@@ -1,0 +1,77 @@
+# ============================================
+# Child Theme StoreX - Grupo Compuservitec
+# .gitignore EXCLUSIVO del child theme.
+# NUNCA subimos: backups locales, cachés, node,
+# archivos de config/server, cachés ni temporales.
+# ============================================
+
+# --- 1) BACKUPS LOCALES (solo existen en tu PC, nunca al repo) ---
+*BACKUP*.off
+*BACKUP*.bak
+*.-BACKUP*
+*.backup
+*.old
+*.orig
+*.tmp
+*.temp
+
+# --- 2) Node / Build tools (si algún día usas Sass/Vite/etc.) ---
+node_modules/
+dist/
+build/
+.npm
+.cache/
+.parcel-cache/
+.eslintcache
+package-lock.json.bak
+yarn-error.log
+
+# --- 3) Sistema operativo (basura Windows/macOS/Linux) ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# --- 4) Editores / IDE (tu config local, nunca al equipo) ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# --- 5) Logs / errores / debug ---
+*.log
+error_log
+debug.log
+php_errors.log
+*.trace
+
+# --- 6) Config / credenciales (NUNCA SUBAS NINGÚN .env) ---
+.env
+.env.*
+!.env.example
+.htaccess
+robots.txt
+wp-config.php
+config.php
+*.pem
+*.key
+
+# --- 7) WordPress archivos que podrían colarse (no pertenecen al child theme) ---
+wp-content/
+uploads/
+cache/
+advanced-cache.php
+object-cache.php
+maintenance
+languages/
+upgrade/

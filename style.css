@@ -1,0 +1,3386 @@
+/*
+Theme Name: StoreX - Grupo Compuservitec
+Theme URI: https://burgerthemes.com/storex-free/
+Template: storex
+Author: David Quispe
+Author URI: https://burgerthemes.com/
+Description: Tema hijo personalizado para la tienda online de GRUPO COMPUSERVITEC E.I.R.L. Especialistas en tecnología, cómputo y artículos de papelería en San Ignacio, Cajamarca, Perú.
+Tags: e-commerce,grid-layout,right-sidebar,custom-logo,custom-menu,featured-images,footer-widgets,theme-options,threaded-comments,translation-ready
+Version: 1.0.15.1785959315
+Updated: 2026-08-05 19:48:35
+
+*/
+
+/* ================================================================================================ */
+/* ==================================  TABLA DE CONTENIDO (TOC)  ================================== */
+/* ================================================================================================ */
+/*   Usa Ctrl+F y escribe "BLOQUE NN" para saltar DIRECTAMENTE en 1 segundo.                       */
+/*   (NN = número del bloque, ej:  Ctrl+F → "BLOQUE 03"  → salta al banner hero).                  */
+/*                                                                                                  */
+/*   BLOQUE 01  ·  Paleta de colores + variables CSS + Botones principales (hamburguesa/buscador)  */
+/*   BLOQUE 02  ·  Menús + Barra superior de contacto (above header / buscador / categorías)       */
+/*   BLOQUE 03  ·  Banner hero / Slider (fondo WebP personalizado + overlay)  ← ← FRANJA AZUL     */
+/*   BLOQUE 04  ·  Categorías destacadas + Tarjetas info + Ofertas / Etiquetas                     */
+/*   BLOQUE 05  ·  Footer 4 columnas Compuservitec + Responsive móvil                              */
+/*   BLOQUE 06  ·  My Account · Mi Cuenta (chips laterales / Dashboard cliente)                    */
+/*   BLOQUE 07  ·  Carrito (Woo Clásico · tabla items + totales + botón CTA)                       */
+/*   BLOQUE 08  ·  Carrito (Woo Blocks Gutenberg · 2 columnas IZQ productos / DER totales)        */
+/*   BLOQUE 09  ·  Carrito VACÍO · Aviso + Sección "Novedades" grid horizontal 3 cols              */
+/*   BLOQUE 10  ·  Producto individual · Tarjetas + Tabs + Reseñas + Stock                         */
+/*   BLOQUE 11  ·  Checkout / Pagar · Diseño minimalista simple 2 columnas                         */
+/*   BLOQUE 12  ·  Responsive global + Scrollbar + Selección texto + Extras varios                 */
+/* ================================================================================================ */
+/*   ¿Cómo deshacer todo en 2 segundos?:     Renombra  style-BACKUP-2026-08-12.css  → style.css    */
+/* ================================================================================================ */
+/* BLOQUE 01 · Paleta de colores y botones  (antiguo: paleta personalizada) */
+/* ==========================================================================
+   PALETA PERSONALIZADA — Grupo Compuservitec
+   --------------------------------------------------------------------------
+   PRINCIPAL (partes grandes / enlaces / backgrounds) : #1c6eab
+   COMPLEMENTARIO (botones pequeños / acentos / hamburguesa) : #1d8ec8
+   ========================================================================== */
+
+:root{
+  --theme-color: #1c6eab;
+  --theme-color-rgb: 28, 110, 171;
+  --accent-color: #1d8ec8;
+  --accent-color-rgb: 29, 142, 200;
+}
+
+/* --------------------------------------------------------------------------
+   1) BOTÓN HAMBURGESA (menú móvil) → usa color COMPLEMENTARIO #1d8ec8
+   -------------------------------------------------------------------------- */
+.mobile-nav-toggler .mobile-menu-btn,
+.main-header .menu-right-content .info-list li .mobile-nav-toggler .mobile-menu-btn{
+  background: var(--accent-color) !important;
+}
+.mobile-nav-toggler .mobile-menu-btn:hover,
+.mobile-nav-toggler .mobile-menu-btn:focus{
+  background: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2) BOTÓN BUSCADOR (lupa) → complementario #1d8ec8
+   -------------------------------------------------------------------------- */
+.header-search-button,
+.search-box button.header-search-button,
+.woocommerce-product-search button[type="submit"]{
+  background: var(--accent-color) !important;
+  color: #fff !important;
+}
+.header-search-button:hover,
+.header-search-button:focus,
+.woocommerce-product-search button[type="submit"]:hover,
+.woocommerce-product-search button[type="submit"]:focus{
+  background: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3) BOTONES DE NAVEGACIÓN DEL CARRUSEL (Owl Nav flechas) → complementario
+   -------------------------------------------------------------------------- */
+.nav-style-one .owl-nav [class*="owl-"],
+.shop-two .nav-style-one .owl-nav [class*="owl-"]{
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border-color: var(--accent-color) !important;
+}
+.nav-style-one .owl-nav [class*="owl-"]:hover,
+.nav-style-one .owl-nav [class*="owl-"]:focus,
+.shop-two .nav-style-one .owl-nav [class*="owl-"]:hover,
+.shop-two .nav-style-one .owl-nav [class*="owl-"]:focus{
+  background: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4) PUNTOS DEL CARRUSEL (Owl dots activo) → complementario
+   -------------------------------------------------------------------------- */
+.dots-style-one .owl-dots button.active span,
+.dots-style-one .owl-dots button.active:before,
+.dots-style-one .owl-dots button:hover span,
+.dots-style-one .owl-dots button:focus span{
+  background: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5) ETIQUETA "Sale" / "Oferta" de productos WooCommerce → complementario
+   -------------------------------------------------------------------------- */
+.woocommerce span.onsale,
+ul.products li.product .onsale,
+.product-block .tag-badge span,
+.slide-item .tag-badge span{
+  background: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6) BOTÓN "Añadir al carrito" → complementario (hover en principal)
+   -------------------------------------------------------------------------- */
+.woocommerce ul.products li.product .button,
+.woocommerce #respond input#submit,
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.product-block .product-meta .add_to_cart_button,
+.slide-item .slider-caption-box .btn-box a.btn-primary,
+.slide-item .slider-caption-box .banner-btn a,
+a.btn, button.btn, .btn,
+.btn-primary{
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: #fff !important;
+}
+.woocommerce ul.products li.product .button:hover,
+.woocommerce ul.products li.product .button:focus,
+.woocommerce #respond input#submit:hover,
+.woocommerce #respond input#submit:focus,
+.woocommerce a.button:hover,
+.woocommerce a.button:focus,
+.woocommerce button.button:hover,
+.woocommerce button.button:focus,
+.woocommerce input.button:hover,
+.woocommerce input.button:focus,
+.product-block .product-meta .add_to_cart_button:hover,
+.product-block .product-meta .add_to_cart_button:focus,
+.slide-item .slider-caption-box .btn-box a.btn-primary:hover,
+.slide-item .slider-caption-box .btn-box a.btn-primary:focus,
+.slide-item .slider-caption-box .banner-btn a:hover,
+.slide-item .slider-caption-box .banner-btn a:focus,
+a.btn:hover, button.btn:hover, .btn:hover,
+a.btn:focus, button.btn:focus, .btn:focus,
+.btn-primary:hover,
+.btn-primary:focus{
+  background: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7) BOOTSTRAP AZUL #0d6efd (btn-primary, badges, alerts) → reemplazos
+   -------------------------------------------------------------------------- */
+.btn-primary:not([class*="elementor"]),
+.btn-primary:visited,
+.bg-primary,
+.text-primary,
+.border-primary,
+.list-group-item.active,
+.page-item.active .page-link,
+.alert-primary,
+.badge.bg-primary,
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active{
+  --bs-btn-bg: var(--accent-color) !important;
+  --bs-btn-border-color: var(--accent-color) !important;
+  --bs-btn-hover-bg: var(--theme-color) !important;
+  --bs-btn-hover-border-color: var(--theme-color) !important;
+  --bs-btn-active-bg: var(--theme-color) !important;
+  --bs-btn-active-border-color: var(--theme-color) !important;
+  --bs-primary-rgb: var(--theme-color-rgb) !important;
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   8) CAJA DE CATEGORÍAS (botón "Todas las categorías" del buscador)
+   -------------------------------------------------------------------------- */
+.header-upper .search-area .category-inner .nice-select,
+.main-header .outer-box .category-box .text,
+.category-box .text{
+  background: var(--theme-color) !important;
+}
+.header-upper .search-area .category-inner .nice-select:hover,
+.header-upper .search-area .category-inner .nice-select:focus,
+.main-header .outer-box .category-box .text:hover,
+.main-header .outer-box .category-box .text:focus{
+  background: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   9) GRADIENTES / BARRAS PROGRESO / backgrounds antiguos rgba(0,62,172)
+      → Fuerzan que cualquier tono azul viejo se mapee al nuevo.
+   -------------------------------------------------------------------------- */
+[style*="rgba(0, 62, 172"],
+[style*="rgba(0,62,172"],
+[style*="#003EAC"],
+[style*="#003eac"],
+[style*="003EAC"],
+[style*="003eac"]{
+  /* fallback por si algún widget inline aún usa el azul viejo */
+}
+
+/* --------------------------------------------------------------------------
+   10) ENLACES (color base del body) → #1c6eab (principal)
+   -------------------------------------------------------------------------- */
+a,
+a:visited{
+  color: var(--theme-color) !important;
+}
+a:hover,
+a:focus,
+a:active{
+  color: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   11) BARRA SUPERIOR DE CONTACTO (Above header) → tono principal
+   -------------------------------------------------------------------------- */
+.above-header,
+.above-header-top,
+.abv-hdr-above-header,
+.top-bar,
+.top-bar-offer{
+  background-color: var(--theme-color) !important;
+  color: #fff !important;
+}
+.above-header a,
+.above-header-top a,
+.top-bar a{
+  color: #fff !important;
+}
+.above-header a:hover,
+.above-header-top a:hover,
+.top-bar a:hover{
+  color: rgba(255,255,255,0.8) !important;
+}
+
+/* --------------------------------------------------------------------------
+   12) BADGE DE CANTIDAD EN CARRITO (globito rojo/azul del icono)
+   -------------------------------------------------------------------------- */
+.cart-box .header-cart .cart-count,
+.header-cart span.count,
+.info-list .cart-box .count,
+.mini-cart .count,
+.cart-count{
+  background: var(--accent-color) !important;
+  color: #fff !important;
+}
+
+/* --------------------------------------------------------------------------
+   13) BOTÓN "Ver todas las categorías" (Popular Categories link)
+   -------------------------------------------------------------------------- */
+.popular-categories .view-all a,
+.section-head .view-all a,
+.cat-block .view-all a{
+  color: var(--accent-color) !important;
+}
+.popular-categories .view-all a:hover,
+.popular-categories .view-all a:focus,
+.section-head .view-all a:hover,
+.section-head .view-all a:focus{
+  color: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   14) TARJETAS INFO (efecto hover) → borde/acento en complementario
+   -------------------------------------------------------------------------- */
+.info-two .info-box:hover,
+.info-two .info-box:focus-within,
+.info-section .info-box:hover,
+.info-section .info-box:focus-within{
+  border-color: var(--accent-color) !important;
+}
+.info-two .info-box .read-more a,
+.info-section .info-box .btn-box a{
+  color: var(--accent-color) !important;
+}
+.info-two .info-box .read-more a:hover,
+.info-two .info-box .read-more a:focus,
+.info-section .info-box .btn-box a:hover,
+.info-section .info-box .btn-box a:focus{
+  color: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   15) WOOCOMMERCE: breadcrumb / pagination / price filter
+   -------------------------------------------------------------------------- */
+.woocommerce .woocommerce-breadcrumb a,
+.woocommerce-breadcrumb a{
+  color: var(--theme-color) !important;
+}
+.woocommerce .woocommerce-pagination ul.page-numbers li a.page-numbers,
+.woocommerce nav.woocommerce-pagination ul li a,
+.woocommerce nav.woocommerce-pagination ul li span{
+  border-color: var(--theme-color) !important;
+  color: var(--theme-color) !important;
+}
+.woocommerce .woocommerce-pagination ul.page-numbers li a.page-numbers:hover,
+.woocommerce .woocommerce-pagination ul.page-numbers li span.current,
+.woocommerce nav.woocommerce-pagination ul li a:hover,
+.woocommerce nav.woocommerce-pagination ul li span.current{
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: #fff !important;
+}
+.woocommerce .price ins .amount,
+.woocommerce ul.products li.product .price ins .amount,
+.product-block .price ins .amount{
+  color: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   16) CHECKOUT / CUENTA WooCommerce → tabs activos
+   -------------------------------------------------------------------------- */
+.woocommerce-MyAccount-navigation ul li.is-active a,
+.woocommerce-MyAccount-navigation ul li a:hover,
+.woocommerce-checkout #payment ul.payment_methods li input[type="radio"]:checked + label{
+  border-color: var(--accent-color) !important;
+  color: var(--theme-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   17) SCROLLBAR (WebKit) → toque elegante en tono complementario
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar{
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track{
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb{
+  background: var(--accent-color);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background: var(--theme-color);
+}
+
+/* --------------------------------------------------------------------------
+   18) SELECCIÓN DE TEXTO → acento en complementario
+   -------------------------------------------------------------------------- */
+::selection{
+  background: rgba(var(--accent-color-rgb), 0.2);
+  color: var(--theme-color);
+}
+::-moz-selection{
+  background: rgba(var(--accent-color-rgb), 0.2);
+  color: var(--theme-color);
+}
+
+/* BLOQUE 02 · Menús + Barra superior contacto / buscador / categorías  ======================= */
+/* ==========================================================================
+   CORRECIONES DE CONTRASTE Y LEGIBILIDAD (paleta nueva)
+   ========================================================================== */
+
+/* ---------- Fix 1: Selector "Seleccionar categoría" del buscador → TEXTO BLANCO ---------- */
+.header-search-select.nice-select,
+.search-area .nice-select,
+.category-inner .nice-select,
+.header-search-select.nice-select .current,
+.search-area .nice-select .current,
+.category-inner .nice-select .current,
+.header-search-select.nice-select:after,
+.search-area .nice-select:after,
+.category-inner .nice-select:after{
+  color: #ffffff !important;
+}
+.header-search-select.nice-select .option,
+.search-area .nice-select .option,
+.category-inner .nice-select .option{
+  color: #1a202c !important;
+}
+.header-search-select.nice-select .option:hover,
+.header-search-select.nice-select .option.focus,
+.header-search-select.nice-select .option.selected.focus,
+.search-area .nice-select .option:hover,
+.search-area .nice-select .option.focus,
+.search-area .nice-select .option.selected.focus{
+  background-color: #1c6eab !important;
+  color: #ffffff !important;
+}
+
+/* ---------- Fix 2: Tagline del logo (debajo "Compuservitec") ----------
+   Más pequeño y color blanco-azulado (no blanco puro ni muy fuerte).   */
+.site-description,
+.logo .site-description,
+.header-upper .logo p.site-description,
+.upper-inner .logo .site-description{
+  font-size: 0.82rem !important;
+  line-height: 1.3 !important;
+  margin-top: 0.15rem !important;
+  letter-spacing: 0.2px;
+  color: #dbeafe !important;       /* blanco-azulado suave */
+  color: #cfe2ff !important;       /* fallback más claro */
+  opacity: 0.95 !important;
+  font-weight: 400 !important;
+}
+
+/* ---------- Fix 3: Número de teléfono del header → BLANCO ---------- */
+.header-upper .support-box a,
+.header-upper .support-box a:visited,
+.main-header .right-column .support-box a,
+.main-header .support-box a,
+.support-box a,
+.support-box a:visited,
+.header-call a,
+.header-call a:visited,
+.right-column a[href*="tel:"],
+.upper-inner a[href*="tel:"]{
+  color: #ffffff !important;
+}
+.header-upper .support-box a:hover,
+.header-upper .support-box a:focus,
+.main-header .support-box a:hover,
+.main-header .support-box a:focus{
+  color: #bfdbfe !important;   /* blanco-azulado claro para hover */
+}
+
+/* ---------- Fix 4: Botón "Todas las categorías" del buscador ----------
+   Texto e ícono en BLANCO (tenían el mismo color que el fondo azul).   */
+.main-header .outer-box .category-box a.text,
+.main-header .outer-box .category-box .text,
+.category-box .text,
+.category-box .text:visited,
+.category-box .text i,
+.category-box .text .fa,
+.main-header .outer-box .category-box .text i,
+.main-header .outer-box .category-box .text .fa{
+  color: #ffffff !important;
+}
+.main-header .outer-box .category-box a.text:hover,
+.main-header .outer-box .category-box a.text:focus,
+.category-box .text:hover,
+.category-box .text:focus{
+  color: #e0f2fe !important;
+}
+.category-box .text .fa:before,
+.main-header .outer-box .category-box .text .fa:before{
+  color: #ffffff !important;
+}
+
+/* ---------- Fix 5: Botón CTA "Comprar ahora" del banner slider ----------
+   TÍTULO EN BLANCO (tenía color azul = no se veía sobre fondo azul).    */
+.slide-item .btn-box a,
+.slide-item .btn-box a:visited,
+.slide-item .btn-box a.btn-primary,
+.slide-item .btn-box .theme-btn,
+.slider-caption-box .btn-box a,
+.slider-caption-box .btn-box a:visited,
+.slider-caption-box .btn-box .theme-btn,
+.banner-carousel .slide-item .theme-btn,
+.banner-carousel .slide-item .btn-one,
+.banner-btn a,
+.banner-btn a:visited,
+.btn-box .theme-btn.btn-one{
+  color: #ffffff !important;
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+.slide-item .btn-box a:hover,
+.slide-item .btn-box a:focus,
+.slider-caption-box .btn-box a:hover,
+.slider-caption-box .btn-box a:focus,
+.banner-carousel .slide-item .theme-btn:hover,
+.banner-carousel .slide-item .theme-btn:focus,
+.banner-btn a:hover,
+.banner-btn a:focus{
+  color: #ffffff !important;
+  background: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+
+/* ---------- Fix extra: links del header (zona azul superior) en BLANCO ----------
+   Por si el sistema los vuelve a pintar en #1c6eab con el "a { color: var(--theme-color) }"
+   anterior. Asegura que TODO lo que viva dentro de .header-upper quede en blanco. */
+.header-upper a,
+.header-upper a:visited,
+.main-header .header-upper a,
+.main-header .upper-inner a,
+.upper-inner a,
+.support-box a,
+.support-box .fa,
+.support-box svg,
+.upper-inner .fa,
+.upper-inner svg{
+  color: #ffffff !important;
+}
+.header-upper a:hover,
+.header-upper a:focus,
+.main-header .upper-inner a:hover,
+.main-header .upper-inner a:focus{
+  color: #bfdbfe !important;   /* blanco-azulado claro en hover */
+}
+
+/* BLOQUE 03 · Banner hero / Slider Home ========================== */
+/* ==========================================================================
+   ESTRUCTURA EXACTA (confirmada HOY 2026-08-16 con HTML DOM REAL del usuario)
+   (ya no adivinamos leyendo section-slider.php, el HTML real del navegador es LA VERDAD)
+
+   [0] section.banner-section.p_relative
+    [1]  div.banner-carousel.owl-carousel.owl-theme.owl-loaded
+     [2]   div.owl-stage-outer / div.owl-stage / div.owl-item (JS Owl)
+      [3]    div.slide-producto.p_relative    ← ✅ CLASE REAL (NO es slide-item vieja)
+       [4]     div.pattern-layer style="background-image: url(banner-compuservitec-bg.webp)"
+       [4]     div.large-container
+        [5]       div.content-box  →  upper-text / h2 / h3 / btn-box  ✅
+
+   ==========================================================================
+   BUG 5H ENCONTRADO HOY (motivo por el que NINGÚN cambio CSS hacía efecto):
+   TODOS los selectores BLOQUE 03 usaban la clase .slide-item (demo vieja,
+   obsoleta). En tu sitio actual Burger Companion genera la clase
+   .slide-producto.p_relative (nueva) → 0 selectores cazaban → 0 efectos.
+   SOLUCIÓN DEFINITIVA: renombrar todos los selectores del BLOQUE 03:
+        .slide-item   →   .slide-producto
+   Ahora SÍ funcionan: padding clamp / background-size / overlay / colores.
+   ========================================================================== */
+
+/* #################################################################
+   BLOQUE 03 · BANNER HERO SLIDER HOME (REVERTIDO 95% AL PADRE STOREX + 2 AJUSTES MÍNIMOS)
+   --------------------------------------------------------------------------
+   REGLA DE ORO: NO tocar más la estructura del PADRE. Todo lo que rompía
+   antes eran !importants mal colocados sobre el JS de Owl Carousel
+   (owl-stage-outer / owl-stage / owl-item) que necesitan su altura inline.
+
+   === 2 ÚNICOS CAMBIOS SOBRE EL PADRE StoreX main.css ===
+   1) .banner-section degradado diagonal #1c6eab→#1d8ec8 (fallback color foto)
+   2) .banner-carousel .slide-producto .pattern-layer background-position: center right
+      (padre traía "bottom center" + clase vieja slide-item → nunca se aplicaba).
+
+   === LO QUE MANTENEMOS NUESTRO (ahora SÍ funciona: DOM clase correcta .slide-producto) ===
+   a) Overlay izquierdo medio oscuro 70% (.slide-producto::after)
+   b) Estilos upper-text, h2/h3, botón btn-one (colores/text-shadow/border-radius)
+   c) large-container/auto-container padding clamp responsive (no rompe)
+   d) content-box max-width 680px + z-index:2 (por encima overlay)
+   e) shape-2.png / image-layer demo display:none
+   f) Owl dots blancos (mejor contraste sobre fotos oscuras)
+   ################################################################# */
+
+/* NIVEL 0 · banner-section (FONDO BASE ORIGINAL ACORDADO · gradiente diagonal corporativo)
+   Diseño original 3 capas:
+   1) FONDO BASE = degradado diagonal #1c6eab → #1d8ec8 (tus colores corporativos)
+   2) PATTERN-LAYER = foto WebP lado derecho center right (objetos útiles/mochila derecha, espacio limpio izq para texto)
+   3) OVERLAY IZQ + CONTENT-BOX = textos blancos alineados izq, padding clamp. */
+section.banner-section{
+  position: relative !important;
+  overflow: hidden !important;
+  background-color: #1c6eab !important;   /* ← color fallback sólido por si gradiente no carga (mismo tono inicial) */
+  background-image: none !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;   /* ← CAMBIO 1: gradiente DIAGONAL original acordado */
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;           /* ← NO tocar aspect-ratio. Usamos padding clamp altura natural. */
+  -webkit-aspect-ratio: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* NIVEL 1 · banner-carousel (igual que padre: NADA que sobrescribir, lo gestiona Owl) */
+section.banner-section .banner-carousel{
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  /* ⛔ PROHIBIDO height:100%! en banner-carousel. Owl JS gestiona alturas. */
+}
+/* ⛔ SUPER IMPORTANTE (causó que DESAPARECIERA TODO el contenido el último error):
+   NO modificamos owl-stage-outer, owl-stage, owl-item. El JS de Owl Carousel necesita
+   poner alturas inline dinámicas. Si le metemos !important aquí, colapsan = 0 altura. */
+section.banner-section .banner-carousel .owl-stage-outer,
+section.banner-section .banner-carousel .owl-stage,
+section.banner-section .banner-carousel .owl-item{
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  /* NUNCA height: 100%! aquí. Dejamos que Owl haga su trabajo inline */
+}
+
+/* NIVEL 3 · slide-producto (ALTURA AUMENTADA · selectores actualizados a DOM real confirmado HOY)
+   ⚠️ POR QUÉ ANTES NUNCA FUNCIONABA (5 horas / ningún cambio visible):
+   El padre StoreX main.css L2669 usaba .banner-carousel .slide-item (clase vieja demo).
+   NOSOTROS también usábamos la clase vieja .slide-item (no existe en tu DOM real).
+   Resultado: NINGÚN selector CSS cazaba ningún elemento → 0 cambios, perdidas horas.
+
+   ✅ AHORA: selector 3 niveles ESPECÍFICO (section.banner-section → banner-carousel.owl-carousel
+   → div.owl-item > div.slide-producto.p_relative) + !important.
+   DOM REAL confirmado HOY: clase HTML = .slide-producto.p_relative ✅ 100% caza.
+
+   Valores padding clamp (móvil → desktop):
+     clamp(160px, 22vw, 360px) 0 → móvil 160px mínimo / desktop ancho 360px.
+   Desktop ≥1200px: clamp(200,25vw,400) (aún más alto / panorama).
+   La foto (pattern-layer: absolute top0 left0 right0 bottom0) se AMPLÍA JUNTO con
+   el padding del padre. */
+section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
+section.banner-section div.slide-producto.p_relative,
+section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+  position: relative !important;
+  padding: clamp(160px, 22vw, 360px) 0 !important;   /* ← ✅ AHORA SÍ aplica (clase correcta). Banner alto. */
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  aspect-ratio: auto !important;
+  -webkit-aspect-ratio: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+/* DESKTOP ≥1200px: AÚN MÁS ALTO (hasta 400px, banner panorámico grande) */
+@media only screen and (min-width: 1200px){
+  section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
+  section.banner-section div.slide-producto.p_relative,
+  section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+    padding: clamp(60px, 25vw, 120px) 0 !important;
+  }
+}
+/* TABLET 768-1199px: Altura intermedia (ni tan alto desktop, ni tan bajo móvil) */
+@media only screen and (min-width: 768px) and (max-width: 1199px){
+  section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
+  section.banner-section div.slide-producto.p_relative,
+  section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+    padding: clamp(180px, 23vw, 320px) 0 !important;
+  }
+}
+
+/* NIVEL 4a · pattern-layer (solo 1 cambio sobre padre: position + background-position) */
+section.banner-section .pattern-layer{
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: bottom center !important;   /* (valor padre, no tocamos este) */
+}
+/* ↓↓↓ 2do CAMBIO MÍNIMO SOBRE EL PADRE ↓↓↓
+   StoreX padre main.css L2708 usa: clase vieja .slide-item (no existe) +
+   background-position: center / bottom center.
+
+   ✅ CLASE CORRECTA DOM REAL: .slide-producto.p_relative (confirmado hoy)
+
+   Diseño ORIGINAL ACORDADO 3 capas: foto al LADO DERECHO (center right).
+   Motivo: banner-compuservitec-bg.webp tiene útiles/mochila/logo del lado DERECHO;
+   alineando la foto al center right dejamos el espacio IZQUIERDO libre para el texto
+   blanco (nunca se pisa ni solapa con los objetos de la foto).
+
+   ⚠️ TAMAÑO FOTO (SOLUCIÓN A TU PEDIDO):
+   Antes: background-size: cover → escalaba PRIMERO por ANCHO → cortaba VERTICALMENTE
+     (perdías partes arriba/abajo de la foto, no se veía completa en altura).
+   AHORA (clase correcta ✅ 100% se aplica): background-size: auto 100% →
+     · 100%  → ALTURA SIEMPRE = ALTO CONTENEDOR BANNER (NUNCA se corta verticalmente,
+                se muestra COMPLETA en altura, tal como lo pediste).
+     · auto  → ANCHO escala naturalmente según la proporción de la foto (16:9 / 21:9).
+                Si el ancho resultante es MAYOR que el ancho del contenedor
+                → SE CORTA HORIZONTALMENTE (a lo ancho, lo que tu pediste explícitamente).
+   Se mantiene background-position: center right → el lado DERECHO de la foto
+   (objetos/útiles) SIEMPRE es visible. El corte horizontal (si lo hay) se produce
+   del lado IZQUIERDO, que es el espacio libre para texto (limpio, no hay objetos
+   que se corten visualmente). */
+div.banner-carousel div.slide-producto .pattern-layer,
+div.slide-producto.p_relative .pattern-layer{
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: auto 100% !important;      /* ← ✅ AHORA SÍ aplica. NUNCA corta vertical; si sobra ancho → corta HORIZONTAL (izq) */
+  background-repeat: no-repeat !important;
+  background-position: center right !important;   /* ← ✅ FOTO AL LADO DERECHO (objetos siempre visibles; corte horiz izq no importa) */
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ===== LO QUE MANTENEMOS NUESTRO (ahora SÍ funciona) ===== */
+
+/* OVERLAY IZQUIERDO · FINAL (CSS puro / clase DOM correcta .slide-producto)
+   --------------------------------------------------------------------------
+   ✅ AHORA SÍ FUNCIONA: selector apunta a .slide-producto (confirmado DOM real hoy).
+   Selector ESPECÍFICO 5 NIVELES: section.banner-section → banner-carousel.owl-carousel
+   → owl-item → div.slide-producto.p_relative →  ::after
+
+   Aseguramos PADRE CON position:relative (L581-L624) → overlay NUNCA sale del banner;
+   imposible solapar header/footer (bug corregido de inyección PHP anterior).
+
+   Orden z-index GARANTIZADO 100% (no stacking context raro):
+     z=0  · pattern-layer (foto WebP)
+     z=1  · ::after overlay degradado (MEDIO = ENCIMA DE FOTO, DETRÁS DE TEXTOS)
+     z=2  · large-container / content-box (badge/H2/H3/botón → ENFRENTE)
+
+   ↓☝️ AJUSTA AQUÍ LOS VALORES (AHORA SÍ se nota al instante con Ctrl+Shift+R):
+     · [Línea width: 70%!]   → ancho overlay. 60 estrecho / 70 actual / 80 muy ancho.
+     · [rgba(18, 55, 92, X) 0%] → opacidad inicio overlay. Cambia el 0.68:
+           0.10 muy claro / 0.35 medio / 0.55 oscuro / 0.68 actual / 0.80 muy oscuro.
+     · [rgba(18, 55, 92, X) 30%] → opacidad mitad overlay (0.50 actual). */
+section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative::after{
+  content: "" !important;
+  display: block !important;
+  visibility: visible !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 70% !important;                   /* ←☝️ ANCHO OVERLAY (ajusta 60 / 70 / 80) */
+  height: 100% !important;
+  opacity: 1 !important;
+  z-index: 1 !important;                   /* ← ENCIMA pattern-layer z=0 (foto) */
+  pointer-events: none !important;
+  transform: translateZ(0) !important;     /* ← Forzar pintado capa GPU (no cache viejo) */
+  will-change: opacity, background, width !important;
+  background: linear-gradient(90deg,
+      rgb(18, 55, 92) 0%,   /* ←☝️ OPACIDAD INICIO OVERLAY (cambia el valor X de rgba) */
+      rgba(18, 55, 92, 0.50) 30%,
+      rgba(18, 55, 92, 0.28) 58%,
+      rgba(18, 55, 92, 0.08) 82%,
+      rgba(18, 55, 92, 0)    100%) !important;
+}
+
+/* Caja del texto: por ENCIMA de overlay (z=1) y foto (z=0). Orden final:
+   z=0 foto  →  z=1 overlay  →  z=2 texto/botón (100% predecible, no hay bug stacking context) */
+section.banner-section .large-container,
+div.banner-carousel .large-container,
+section.banner-section .auto-container,
+div.banner-carousel .auto-container,
+div.banner-carousel .content-box,
+div.slide-producto.p_relative .content-box{
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Padding caja texto (ORIGINAL ANTES ajuste altura ~100px)
+   Valores restaurados al padrón corporativo original:
+     · clamp(8px, 1vw, 24px) arriba/abajo → banner alto, texto no pegado arriba.
+     · max-width: 680px → texto ancho adecuado para banner alto (no tan horizontal). */
+section.banner-section .large-container,
+div.banner-carousel .large-container,
+section.banner-section .auto-container,
+div.banner-carousel .auto-container{
+  padding-top: clamp(8px, 1vw, 24px) !important;
+  padding-bottom: clamp(8px, 1vw, 24px) !important;
+  padding-left: clamp(16px, 4.5vw, 64px) !important;
+  padding-right: clamp(14px, 3.5%, 48px) !important;
+}
+div.banner-carousel .content-box{
+  max-width: 680px !important;
+}
+
+/* ===== NIVEL 5 · Elementos texto (TAMAÑOS ORIGINALES · ajuste altura ~100px deshecho) ===== */
+
+/* Badge 🔥 OFERTAS SEMANALES · fuente + márgenes ORIGINALES (grandes, para banner alto) */
+div.banner-carousel div.slide-producto .upper-text,
+div.banner-carousel .content-box .upper-text,
+section.banner-section .slide-producto .upper-text{
+  color: #ffffff !important;
+  letter-spacing: 1.2px !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  font-size: clamp(14px, 1.4vw, 16px) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
+  margin-bottom: 18px !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  line-height: 1.3 !important;
+}
+
+/* Título grande H2 · fuente + márgenes ORIGINALES (grande, banner alto) */
+div.banner-carousel div.slide-producto h2,
+div.banner-carousel .content-box h2,
+section.banner-section .slide-producto h2{
+  color: #ffffff !important;
+  text-shadow: 0 2px 6px rgba(18, 55, 92, 0.338) !important;
+  line-height: 1.15 !important;
+  font-size: clamp(40px, 5vw, 52px) !important;
+  margin-bottom: 18px !important;
+  font-weight: 700 !important;
+}
+div.banner-carousel div.slide-producto h2 span,
+section.banner-section .slide-producto h2 span{
+  color: #ffffff !important;
+}
+
+/* Subtítulo H3 · fuente + márgenes ORIGINALES (grande, banner alto) */
+div.banner-carousel div.slide-producto h3,
+div.banner-carousel .content-box h3,
+section.banner-section .slide-producto h3,
+div.banner-carousel div.slide-producto h3 span,
+section.banner-section .slide-producto h3 span{
+  color: #ffffff !important;
+  text-shadow: 0 2px 6px rgba(18,55,92,0.3) !important;
+  font-size: clamp(24px, 3vw, 30px) !important;
+  margin-bottom: 18px !important;
+  line-height: 1.25 !important;
+  font-weight: 500 !important;
+}
+
+/* Botón Ver catálogo · tamaño + padding ORIGINALES (grande, para banner alto) */
+div.banner-carousel .content-box .btn-box{
+  margin-top: 18px !important;
+}
+div.banner-carousel div.slide-producto .theme-btn.btn-one,
+div.banner-carousel .content-box .theme-btn.btn-one,
+section.banner-section .slide-producto .theme-btn.btn-one{
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  font-size: clamp(14px, 1.45vw, 16px) !important;
+  padding: clamp(10px, 1.2vw, 14px) clamp(24px, 3vw, 34px) !important;
+  line-height: 1.3 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Anulación fotos demo Burger (image-layer / shape-2.png) · clase correcta */
+section.banner-section .image-layer,
+div.slide-producto.p_relative figure.image-layer,
+div.banner-carousel figure.image-layer{
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"]{
+  background-image: none !important;
+}
+
+/* Puntos Owl Carousel (dots) claros */
+.dots-style-one .owl-dots{
+  z-index: 4 !important;
+  position: relative !important;
+}
+.dots-style-one .owl-dots button span{
+  background-color: rgba(255,255,255,0.35) !important;
+}
+.dots-style-one .owl-dots button.active span,
+.dots-style-one .owl-dots button:hover span{
+  background-color: #ffffff !important;
+}
+/* ← FIN BLOQUE 03 Banner Hero Slider Home. BLOQUE 04 Categorías empieza aquí */
+
+/* BLOQUE 04 · Categorías destacadas + Tarjetas info + Ofertas ===== */
+/* ==========================================================================
+   INFO SECTION — 3 tarjetas Tecnología / Papelería / Accesorios
+   --------------------------------------------------------------------------
+   Fondo con la imagen nueva + overlay oscuro izquierdo para contraste
+   del texto. Nunca más las fotos de ropa/zapatos/reloj de la demo.
+   ========================================================================== */
+
+/* 1) Bloque base: sombra más suave y altura fija para alinear las 3 tarjetas */
+.shop-one .feature-block,
+.shop-one .shop-block-one,
+.shop-one .shop-block-one .inner-box{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  min-height: 360px !important;
+}
+.shop-one .shop-block-one .inner-box{
+  padding: 36px 30px 40px !important;
+  z-index: 1;
+}
+
+/* 2) Overlay izquierdo SÚTIL para que el texto no choque con la imagen
+      (solo 8% residual; el texto blanco usa text-shadow para contraste) */
+.shop-one .shop-block-one .inner-box::before{
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  background: linear-gradient(120deg,
+      rgba(18, 55, 92, 0.08) 0%,
+      rgba(18, 55, 92, 0.03) 45%,
+      rgba(18, 55, 92, 0.00) 100%);
+  pointer-events: none;
+  transition: background 320ms ease;
+}
+
+/* 3) Capa de la imagen de fondo (figure.image) — la mandamos al fondo */
+.shop-one .shop-block-one .inner-box .image,
+.shop-one .shop-block-one .inner-box .image.r_0.b_10,
+.shop-one .shop-block-one .inner-box figure.image{
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: -1 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+.shop-one .shop-block-one .inner-box .image img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center right !important;
+  display: block !important;
+}
+
+/* 4) Tipografía: BLANCO con sombras para contraste sobre imagen */
+.shop-one .shop-block-one .inner-box > .text,
+.shop-one .shop-block-one .inner-box span.text{
+  position: relative !important;
+  z-index: 2 !important;
+  display: inline-block !important;
+  color: #bfdbfe !important;
+  font-size: 0.80rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.3px !important;
+  text-transform: uppercase !important;
+  padding: 4px 12px !important;
+  margin-bottom: 18px !important;
+  border-radius: 999px !important;
+  background-color: rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.shop-one .shop-block-one .inner-box h2{
+  position: relative !important;
+  z-index: 2 !important;
+  color: #ffffff !important;
+  font-size: 1.75rem !important;
+  line-height: 1.15 !important;
+  margin-bottom: 14px !important;
+  text-shadow: 0 2px 8px rgba(18,55,92,0.55) !important;
+}
+
+.shop-one .shop-block-one .inner-box h4{
+  position: relative !important;
+  z-index: 2 !important;
+  color: #ffffff !important;
+  font-size: 1.15rem !important;
+  font-weight: 500 !important;
+  margin-bottom: 22px !important;
+  text-shadow: 0 2px 6px rgba(18,55,92,0.45) !important;
+}
+.shop-one .shop-block-one .inner-box h4 span{
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  margin-right: 6px;
+  font-weight: 400 !important;
+}
+
+/* 5) Botón "Ver categoría" — BLANCO con borde azul, invertido en hover */
+.shop-one .shop-block-one .inner-box .link-box,
+.shop-one .shop-block-one .inner-box .link-box a{
+  position: relative !important;
+  z-index: 2 !important;
+}
+.shop-one .shop-block-one .inner-box .link-box a{
+  display: inline-block !important;
+  padding: 11px 22px !important;
+  border-radius: 999px !important;
+  background-color: #ffffff !important;
+  color: var(--theme-color, #1c6eab) !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.4px !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 16px rgba(18,55,92,0.20) !important;
+  transition: all 220ms ease-in-out !important;
+}
+.shop-one .shop-block-one .inner-box .link-box a:hover,
+.shop-one .shop-block-one .inner-box .link-box a:focus{
+  background-color: var(--accent-color, #1d8ec8) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29,142,200,0.35) !important;
+}
+
+/* 6) Hover sutil en toda la tarjeta */
+.shop-one .feature-block:hover .shop-block-one,
+.shop-one .feature-block:hover .shop-block-one .inner-box{
+  transform: translateY(-4px);
+  transition: transform 240ms ease;
+  box-shadow: 0 18px 48px rgba(18,55,92,0.22) !important;
+}
+.shop-one .feature-block:hover .shop-block-one .inner-box::before{
+  background: linear-gradient(120deg,
+      rgba(18, 55, 92, 0.22) 0%,
+      rgba(18, 55, 92, 0.10) 45%,
+      rgba(18, 55, 92, 0.02) 100%);
+}
+
+/* BLOQUE 05 · Footer 4 columnas Compuservitec ========================= */
+/* =============================================================================
+   FOOTER — Fondo oscuro personalizado, 4 columnas Compuservitec
+   (Reemplaza widgets demo burger-companion: Londres, StoreX, categs blog...)
+   ========================================================================== */
+
+/* ---------- 1) Contenedores: fondo oscuro azul corporativo ---------- */
+.footer-section,
+.main-footer{
+  background-color: #0e2c4a !important;
+  background-image:
+    radial-gradient(1200px 400px at 0% 0%, rgba(28,110,171,0.45), transparent 60%),
+    radial-gradient(900px 360px at 100% 100%, rgba(29,142,200,0.30), transparent 60%);
+  color: #e2e8f0;
+  padding-top: 56px;
+  padding-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+.footer-section .container,
+.main-footer .container,
+.main-footer .large-container{
+  position: relative;
+  z-index: 2;
+  max-width: 1320px;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.main-footer .widget-section{ padding-bottom: 44px; }
+
+/* Ocultamos por seguridad las 6 footer cards demo antiguas (por si acaso) */
+.footer-btm-card,
+.storex-footer-card,
+.footer-card-section{
+  display: none !important;
+}
+
+/* =============================================================================
+   FOOTER — Fondo oscuro personalizado, 4 columnas Compuservitec RESPONSIVO
+   (Reemplaza widgets demo burger-companion: Londres, StoreX, categs blog...)
+
+   REGLAS CLAVE para no romper la responsividad:
+   1) NO usamos display:grid en .widget-section (wrapper).
+   2) SÓLO el hijo .scx-foo-grid es el GRID DE COLUMNAS.
+   3) Breakpoints:
+        · ≥ 900px : 4 columnas  (desktop)
+        · 641px – 899px : 2 columnas  (tablet)
+        · ≤ 640px : 1 columna   (móvil)
+   ========================================================================== */
+
+/* ---------- 1) Contenedores: fondo oscuro azul corporativo ---------- */
+.footer-section,
+.main-footer{
+  background-color: #0e2c4a !important;
+  background-image:
+    radial-gradient(1200px 400px at 0% 0%, rgba(28,110,171,0.45), transparent 60%),
+    radial-gradient(900px 360px at 100% 100%, rgba(29,142,200,0.30), transparent 60%);
+  color: #e2e8f0;
+  padding-top: 48px;
+  padding-bottom: 0;
+  position: relative;
+  z-index: 1;
+}
+.footer-section .container,
+.main-footer .container,
+.main-footer .large-container{
+  position: relative;
+  z-index: 2;
+  max-width: 1320px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Ocultamos por seguridad las 6 footer cards demo antiguas (por si acaso) */
+.footer-btm-card,
+.storex-footer-card,
+.footer-card-section{
+  display: none !important;
+}
+
+/* ---------- 2) ESTRUCTURA EXACTA inyectada por PHP · 1 sola grid ----------
+   HTML final:
+   <div class="widget-section scx-foo-wrapper">      ← BLOCK (sin grid)
+     <div class="scx-foo-grid scx-foo-inject">       ← ESTE SÍ ES EL GRID
+       <div class="scx-foo-col scx-foo-contacto">…</div>
+       <div class="scx-foo-col scx-foo-enlaces">…</div>
+       <div class="scx-foo-col scx-foo-ayuda">…</div>
+       <div class="scx-foo-col scx-foo-newsletter">…</div>
+     </div>
+   </div>
+--------------------------------------------------------------- */
+
+/* WRAPPER · solo contenedor → NUNCA grid */
+.main-footer .widget-section,
+.widget-section.scx-foo-wrapper{
+  display: block !important;
+  width: 100% !important;
+  float: none !important;
+  clear: both !important;
+  padding: 0 0 36px 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+/* Fallback: otros nombres que el padre StoreX usa a veces */
+.footer-section .widget-area,
+.footer-section .footer-widget-area{
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* GRID 4 COLS · SÓLO .scx-foo-grid es grid · desktop */
+.scx-foo-grid,
+.scx-foo-inject,
+.main-footer .scx-foo-grid,
+.main-footer .scx-foo-inject,
+.main-footer .widget-section.scx-foo-wrapper > .scx-foo-grid.scx-foo-inject{
+  display: grid;
+  display: -ms-grid;
+  grid-template-columns: 1.15fr 1fr 1fr 1.2fr;
+  -ms-grid-columns: 1.15fr 1fr 1fr 1.2fr;
+  gap: 32px 28px;
+  align-items: start;
+  justify-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  float: none;
+  clear: both;
+  box-sizing: border-box;
+}
+
+/* HIJOS = columnas · ancho natural, NUNCA width 100% */
+.scx-foo-col{
+  display: block;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-basis: auto;
+  float: none;
+  margin: 0;
+  padding: 4px 2px;
+  box-sizing: border-box;
+}
+
+/* ----- TABLET · 2 columnas ----- */
+@media (max-width: 899px) and (min-width: 641px){
+  .scx-foo-grid,
+  .scx-foo-inject,
+  .main-footer .scx-foo-grid,
+  .main-footer .scx-foo-inject,
+  .main-footer .widget-section.scx-foo-wrapper > .scx-foo-grid.scx-foo-inject{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    -ms-grid-columns: 1fr 1fr;
+    gap: 28px 24px;
+  }
+}
+
+/* ----- MÓVIL · 1 columna ----- */
+@media (max-width: 640px){
+  .scx-foo-grid,
+  .scx-foo-inject,
+  .main-footer .scx-foo-grid,
+  .main-footer .scx-foo-inject,
+  .main-footer .widget-section.scx-foo-wrapper > .scx-foo-grid.scx-foo-inject{
+    grid-template-columns: 1fr;
+    -ms-grid-columns: 1fr;
+    gap: 32px;
+  }
+  .main-footer .widget-section,
+  .widget-section.scx-foo-wrapper{
+    padding-bottom: 28px !important;
+  }
+}
+
+/* ---------- 3) Textos generales ---------- */
+.scx-foo-col{ color: #cbd5e1; line-height: 1.55; }
+.scx-foo-col h3,
+.scx-foo-col h4.scx-foo-titulo{
+  color: #ffffff !important;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  position: relative;
+}
+.scx-foo-col h4.scx-foo-titulo::after{
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 38px; height: 3px;
+  background: linear-gradient(90deg, #1d8ec8 0%, #1c6eab 100%);
+  border-radius: 99px;
+}
+.scx-foo-col p{ margin: 0 0 16px 0; color: #c7d2e0; font-size: 0.92rem; }
+.scx-foo-col a{ color: #9ec5ee !important; text-decoration: none; transition: color .18s ease; }
+.scx-foo-col a:hover,
+.scx-foo-col a:focus{ color: #ffffff !important; }
+
+/* ---------- 4) Columna 1 · Contacto · Marca en 2 líneas GRUPO / COMPUSERVITEC ---------- */
+.scx-foo-logo{ display: none !important; } /* escondemos logo img anterior ya que no lo usamos */
+.scx-foo-brand{ display: none !important; }
+.scx-foo-tagline{ display: none !important; }
+
+.scx-foo-logo-marca{
+  margin: 0 0 18px 0;
+  line-height: 1;
+  user-select: none;
+}
+.scx-foo-marca-grupo{
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #bfdbfe;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #1d8ec8;
+  display: inline-block;
+}
+.scx-foo-marca-nombre{
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: 0.4px;
+  line-height: 1.15;
+  color: #ffffff;
+  margin-top: 8px;
+  text-shadow: 0 2px 10px rgba(29,142,200,0.25);
+}
+@media (max-width: 640px){
+  .scx-foo-marca-nombre{ font-size: 1.45rem; }
+  .scx-foo-marca-grupo{ letter-spacing: 4px; font-size: 0.85rem; }
+}
+
+.scx-foo-lista{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.scx-foo-lista li{
+  position: relative;
+  padding: 7px 0 7px 28px;
+  font-size: 0.92rem;
+  color: #cbd5e1;
+  border-bottom: 1px dashed rgba(255,255,255,0.07);
+}
+.scx-foo-lista li:last-child{ border-bottom: 0; }
+.scx-foo-lista li > i{
+  position: absolute;
+  left: 0; top: 10px;
+  width: 20px; text-align: center;
+  color: #1d8ec8;
+  font-size: 1rem;
+}
+.scx-foo-redes{ padding-top: 6px; border-bottom: 0 !important; }
+.scx-foo-redes a{
+  display: inline-flex !important;
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #ffffff !important;
+  transition: all .2s ease;
+}
+.scx-foo-redes a:hover{
+  background: #1d8ec8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29,142,200,0.40);
+}
+.scx-foo-redes a i{ font-size: 1rem; }
+
+/* ---------- 5) Columnas 2 · 3: listas de enlaces ---------- */
+.scx-foo-enlaces ul,
+.scx-foo-ayuda ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.scx-foo-enlaces li,
+.scx-foo-ayuda li{
+  padding: 6px 0 6px 20px;
+  position: relative;
+  border-bottom: 1px dashed rgba(255,255,255,0.06);
+  font-size: 0.92rem;
+}
+.scx-foo-enlaces li:last-child,
+.scx-foo-ayuda li:last-child{ border-bottom: 0; }
+.scx-foo-enlaces li i,
+.scx-foo-ayuda li i{
+  position: absolute; left: 0; top: 7px;
+  color: #1d8ec8; font-size: 0.95rem;
+}
+
+/* ---------- 6) Columna 4 · Newsletter + Pagos (archivos IMG reales) ---------- */
+.scx-foo-nl-desc{
+  color: #d1dcfa;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+.scx-nl-form{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 26px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.scx-nl-form input[type="email"]{
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.95);
+  color: #0e2c4a;
+  font-size: 0.92rem;
+  outline: none;
+  transition: all .2s ease;
+}
+.scx-nl-form input[type="email"]::placeholder{ color: #7689a8; }
+.scx-nl-form input[type="email"]:focus{
+  border-color: #1d8ec8;
+  box-shadow: 0 0 0 3px rgba(29,142,200,0.28);
+}
+.scx-nl-boton{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%);
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(28,110,171,0.35);
+  transition: all .2s ease;
+}
+.scx-nl-boton:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(29,142,200,0.42);
+  background: linear-gradient(135deg, #1b5f96 0%, #1a79ab 100%);
+}
+.scx-nl-boton span{ font-size: 0.92rem; }
+
+/* Métodos de pago · ahora 3 columnas (visa / yape / plin) */
+.scx-foo-pagos{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  -ms-grid-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin: 6px 0 0 0;
+}
+/* Por seguridad si se quedara con clase 4 cols antigua */
+.scx-foo-pagos.scx-pagos-3col{
+  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+}
+.scx-pago{
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 2px;
+  background: #ffffff00;
+  border: 1px solid rgba(14,44,74,0.08);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  transition: all .2s ease;
+  min-height: 48px;
+}
+
+.scx-pago img{
+  max-width: 100%;
+  max-height: 42px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+.scx-pago svg,
+.scx-pago svg.scx-pago-placeholder{
+  width: 100%;
+  height: 42px;
+  display: block;
+}
+.scx-foo-pagos-tit::before{ content: "" !important; }
+.scx-foo-pagos-tit{ text-transform: uppercase; }
+
+@media (max-width: 500px){
+  .scx-foo-pagos,
+  .scx-foo-pagos.scx-pagos-3col{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    -ms-grid-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .scx-pago img{ max-height: 40px; }
+  .scx-pago svg,
+  .scx-pago svg.scx-pago-placeholder{ height: 40px; }
+}
+@media (max-width: 400px){
+  .scx-foo-pagos,
+  .scx-foo-pagos.scx-pagos-3col{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    -ms-grid-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .scx-pago img{ max-height: 44px; }
+  .scx-pago svg,
+  .scx-pago svg.scx-pago-placeholder{ height: 44px; }
+}
+
+/* ---------- 7) Barra inferior · Copyright ---------- */
+.copy-section{
+  background-color: #0b223a !important;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 16px 0;
+  color: #a8b8d1;
+}
+.copy-section .container,
+.copy-section .copy-right{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.copy-section .copy-right{
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+.copy-section p,
+.copy-section .copy-right,
+.copy-section .left-text,
+.copy-section .right-text{
+  font-size: 0.86rem !important;
+  color: #9db0cb !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.copy-section strong{ color: #ffffff; font-weight: 700; }
+.copy-section a{ color: #bfdbfe !important; }
+.copy-section a:hover{ color: #ffffff !important; }
+
+/* ---------- 8) Helpers · anular estilos widgets viejos por si acaso ---------- */
+.footer-section .widget{
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  margin: 0 0 20px 0 !important;
+}
+.footer-section .widget-title,
+.footer-section .widget .widget-title,
+.footer-section .widget .widgettitle,
+.footer-section .widget h2,
+.footer-section .widget h3{
+  color: #ffffff !important;
+}
+
+/* BLOQUE 06 · My Account · Mi Cuenta chips laterales =================== */
+/* =============================================================================
+   9) My Account · Mi Cuenta (solo esta sección)
+   ========================================================================== */
+
+.woocommerce-account ul.woocommerce-MyAccount-navigation,
+.woocommerce-account ul.woocommerce-my-account-navigation,
+.woocommerce-page .woocommerce-MyAccount-navigation ul,
+.woocommerce-MyAccount-navigation ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.woocommerce-MyAccount-navigation li,
+.woocommerce-MyAccount-navigation ul li,
+.woocommerce-account nav.woocommerce-MyAccount-navigation li {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 0 10px 0 !important;
+}
+
+.woocommerce-MyAccount-navigation li::before,
+.woocommerce-MyAccount-navigation ul li::before,
+.woocommerce-account .woocommerce-MyAccount-navigation li::before {
+  content: "" !important;
+  display: none !important;
+}
+
+.woocommerce-MyAccount-navigation li a,
+.woocommerce-MyAccount-navigation ul li a {
+  display: block !important;
+  padding: 10px 18px !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.35 !important;
+  text-decoration: none !important;
+  border: 1px solid #dbe3ef !important;
+  color: #1d4ed8 !important;
+  background: #f6f9ff !important;
+  transition: all 200ms ease !important;
+}
+
+.woocommerce-MyAccount-navigation li a:hover,
+.woocommerce-MyAccount-navigation ul li a:hover {
+  background: #e7efff !important;
+  color: #0e2c4a !important;
+  border-color: #c8d6ec !important;
+}
+
+.woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-MyAccount-navigation li.active a,
+.woocommerce-MyAccount-navigation ul li.is-active a,
+.woocommerce-MyAccount-navigation ul li.active a {
+  background: #1e6faa !important;
+  color: #ffffff !important;
+  border-color: #1e6faa !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(14, 44, 74, 0.18) !important;
+}
+
+/* BLOQUE 07 · Carrito Woo Clásico · tabla + totales ==================== */
+/* =============================================================================
+   10) Carrito / Cart · Tienda (solo esta sección)
+   ========================================================================== */
+
+/* Wrapper general carrito + totales, layout 2 cols desktop */
+.woocommerce-cart .woocommerce,
+.woocommerce-page.woocommerce-cart .woocommerce {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 16px !important;
+}
+
+/* Cupones / Have a coupon arriba */
+.woocommerce-cart .woocommerce-coupon-form,
+.woocommerce-cart .coupon,
+.woocommerce form .form-row-first,
+.woocommerce form .form-row-last,
+.woocommerce form [class*=coupon] {
+  margin-bottom: 16px !important;
+}
+.woocommerce-cart .coupon input[type=text],
+.woocommerce-cart input[name=coupon_code] {
+  min-height: 44px !important;
+  border-radius: 8px 0 0 8px !important;
+  border: 1px solid #c8d6ec !important;
+  padding: 8px 14px !important;
+  width: 260px !important;
+  max-width: 70% !important;
+  font-size: 0.95rem !important;
+}
+.woocommerce-cart .coupon button,
+.woocommerce-cart button[name=apply_coupon] {
+  min-height: 44px !important;
+  border-radius: 0 8px 8px 0 !important;
+  background: linear-gradient(135deg, #1c6eab, #1d8ec8) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  padding: 8px 18px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  margin-left: -1px !important;
+}
+
+/* ========= Tabla Productos (carrito items) ========= */
+.woocommerce-cart table.shop_table,
+.woocommerce table.shop_table {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(14, 44, 74, 0.05) !important;
+  margin: 0 0 24px 0 !important;
+}
+
+.woocommerce-cart table.shop_table thead th,
+.woocommerce table.shop_table thead th {
+  background: linear-gradient(135deg, #0e2c4a, #134a77) !important;
+  color: #ffffff !important;
+  text-align: left !important;
+  padding: 14px 18px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  border: 0 !important;
+  letter-spacing: 0.2px !important;
+}
+
+.woocommerce-cart table.shop_table td,
+.woocommerce table.shop_table td {
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #eef3fa !important;
+  vertical-align: middle !important;
+  font-size: 0.97rem !important;
+  color: #0e2c4a !important;
+}
+.woocommerce-cart table.shop_table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Miniatura producto */
+.woocommerce-cart table.cart .product-thumbnail {
+  width: 96px !important;
+}
+.woocommerce-cart table.cart .product-thumbnail img,
+.woocommerce-cart table.cart img {
+  width: 80px !important;
+  height: 80px !important;
+  object-fit: contain !important;
+  border: 1px solid #e6ecf5 !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  background: #fafdff !important;
+}
+
+/* Nombre producto link */
+.woocommerce-cart .product-name a {
+  color: #1e6faa !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  text-decoration: none !important;
+}
+.woocommerce-cart .product-name a:hover {
+  color: #0e2c4a !important;
+  text-decoration: underline !important;
+}
+
+/* Precio / Total columna */
+.woocommerce-cart table.cart .product-price,
+.woocommerce-cart table.cart .product-subtotal {
+  font-weight: 700 !important;
+  color: #0e2c4a !important;
+  white-space: nowrap !important;
+}
+
+/* Botones cantidad - + */
+.woocommerce-cart table.cart .quantity,
+.woocommerce .quantity {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  border: 1px solid #c8d6ec !important;
+  border-radius: 999px !important;
+  padding: 2px !important;
+  background: #f6f9ff !important;
+}
+.woocommerce-cart table.cart .quantity input.qty,
+.woocommerce .quantity input.qty {
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 60px !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  color: #0e2c4a !important;
+  -moz-appearance: textfield !important;
+}
+.woocommerce-cart .quantity input::-webkit-outer-spin-button,
+.woocommerce-cart .quantity input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.woocommerce-cart .quantity .minus,
+.woocommerce-cart .quantity .plus,
+.woocommerce .quantity .minus,
+.woocommerce .quantity .plus {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: #ffffff !important;
+  color: #1e6faa !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(14, 44, 74, 0.09) !important;
+}
+.woocommerce-cart .quantity .minus:hover,
+.woocommerce-cart .quantity .plus:hover {
+  background: #1e6faa !important;
+  color: #ffffff !important;
+}
+
+/* Botón papelera eliminar producto */
+.woocommerce-cart table.cart td.product-remove .remove,
+.woocommerce table.shop_table td.product-remove .remove {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  text-decoration: none !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  transition: all 180ms ease !important;
+  border: 1px solid #fecaca !important;
+}
+.woocommerce-cart td.product-remove .remove:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+  border-color: #ef4444 !important;
+}
+
+/* Fila Update cart + botón actualizar */
+.woocommerce-cart table.shop_table td.actions {
+  background: #f6f9ff !important;
+  border-top: 1px solid #e4ecf6 !important;
+}
+.woocommerce-cart button[name=update_cart] {
+  min-height: 46px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  border: 1px solid #1e6faa !important;
+  color: #1e6faa !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 180ms ease !important;
+}
+.woocommerce-cart button[name=update_cart]:hover {
+  background: #1e6faa !important;
+  color: #ffffff !important;
+}
+
+/* ========= Totales del carrito (Cart totals) ========= */
+.woocommerce-cart .cart-collaterals,
+.woocommerce .cart-collaterals {
+  width: 100% !important;
+  max-width: 100% !important;
+  float: none !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  padding: 0 !important;
+}
+.woocommerce-cart .cart-collaterals .cart_totals,
+.woocommerce .cart_totals {
+  width: 100% !important;
+  max-width: 520px !important;
+  float: none !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 28px rgba(14, 44, 74, 0.08) !important;
+}
+.woocommerce-cart .cart_totals h2,
+.woocommerce .cart_totals h2 {
+  color: #0e2c4a !important;
+  font-size: 1.4rem !important;
+  margin: 0 0 16px 0 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
+}
+.woocommerce-cart .shop_table.shop_table_responsive,
+.woocommerce table.shop_table_responsive {
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+.woocommerce-cart .cart_totals tr,
+.woocommerce .cart_totals tr {
+  border: 0 !important;
+}
+.woocommerce-cart .cart_totals th,
+.woocommerce-cart .cart_totals td,
+.woocommerce .cart_totals th,
+.woocommerce .cart_totals td {
+  padding: 10px 0 !important;
+  border-top: 1px dashed #e4ecf6 !important;
+  border-bottom: 0 !important;
+  text-align: left !important;
+  font-size: 1rem !important;
+  background: transparent !important;
+}
+.woocommerce-cart .cart_totals thead th {
+  background: transparent !important;
+  color: #0e2c4a !important;
+  padding: 0 0 10px 0 !important;
+  border-top: 0 !important;
+  border-bottom: 2px solid #0e2c4a !important;
+}
+.woocommerce-cart .cart_totals tr.order-total th,
+.woocommerce-cart .cart_totals tr.order-total td {
+  border-top: 2px solid #0e2c4a !important;
+  font-weight: 900 !important;
+  font-size: 1.2rem !important;
+  color: #0e2c4a !important;
+  padding-top: 14px !important;
+  padding-bottom: 6px !important;
+}
+.woocommerce-cart .cart_totals tr.shipping td,
+.woocommerce-cart .cart_totals tr.cart-subtotal td {
+  font-weight: 600 !important;
+}
+.woocommerce-cart .cart_totals .shipping td small {
+  display: block !important;
+  margin-top: 4px !important;
+  color: #5a708e !important;
+  font-size: 0.86rem !important;
+}
+
+/* Acordeón Add coupons */
+.woocommerce-cart .cart_totals .woocommerce-accordion,
+.woocommerce-cart .wc-block-components-totals-coupon,
+.woocommerce-cart .cart_totals [class*=coupon] summary,
+.woocommerce-cart .cart_totals details {
+  margin: 10px 0 16px 0 !important;
+}
+.woocommerce-cart .cart_totals summary {
+  list-style: none !important;
+  cursor: pointer !important;
+  color: #1e6faa !important;
+  font-weight: 600 !important;
+  padding: 8px 0 !important;
+}
+.woocommerce-cart .cart_totals summary::-webkit-details-marker {
+  display: none !important;
+}
+
+/* ========= Botón Proceed to Checkout (CTA) ========= */
+.woocommerce-cart .wc-proceed-to-checkout {
+  margin: 20px 0 0 0 !important;
+  padding-top: 18px !important;
+  border-top: 2px solid #e4ecf6 !important;
+}
+.woocommerce-cart a.checkout-button,
+.woocommerce-cart button.checkout-button,
+.woocommerce .checkout-button {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  padding: 16px 22px !important;
+  font-size: 1.06rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(30, 111, 170, 0.28) !important;
+  cursor: pointer !important;
+  transition: all 200ms ease !important;
+  letter-spacing: 0.3px !important;
+}
+.woocommerce-cart a.checkout-button:hover,
+.woocommerce-cart button.checkout-button:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 14px 28px rgba(30, 111, 170, 0.38) !important;
+  background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+}
+
+/* ========= Responsive móvil (<= 768px) ========= */
+@media (max-width: 768px) {
+  .woocommerce-cart table.shop_table thead {
+    display: none !important;
+  }
+  .woocommerce-cart table.shop_table,
+  .woocommerce-cart table.shop_table tbody,
+  .woocommerce-cart table.shop_table tr,
+  .woocommerce-cart table.shop_table td {
+    display: block !important;
+    width: 100% !important;
+  }
+  .woocommerce-cart table.shop_table tr {
+    border: 1px solid #e4ecf6 !important;
+    border-radius: 14px !important;
+    margin-bottom: 18px !important;
+    padding: 14px !important;
+    background: #ffffff !important;
+    position: relative !important;
+  }
+  .woocommerce-cart table.shop_table td {
+    border: 0 !important;
+    padding: 8px 0 !important;
+    text-align: right !important;
+    position: relative !important;
+  }
+  .woocommerce-cart table.shop_table td::before {
+    content: attr(data-title) ": ";
+    float: left !important;
+    font-weight: 700 !important;
+    color: #0e2c4a !important;
+    margin-right: 12px !important;
+  }
+  .woocommerce-cart table.shop_table td.product-remove {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    padding: 0 !important;
+    text-align: right !important;
+    width: auto !important;
+  }
+  .woocommerce-cart table.shop_table td.product-thumbnail {
+    text-align: center !important;
+    width: 100% !important;
+  }
+  .woocommerce-cart table.shop_table td.product-thumbnail::before {
+    content: "" !important;
+  }
+  .woocommerce-cart table.shop_table td.product-name {
+    text-align: left !important;
+  }
+  .woocommerce-cart .coupon {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .woocommerce-cart .coupon input[type=text] {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 8px !important;
+  }
+  .woocommerce-cart .coupon button,
+  .woocommerce-cart button[name=apply_coupon],
+  .woocommerce-cart button[name=update_cart] {
+    width: 100% !important;
+    border-radius: 8px !important;
+    margin-left: 0 !important;
+  }
+  .woocommerce-cart .cart_totals {
+    max-width: 100% !important;
+  }
+}
+
+/* BLOQUE 08 · Carrito Woo Blocks Gutenberg 2 cols =================== */
+/* =============================================================================
+   11) Carrito / Cart · WOOCOMMERCE BLOCKS (Gutenberg) — StoreX default
+   ========================================================================== */
+
+/* Wrapper general cart page + layout 2 cols desktop (items + totals) */
+.woocommerce-cart-page,
+.woocommerce-cart [class*=wp-block-woocommerce-cart],
+.woocommerce .wp-block-woocommerce-cart,
+.wp-block-woocommerce-cart-page {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 20px auto 40px auto !important;
+  padding: 0 16px !important;
+}
+.wp-block-woocommerce-cart .wc-block-cart__main,
+.wc-block-cart__main,
+.wp-block-woocommerce-cart .wc-block-components-main,
+.wc-block-cart {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 32px !important;
+  align-items: flex-start !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ========== Columna IZQUIERDA: Cart Items (productos) ========== */
+.wc-block-cart-items,
+.wp-block-woocommerce-cart .wc-block-cart-items,
+.wp-block-woocommerce-cart .wc-block-cart-items table,
+.wc-block-cart-items {
+  width: 100% !important;
+  flex: 1 1 620px !important;
+  min-width: 300px !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 6px 22px rgba(14, 44, 74, 0.06) !important;
+}
+
+/* Headers items table (si existe <thead>) */
+.wc-block-cart-items thead th,
+.wc-block-cart-items__header,
+.wc-block-cart-items thead {
+  background: linear-gradient(135deg, #0e2c4a, #134a77) !important;
+  color: #ffffff !important;
+  padding: 14px 20px !important;
+  font-weight: 700 !important;
+  font-size: 0.96rem !important;
+  letter-spacing: 0.2px !important;
+  border: 0 !important;
+}
+
+/* Cada fila de producto (row) */
+.wc-block-cart-items td,
+.wc-block-cart-items__row,
+.wc-block-components-cart-item,
+.wc-block-cart-item {
+  padding: 18px 20px !important;
+  border-bottom: 1px solid #eef3fa !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  vertical-align: middle !important;
+}
+.wc-block-cart-items__row:last-child,
+.wc-block-cart-items tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* Miniatura producto */
+.wc-block-cart-item__image,
+.wc-block-components-product-image,
+.wc-block-cart-items .product-thumbnail,
+.wc-block-cart-items td.wc-block-cart-items__product-image {
+  width: 88px !important;
+  min-width: 88px !important;
+  max-width: 88px !important;
+}
+.wc-block-cart-item__image img,
+.wc-block-components-product-image img,
+.wc-block-cart-items img {
+  width: 80px !important;
+  height: 80px !important;
+  object-fit: contain !important;
+  border: 1px solid #e6ecf5 !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  background: #fafdff !important;
+}
+
+/* Nombre + precio producto */
+.wc-block-cart-item__product,
+.wc-block-components-product-name,
+.wc-block-cart-items .product-name,
+.wc-block-cart-item__title {
+  color: #1e6faa !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  text-decoration: none !important;
+  line-height: 1.3 !important;
+  flex: 1 1 auto !important;
+  min-width: 180px !important;
+}
+.wc-block-cart-item__product:hover,
+.wc-block-components-product-name:hover {
+  color: #0e2c4a !important;
+  text-decoration: underline !important;
+}
+.wc-block-components-product-price,
+.wc-block-cart-item__price,
+.wc-block-cart-items .product-price,
+.wc-block-cart-items .product-subtotal {
+  font-weight: 700 !important;
+  color: #0e2c4a !important;
+  white-space: nowrap !important;
+  min-width: 88px !important;
+  text-align: right !important;
+}
+
+/* Botones cantidad - + */
+.wc-block-cart-item__quantity,
+.wc-block-components-quantity-selector,
+.wc-block-components-product-quantity {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  border: 1px solid #c8d6ec !important;
+  border-radius: 999px !important;
+  padding: 2px !important;
+  background: #f6f9ff !important;
+  min-width: 130px !important;
+  justify-content: center !important;
+}
+.wc-block-components-quantity-selector input,
+.wc-block-cart-item__quantity input,
+.wc-block-cart-items input.qty {
+  width: 44px !important;
+  min-width: 44px !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  color: #0e2c4a !important;
+  outline: none !important;
+  -moz-appearance: textfield !important;
+}
+.wc-block-components-quantity-selector input::-webkit-outer-spin-button,
+.wc-block-components-quantity-selector input::-webkit-inner-spin-button,
+.wc-block-cart-items input::-webkit-outer-spin-button,
+.wc-block-cart-items input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.wc-block-components-quantity-selector__button,
+.wc-block-components-quantity-selector button,
+.wc-block-cart-item__quantity button {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: #ffffff !important;
+  color: #1e6faa !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(14, 44, 74, 0.09) !important;
+}
+.wc-block-components-quantity-selector__button:hover,
+.wc-block-components-quantity-selector button:hover {
+  background: #1e6faa !important;
+  color: #ffffff !important;
+}
+
+/* Botón papelera eliminar */
+.wc-block-cart-item__remove-link,
+.wc-block-cart-item__remove,
+.wc-block-components-product-remove,
+.wc-block-cart-items td.product-remove a,
+.wc-block-cart-item a.remove {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  text-decoration: none !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  transition: all 180ms ease !important;
+  border: 1px solid #fecaca !important;
+  padding: 0 !important;
+  min-width: 34px !important;
+}
+.wc-block-cart-item__remove-link:hover,
+.wc-block-cart-item a.remove:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+  border-color: #ef4444 !important;
+}
+
+/* ========== Columna DERECHA: Totales del carrito ========== */
+.wc-block-cart__totals,
+.wc-block-components-totals-wrapper,
+.wc-block-components-totals,
+.wc-block-cart__sidebar,
+.wc-block-components-sidebar,
+.wp-block-woocommerce-cart .wc-block-components-totals-wrapper {
+  flex: 1 1 420px !important;
+  min-width: 300px !important;
+  max-width: 520px !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 18px !important;
+  padding: 24px 26px !important;
+  box-shadow: 0 10px 32px rgba(14, 44, 74, 0.09) !important;
+  align-self: flex-start !important;
+  position: sticky !important;
+  top: 20px !important;
+}
+.wc-block-cart__totals-title,
+.wc-block-components-totals__title,
+.wc-block-components-totals-wrapper h2,
+.wc-block-components-totals-wrapper h3 {
+  color: #0e2c4a !important;
+  font-size: 1.45rem !important;
+  margin: 0 0 16px 0 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Cada item de totales (Subtotal/Envío/Taxes/TOTAL) */
+.wc-block-components-totals-item,
+.wc-block-components-totals-wrapper .wc-block-components-totals-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 11px 0 !important;
+  border-top: 1px dashed #e4ecf6 !important;
+  font-size: 1rem !important;
+}
+.wc-block-components-totals-item:first-of-type {
+  border-top: 2px solid #0e2c4a !important;
+  padding-top: 14px !important;
+}
+.wc-block-components-totals-item__label {
+  color: #0e2c4a !important;
+  font-weight: 600 !important;
+}
+.wc-block-components-totals-item__value {
+  color: #0e2c4a !important;
+  font-weight: 700 !important;
+}
+.wc-block-components-totals-item:last-of-type,
+.wc-block-components-totals-footer-item,
+.wc-block-components-totals-footer,
+.wc-block-components-order-total {
+  border-top: 2px solid #0e2c4a !important;
+  margin-top: 10px !important;
+  padding-top: 16px !important;
+  padding-bottom: 8px !important;
+}
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
+.wc-block-components-order-total .wc-block-components-totals-item__label {
+  font-weight: 900 !important;
+  font-size: 1.22rem !important;
+}
+.wc-block-components-totals-footer-item .wc-block-components-totals-item__value,
+.wc-block-components-order-total .wc-block-components-totals-item__value {
+  font-weight: 900 !important;
+  font-size: 1.28rem !important;
+}
+.wc-block-components-totals-tax,
+.wc-block-components-totals-item small {
+  display: block !important;
+  margin-top: 4px !important;
+  color: #5a708e !important;
+  font-size: 0.86rem !important;
+  font-weight: 400 !important;
+}
+
+/* Add coupons acordeón */
+.wc-block-components-totals-coupon,
+.wc-block-cart__submit-coupon,
+.wc-block-components-totals-coupon-wrapper {
+  margin: 10px 0 18px 0 !important;
+}
+.wc-block-components-totals-coupon__content,
+.wc-block-components-totals-coupon details {
+  width: 100% !important;
+}
+.wc-block-components-totals-coupon summary,
+.wc-block-components-formatted-money-amount + details summary {
+  list-style: none !important;
+  cursor: pointer !important;
+  color: #1e6faa !important;
+  font-weight: 600 !important;
+  padding: 10px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.wc-block-components-totals-coupon summary::-webkit-details-marker {
+  display: none !important;
+}
+.wc-block-components-totals-coupon__form,
+.wc-block-components-totals-coupon form {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+}
+.wc-block-components-totals-coupon__input input,
+.wc-block-components-totals-coupon input[type=text] {
+  flex: 1 1 220px !important;
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  border: 1px solid #c8d6ec !important;
+  padding: 8px 14px !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+}
+.wc-block-components-totals-coupon__button,
+.wc-block-components-totals-coupon button {
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  padding: 8px 18px !important;
+  background: linear-gradient(135deg, #1c6eab, #1d8ec8) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+.wc-block-components-totals-coupon__button:hover,
+.wc-block-components-totals-coupon button:hover {
+  background: linear-gradient(135deg, #145484, #13739e) !important;
+}
+
+/* ========== Botón PROCEDER A PAGAR (CTA principal) ========== */
+.wc-block-cart__submit,
+.wc-block-components-checkout-place-order-button,
+.wc-block-cart .wp-block-button,
+.wc-block-cart a.wc-forward,
+.wc-block-cart__submit-button,
+.wp-block-woocommerce-cart [class*=submit-container] {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 16px !important;
+  padding-top: 18px !important;
+  border-top: 2px solid #e4ecf6 !important;
+}
+.wc-block-cart__submit button,
+.wc-block-cart__submit a,
+.wc-block-components-checkout-place-order-button button,
+.wc-block-cart .wp-block-button__link,
+.wc-block-cart a.wc-forward,
+.wc-block-cart__submit .wp-block-button__link,
+.wc-block-components-button--contained,
+button.wc-block-components-button {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  min-height: 54px !important;
+  padding: 16px 24px !important;
+  font-size: 1.08rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(30, 111, 170, 0.28) !important;
+  cursor: pointer !important;
+  transition: all 200ms ease !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.2 !important;
+}
+.wc-block-cart__submit button:hover,
+.wc-block-cart__submit a:hover,
+.wc-block-components-button--contained:hover,
+button.wc-block-components-button:hover {
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 14px 28px rgba(30, 111, 170, 0.38) !important;
+  background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Notas / empty cart / return to shop */
+.wc-block-components-totals-footer-item-tax,
+.wc-block-components-totals-tax-line {
+  color: #5a708e !important;
+  font-size: 0.88rem !important;
+  padding: 6px 0 10px 0 !important;
+}
+.wc-block-cart__empty-cart,
+.wc-block-cart-empty {
+  padding: 40px !important;
+  text-align: center !important;
+  background: #f6f9ff !important;
+  border-radius: 16px !important;
+  border: 1px dashed #c8d6ec !important;
+}
+.wc-block-cart__empty-cart a,
+.wc-block-cart-empty a {
+  display: inline-block !important;
+  margin-top: 16px !important;
+  padding: 12px 26px !important;
+  background: linear-gradient(135deg, #1c6eab, #1d8ec8) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+}
+
+/* ========== Responsive móvil (<= 860px) ========== */
+@media (max-width: 860px) {
+  .wc-block-cart__main,
+  .wp-block-woocommerce-cart .wc-block-cart__main {
+    flex-direction: column !important;
+    gap: 22px !important;
+  }
+  .wc-block-cart__totals,
+  .wc-block-components-totals-wrapper,
+  .wc-block-cart__sidebar {
+    max-width: 100% !important;
+    position: static !important;
+    top: auto !important;
+    padding: 22px !important;
+  }
+  .wc-block-cart-items__row,
+  .wc-block-cart-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .wc-block-cart-item__image,
+  .wc-block-components-product-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    text-align: center !important;
+  }
+  .wc-block-cart-item__image img,
+  .wc-block-components-product-image img {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .wc-block-cart-item__product,
+  .wc-block-components-product-name {
+    min-width: 100% !important;
+  }
+  .wc-block-components-product-price,
+  .wc-block-cart-item__price,
+  .wc-block-cart-items .product-subtotal {
+    text-align: left !important;
+    min-width: 100% !important;
+  }
+  .wc-block-cart-item__quantity {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+  .wc-block-cart-item__remove-link {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+  }
+}
+
+/* BLOQUE 09 · Carrito vacío + "Novedades" grid ====================== */
+/* =============================================================================
+   12) Carrito VACÍO (Empty Cart) + sección "Novedades" GRID HORIZONTAL
+       (selectores ESPECÍFICOS solo para cuando hay p.cart-empty / wc-block-cart__empty-cart — NO interfiere con carrito CON productos)
+   ========================================================================== */
+
+/* ========== Aviso "Tu carrito está vacío" ========== */
+p.cart-empty,
+.woocommerce .cart-empty,
+.wc-block-cart__empty-cart {
+  display: block !important;
+  width: 100% !important;
+  max-width: 880px !important;
+  margin: 30px auto 10px auto !important;
+  padding: 54px 28px 40px !important;
+  background: linear-gradient(180deg, #f6fbff 0%, #ffffff 60%) !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 34px rgba(14, 44, 74, 0.07) !important;
+  text-align: center !important;
+  color: #0e2c4a !important;
+  border-top: 4px solid #1e6faa !important;
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
+  clear: both !important;
+}
+p.cart-empty::before,
+.woocommerce .cart-empty::before,
+.wc-block-cart__empty-cart::before {
+  content: "\1F6D2" !important;
+  display: block !important;
+  font-size: 3.4rem !important;
+  line-height: 1 !important;
+  margin: 0 auto 16px auto !important;
+  filter: drop-shadow(0 4px 8px rgba(30, 111, 170, 0.18)) !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  width: auto !important;
+  height: auto !important;
+  float: none !important;
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+}
+p.return-to-shop {
+  display: block !important;
+  text-align: center !important;
+  margin: 18px auto 0 auto !important;
+  padding: 0 !important;
+}
+p.return-to-shop a.button {
+  display: inline-block !important;
+  padding: 14px 30px !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  color: #ffffff !important;
+  border-radius: 14px !important;
+  text-decoration: none !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+  box-shadow: 0 10px 22px rgba(30, 111, 170, 0.28) !important;
+  border: 0 !important;
+  transition: all 200ms ease !important;
+}
+p.return-to-shop a.button:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 14px 28px rgba(30, 111, 170, 0.38) !important;
+  background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+  color: #ffffff !important;
+}
+
+/* ========== Sección "Novedades" (New in store) — MÉTODO NUCLEAR: selector GENÉRICO sin hermanos
+   En StoreX /cart/ SOLO HAY ul.products en la pantalla CARRITO VACÍO (no aparece cuando el carrito tiene items,
+   esos usan bloques divs). Así que es 100% seguro aplicarlo a body.woocommerce-cart ul.products.
+   ========================================================================== */
+
+body.woocommerce-cart ul.products,
+body.woocommerce-cart ul[class*="products"],
+body.woocommerce-cart .products,
+.woocommerce-cart ul.products {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding: 0 16px !important;
+  padding-left: 16px !important;
+  padding-inline-start: 16px !important;
+  margin: 40px auto 60px auto !important;
+  max-width: 100% !important;
+  width: calc(100% - 32px) !important;
+  display: grid !important;
+  /* ===== AUTO-GRID RESPONSIVE (sin saltos bruscos) =====
+     Cada columna mínimo 220px, auto-rellena según ancho ventana:
+     1920px → 8 cols | 1440px → 6 cols | 1100px → 5 cols | 900px → 4 cols
+     640px → 3 cols | 480px → 2 cols | 360px → 1 col  */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  grid-template-rows: auto !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: 1fr !important;
+  align-items: stretch !important;
+  justify-items: stretch !important;
+  gap: 20px 18px !important;
+  clear: both !important;
+  float: none !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+body.woocommerce-cart ul.products::before,
+body.woocommerce-cart ul.products::after,
+body.woocommerce-cart .products::before,
+body.woocommerce-cart .products::after {
+  content: "" !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  float: none !important;
+}
+
+/* Título "Novedades en la tienda" SOLO en cart */
+body.woocommerce-cart h2,
+body.woocommerce-cart h1 + h2 {
+  display: block !important;
+  width: 100% !important;
+  max-width: 640px !important;
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem) !important;
+  font-weight: 800 !important;
+  color: #0e2c4a !important;
+  margin: 50px auto 22px auto !important;
+  padding: 0 16px 10px 16px !important;
+  text-align: center !important;
+  letter-spacing: 0.3px !important;
+  border-bottom: 2px solid #e4ecf6 !important;
+  clear: both !important;
+  float: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Cada LI producto — GENÉRICO, flex column para que TODAS las tarjetas tengan MISMA ALTURA (muy importante!) */
+body.woocommerce-cart ul.products > li,
+body.woocommerce-cart ul.products > li.product,
+body.woocommerce-cart ul[class*="products"] > li,
+body.woocommerce-cart li.product,
+.woocommerce-cart ul.products li {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding: 0 0 16px 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  transition: all 220ms ease !important;
+  position: relative !important;
+  box-shadow: 0 2px 12px rgba(14, 44, 74, 0.05) !important;
+  float: none !important;
+  clear: none !important;
+  box-sizing: border-box !important;
+  flex: 1 1 auto !important;
+  min-height: 410px !important;
+  max-height: none !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  z-index: 1 !important;
+}
+body.woocommerce-cart ul.products > li::before,
+body.woocommerce-cart ul.products li::marker,
+body.woocommerce-cart li.product::before {
+  content: "" !important;
+  display: none !important;
+  list-style-type: none !important;
+  visibility: hidden !important;
+}
+body.woocommerce-cart ul.products li:hover,
+body.woocommerce-cart li.product:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 30px rgba(14, 44, 74, 0.12) !important;
+  border-color: #1e6faa !important;
+  z-index: 2 !important;
+}
+
+/* Imagen producto — genérica cart */
+body.woocommerce-cart ul.products li img,
+body.woocommerce-cart ul.products li a img,
+body.woocommerce-cart li.product img,
+body.woocommerce-cart li.product img.attachment-woocommerce_thumbnail {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: contain !important;
+  padding: 16px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  background: #f6f9ff !important;
+  border-bottom: 1px solid #eef3fa !important;
+  border-radius: 0 !important;
+  float: none !important;
+  flex: 0 0 auto !important;
+}
+
+/* Título producto (h2 h3 loop) */
+body.woocommerce-cart ul.products li h2,
+body.woocommerce-cart ul.products li h3,
+body.woocommerce-cart ul.products li .woocommerce-loop-product__title,
+body.woocommerce-cart li.product h2,
+body.woocommerce-cart li.product h3,
+body.woocommerce-cart .woocommerce-loop-product__title {
+  font-size: 0.94rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  color: #0e2c4a !important;
+  margin: 14px 14px 6px 14px !important;
+  padding: 0 !important;
+  text-align: center !important;
+  min-height: 48px !important;
+  max-height: none !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  float: none !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+body.woocommerce-cart ul.products li a,
+body.woocommerce-cart li.product a.woocommerce-LoopProduct-link {
+  text-decoration: none !important;
+  color: inherit !important;
+  display: block !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+/* Precio */
+body.woocommerce-cart ul.products li .price,
+body.woocommerce-cart ul.products li .woocommerce-Price-amount,
+body.woocommerce-cart li.product .price,
+body.woocommerce-cart li.product .woocommerce-Price-amount.amount {
+  display: block !important;
+  text-align: center !important;
+  color: #1e6faa !important;
+  font-weight: 900 !important;
+  font-size: 1.08rem !important;
+  line-height: 1.2 !important;
+  margin: 0 14px 10px 14px !important;
+  padding: 0 !important;
+  word-break: break-word !important;
+  float: none !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+body.woocommerce-cart ul.products li .price ins,
+body.woocommerce-cart li.product .price ins {
+  text-decoration: none !important;
+  color: #1e6faa !important;
+  background: transparent !important;
+  font-weight: 900 !important;
+  display: inline !important;
+}
+body.woocommerce-cart ul.products li .price del,
+body.woocommerce-cart li.product .price del {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+  font-size: 0.86rem !important;
+  display: block !important;
+  margin-bottom: 2px !important;
+  text-align: center !important;
+  text-decoration: line-through !important;
+}
+
+/* Star rating */
+body.woocommerce-cart ul.products li .star-rating,
+body.woocommerce-cart li.product .star-rating {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0 14px 6px 14px !important;
+  color: #f59e0b !important;
+  padding: 0 !important;
+  float: none !important;
+  clear: both !important;
+  flex: 0 0 auto !important;
+}
+
+/* BLOQUE 10 · Producto individual · Tarjetas/Reseñas/Stock ============ */
+/* =============================================================
+   🛑 FIX CRÍTICO botón "Añadir al carrito" FEO (negro, esquina urna recortada)
+   ============================================================= */
+body.woocommerce-cart ul.products li .button,
+body.woocommerce-cart ul.products li a.button,
+body.woocommerce-cart ul.products li a.add_to_cart_button,
+body.woocommerce-cart ul.products li button.button,
+body.woocommerce-cart li.product .button,
+body.woocommerce-cart li.product a.button,
+body.woocommerce-cart li.product a.add_to_cart_button,
+body.woocommerce-cart li.product button.button,
+.woocommerce-cart ul.products li .button {
+  /* Forzar que no use clip-path raro del padre (causa esquina urna) */
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  shape-outside: none !important;
+  overflow: visible !important;
+
+  display: block !important;
+  width: calc(100% - 28px) !important;
+  min-width: calc(100% - 28px) !important;
+  max-width: calc(100% - 28px) !important;
+  min-height: 44px !important;
+  height: auto !important;
+  margin: auto auto 0 auto !important;
+  padding: 12px 10px !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+
+  /* 4 ESQUINAS UNIFORMES (no más esquina inferior-izq 0px) */
+  border-radius: 14px !important;
+  -webkit-border-radius: 14px !important;
+  -moz-border-radius: 14px !important;
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+
+  /* Color + fondo degradado (no más NEGRO) */
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  background-image: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  background-color: #1c6eab !important;
+  background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: 0 8px 18px rgba(30, 111, 170, 0.26) !important;
+  outline: none !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  float: none !important;
+  clear: both !important;
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  justify-self: center !important;
+  transition: all 180ms ease !important;
+}
+
+body.woocommerce-cart ul.products li .button:hover,
+body.woocommerce-cart ul.products li a.add_to_cart_button:hover,
+body.woocommerce-cart li.product .button:hover {
+  background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+  background-image: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+  background-color: #145484 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 12px 24px rgba(30, 111, 170, 0.36) !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+}
+
+/* =============================================================
+   Responsive FALLBACK (solo casos extremos, auto-fill ya cubre todo)
+   ============================================================= */
+@media (max-width: 1100px) {
+  body.woocommerce-cart ul.products,
+  body.woocommerce-cart ul[class*="products"],
+  body.woocommerce-cart .products {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+    gap: 18px 16px !important;
+  }
+}
+@media (max-width: 768px) {
+  body.woocommerce-cart ul.products,
+  body.woocommerce-cart ul[class*="products"] {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 16px 14px !important;
+    padding: 0 12px !important;
+    width: calc(100% - 24px) !important;
+  }
+  body.woocommerce-cart h2,
+  body.woocommerce-cart h1 + h2 {
+    padding: 0 12px 8px 12px !important;
+  }
+}
+@media (max-width: 520px) {
+  body.woocommerce-cart ul.products,
+  body.woocommerce-cart ul[class*="products"] {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 14px 12px !important;
+    padding: 0 10px !important;
+    width: calc(100% - 20px) !important;
+  }
+  p.cart-empty,
+  .woocommerce .cart-empty,
+  .wc-block-cart__empty-cart {
+    padding: 40px 20px 30px !important;
+    font-size: 1.18rem !important;
+  }
+  p.cart-empty::before,
+  .wc-block-cart__empty-cart::before {
+    font-size: 2.6rem !important;
+  }
+}
+@media (max-width: 360px) {
+  body.woocommerce-cart ul.products,
+  body.woocommerce-cart ul[class*="products"] {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+}
+
+/* BLOQUE 11 · Checkout / Pagar · minimalista 2 columnas ================ */
+/* =============================================================================
+   13) Página Checkout / Pagar — Diseño MINIMALISTA SIMPLE (sin adornos)
+   ========================================================================== */
+
+/* Contenedor general page checkout: limita ancho, auto-centrado, separación arriba */
+.woocommerce-checkout .entry-content,
+.page-id-CHECKOUT .entry-content,
+body[class*="checkout"] main > .container,
+body[class*="checkout"] #content,
+.wc-block-checkout,
+.wp-block-woocommerce-checkout,
+.woocommerce .woocommerce-checkout,
+form.woocommerce-checkout {
+  max-width: 1240px !important;
+  margin: 32px auto 80px auto !important;
+  padding: 0 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+/* Título H1 banner Checkout (limpio) */
+.woocommerce-checkout h1,
+body[class*="checkout"] h1,
+.wc-block-checkout__title {
+  color: #0e2c4a !important;
+  font-weight: 800 !important;
+  font-size: clamp(1.4rem, 3vw, 1.9rem) !important;
+  margin: 24px 0 28px 0 !important;
+  padding: 0 !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* LAYOUT 2 COLUMNAS desktop: formulario IZQ (62%) + Resumen DER (34%) */
+.woocommerce-checkout #customer_details,
+.woocommerce-checkout .col2-set,
+.wc-block-checkout__main > form,
+.wc-block-checkout__form,
+.woocommerce form.checkout_coupon,
+.woocommerce-checkout form.woocommerce-checkout,
+form.woocommerce-checkout .col2-set,
+.wc-block-components-layout,
+.wc-block-checkout__main {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 32px 28px !important;
+}
+/* Columna IZQ (datos cliente / envío / pago) */
+.woocommerce-checkout .col2-set,
+.woocommerce-checkout #customer_details,
+.wc-block-checkout__contact-fields,
+.wc-block-checkout__billing-fields,
+.wc-block-checkout__shipping-fields,
+.wc-block-checkout__shipping-methods,
+.wc-block-checkout__payment-methods,
+.wc-block-checkout__additional-fields,
+.woocommerce-billing-fields,
+.woocommerce-shipping-fields,
+.woocommerce-additional-fields,
+.woocommerce-checkout-payment {
+  flex: 1 1 62% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+/* Columna DER: Resumen del Pedido (Order review / Order summary) */
+#order_review,
+.woocommerce-checkout-review-order-table,
+.woocommerce-checkout .woocommerce-checkout-review-order,
+.wc-block-checkout__order-summary,
+.wc-block-order-summary,
+.wc-block-components-order-summary,
+.woocommerce-checkout #order_review_heading,
+.wc-block-checkout__order-summary-header {
+  flex: 1 1 34% !important;
+  min-width: 300px !important;
+  max-width: 440px !important;
+  align-self: flex-start !important;
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 14px !important;
+  padding: 22px 22px 24px 22px !important;
+  box-shadow: 0 4px 16px rgba(14, 44, 74, 0.06) !important;
+  box-sizing: border-box !important;
+}
+
+/* Tarjetas / Secciones individuales: bordes suaves, padding ordenado */
+.woocommerce-billing-fields,
+.woocommerce-shipping-fields,
+.woocommerce-additional-fields,
+.woocommerce-checkout-payment,
+#payment,
+.wc-block-components-panel,
+.wc-block-checkout__shipping,
+.wc-block-checkout__contact-fields,
+.wc-block-checkout__payment-methods,
+.wc-block-checkout__shipping-methods,
+.woocommerce-shipping-methods {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 14px !important;
+  padding: 20px 22px 22px 22px !important;
+  margin: 0 0 20px 0 !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+/* SUB-TÍTULOS de cada sección (H3) — fondo claro azul simple, padding 14px */
+.woocommerce-billing-fields h3,
+.woocommerce-shipping-fields h3,
+.woocommerce-additional-fields h3,
+#payment h3,
+.wc-block-checkout__payment-methods h2,
+.wc-block-checkout__shipping h2,
+.wc-block-checkout__contact-fields h2,
+.wc-block-checkout__shipping-methods h2,
+.wc-block-checkout__order-summary h2,
+#order_review_heading,
+.wc-block-components-title h2,
+.woocommerce-checkout h2,
+.woocommerce-checkout h3 {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: #0e2c4a !important;
+  background: #f5f8fd !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 11px 14px !important;
+  margin: 0 0 14px 0 !important;
+  text-align: left !important;
+  letter-spacing: 0.15px !important;
+  line-height: 1.35 !important;
+  clear: both !important;
+}
+
+/* Campos de FORMULARIO (inputs, selects, textarea) — ancho 100%, altura 44px, bordes redondeados simples */
+.woocommerce-billing-fields input,
+.woocommerce-shipping-fields input,
+.woocommerce-additional-fields input,
+.woocommerce-form-login input,
+#payment input[type="text"],
+#payment input[type="email"],
+#payment input[type="tel"],
+#payment input[type="password"],
+.wc-block-components-text-input input,
+.wc-block-components-phone-input input,
+.wc-block-components-email-input input,
+.woocommerce-checkout input.input-text,
+.woocommerce-checkout textarea,
+.woocommerce-checkout select {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  padding: 0 14px !important;
+  margin: 6px 0 12px 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border 160ms ease, box-shadow 160ms ease !important;
+  box-shadow: none !important;
+  appearance: none !important;
+}
+.woocommerce-checkout textarea {
+  min-height: 88px !important;
+  height: 88px !important;
+  padding: 12px 14px !important;
+  line-height: 1.45 !important;
+  resize: vertical !important;
+}
+/* Focus de input: borde azul simple */
+.woocommerce-checkout input:focus,
+.woocommerce-checkout textarea:focus,
+.woocommerce-checkout select:focus,
+.wc-block-components-text-input input:focus {
+  border-color: #1e6faa !important;
+  box-shadow: 0 0 0 3px rgba(30, 111, 170, 0.13) !important;
+  background: #ffffff !important;
+}
+
+/* LABELS de campos */
+.woocommerce-form__label,
+.woocommerce-billing-fields label,
+.woocommerce-shipping-fields label,
+.woocommerce-additional-fields label,
+.form-row label,
+.wc-block-components-label,
+.wc-block-components-text-input label {
+  display: block !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  margin: 10px 0 4px 0 !important;
+  padding: 0 !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+}
+.woocommerce-checkout .required,
+abbr.required {
+  color: #dc2626 !important;
+  margin-left: 2px !important;
+  text-decoration: none !important;
+  border: 0 !important;
+}
+
+/* TABLA de Order review (resumen pedido) — limpia, líneas separadoras */
+.woocommerce-checkout-review-order-table,
+tbody.cart_item,
+tbody.cart_item tr,
+.woocommerce-checkout-review-order-table tr,
+.wc-block-components-order-summary-item,
+.wc-block-order-summary__items {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.woocommerce-checkout-review-order-table tr.cart_item td,
+.woocommerce-checkout-review-order-table tfoot td,
+.woocommerce-checkout-review-order-table th,
+.wc-block-components-order-summary-item {
+  padding: 12px 4px !important;
+  border-bottom: 1px dashed #e2e8f0 !important;
+  font-size: 0.92rem !important;
+  color: #0f172a !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+}
+.woocommerce-checkout-review-order-table tr:last-child td,
+.wc-block-order-summary__total,
+.order-total td,
+.order-total th {
+  border-bottom: 0 !important;
+  border-top: 2px solid #e2e8f0 !important;
+}
+.woocommerce-checkout-review-order-table tfoot tr.order-total th,
+.woocommerce-checkout-review-order-table tfoot tr.order-total td,
+.wc-block-order-summary__total,
+.order-total .woocommerce-Precio-amount {
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+  color: #0e2c4a !important;
+  padding-top: 16px !important;
+}
+.product-total,
+td.product-total,
+th.product-total {
+  text-align: right !important;
+  font-weight: 700 !important;
+}
+.woocommerce-checkout-review-order-table td.product-name {
+  font-weight: 600 !important;
+  color: #0e2c4a !important;
+}
+.product-name dl.variation {
+  font-size: 0.82rem !important;
+  color: #64748b !important;
+  margin: 6px 0 0 0 !important;
+}
+.product-quantity {
+  font-size: 0.84rem !important;
+  color: #64748b !important;
+}
+
+/* Métodos de pago (radio buttons) — diseño simple */
+.wc_payment_method,
+.woocommerce-Payment-method,
+.wc-block-components-payment-method-label,
+.wc-block-payment-method__label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+  margin: 0 0 8px 0 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  transition: border 160ms ease, background 160ms ease !important;
+  cursor: pointer !important;
+  font-size: 0.94rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+}
+.wc_payment_method:hover,
+.wc-block-components-payment-method-label:hover {
+  border-color: #1e6faa !important;
+  background: #f5f8fd !important;
+}
+.wc_payment_method input[type="radio"],
+.wc-block-components-payment-method-label input[type="radio"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #1e6faa !important;
+  flex: 0 0 18px !important;
+  margin: 0 !important;
+}
+/* Texto descriptivo del pago (Transferencia bancaria, Yape, Plin) */
+.payment_box,
+.wc_payment_method .payment_box,
+.wc-block-payment-method__description,
+.payment_method_bacs p {
+  font-size: 0.88rem !important;
+  line-height: 1.55 !important;
+  color: #475569 !important;
+  padding: 12px 14px !important;
+  margin: 0 0 8px 0 !important;
+  background: #f8fafc !important;
+  border-left: 3px solid #1e6faa !important;
+  border-radius: 8px !important;
+  text-align: left !important;
+}
+
+/* BOTÓN PLACE ORDER / FINALIZAR COMPRA — degradado ancho */
+#place_order,
+.woocommerce-checkout #place_order,
+#payment #place_order,
+.wc-block-components-checkout-place-order-button button,
+button.wc-block-components-checkout-place-order-button,
+.woocommerce-checkout-place-order-button {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  min-height: 52px !important;
+  padding: 14px 18px !important;
+  margin: 24px 0 6px 0 !important;
+  text-align: center !important;
+  font-size: 1.04rem !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.3px !important;
+  background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  background-image: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+  background-color: #1c6eab !important;
+  background-clip: border-box !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  shape-outside: none !important;
+  box-shadow: 0 10px 22px rgba(30, 111, 170, 0.3) !important;
+  cursor: pointer !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
+  outline: none !important;
+  font-family: inherit !important;
+  transition: all 200ms ease !important;
+  box-sizing: border-box !important;
+  clear: both !important;
+  position: relative !important;
+  float: none !important;
+  overflow: visible !important;
+}
+#place_order:hover,
+button.wc-block-components-checkout-place-order-button:hover {
+  background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+  background-color: #145484 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 14px 28px rgba(30, 111, 170, 0.4) !important;
+  color: #ffffff !important;
+}
+/* Texto términos y condiciones bajo botón */
+.woocommerce-terms-and-conditions-wrapper,
+.form-row.terms,
+.wc-block-components-checkbox,
+.wc-block-checkout__terms {
+  font-size: 0.86rem !important;
+  line-height: 1.5 !important;
+  color: #475569 !important;
+  text-align: left !important;
+  padding: 8px 2px 0 2px !important;
+  margin: 6px 0 0 0 !important;
+}
+.woocommerce-terms-and-conditions-wrapper a,
+.form-row.terms a {
+  color: #1e6faa !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+
+/* Add coupons sección (resumen) — simple */
+.woocommerce-form-coupon,
+.wc-block-components-checkout-step__container,
+.wc-block-checkout__coupon-form,
+form.checkout_coupon {
+  width: 100% !important;
+  padding: 12px 4px 4px 4px !important;
+  margin: 10px 0 16px 0 !important;
+}
+.wc-block-components-checkout-step__container button,
+form.checkout_coupon button.button,
+.woocommerce-form-coupon button {
+  min-height: 44px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  background: #1e6faa !important;
+  border: 0 !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  margin-left: 6px !important;
+}
+
+/* Errores / Notices de Checkout — simple */
+.woocommerce-error,
+.woocommerce-message,
+.woocommerce-info,
+.wc-block-components-notice-banner,
+.woocommerce-NoticeGroup {
+  padding: 14px 18px !important;
+  margin: 0 0 20px 0 !important;
+  border-radius: 12px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+  border: 1px solid !important;
+}
+.woocommerce-error,
+.wc-block-components-notice-banner.is-error { background: #fef2f2 !important; border-color: #fecaca !important; color: #991b1b !important; }
+.woocommerce-message, .wc-block-components-notice-banner.is-success { background: #f0fdf4 !important; border-color: #bbf7d0 !important; color: #166534 !important; }
+.woocommerce-info, .wc-block-components-notice-banner.is-info { background: #eff6ff !important; border-color: #bfdbfe !important; color: #1e40af !important; }
+
+/* BLOQUE 12 · Responsive global + Scrollbar + Selección texto ====== */
+/* ============= RESPONSIVE: Tablet / móvil <980px ============= */
+@media (max-width: 980px) {
+  .woocommerce-checkout .entry-content,
+  body[class*="checkout"] main > .container,
+  .woocommerce form.woocommerce-checkout,
+  form.woocommerce-checkout .col2-set,
+  .wc-block-checkout__main,
+  .wc-block-checkout__form {
+    gap: 24px !important;
+  }
+  /* TODO 1 COLUMNA: Resumen pasa ABAJO del formulario (no más a la derecha) */
+  .woocommerce-checkout .col2-set,
+  .woocommerce-checkout #customer_details,
+  .woocommerce-billing-fields,
+  .woocommerce-shipping-fields,
+  .woocommerce-additional-fields,
+  .woocommerce-checkout-payment,
+  #order_review,
+  .wc-block-checkout__order-summary,
+  .wc-block-order-summary,
+  .wc-block-components-order-summary {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .woocommerce-billing-fields,
+  .woocommerce-shipping-fields,
+  .woocommerce-additional-fields,
+  .woocommerce-checkout-payment,
+  #payment,
+  #order_review,
+  .wc-block-checkout__order-summary {
+    padding: 18px 16px 20px 16px !important;
+    margin: 0 0 18px 0 !important;
+  }
+  .woocommerce-checkout h2,
+  .woocommerce-checkout h3,
+  #order_review_heading {
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+  }
+  .woocommerce-billing-fields input,
+  .woocommerce-shipping-fields input,
+  .woocommerce-additional-fields input,
+  .woocommerce-checkout textarea,
+  .woocommerce-checkout select {
+    height: 44px !important;
+    padding: 0 12px !important;
+    margin: 4px 0 10px 0 !important;
+  }
+  #place_order,
+  button.wc-block-components-checkout-place-order-button {
+    min-height: 50px !important;
+    padding: 12px 16px !important;
+    font-size: 1rem !important;
+  }
+}
+@media (max-width: 560px) {
+  .woocommerce-checkout .entry-content,
+  body[class*="checkout"] main > .container {
+    padding: 0 12px !important;
+    margin: 20px auto 60px auto !important;
+  }
+  .wc_payment_method,
+  .wc-block-components-payment-method-label {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* =============================================================================
+   FIN DE ESTILOS PERSONALIZADOS
+   ========================================================================== */
+
