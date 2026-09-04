@@ -1142,6 +1142,10 @@ if ( ! function_exists( 'storex_child_theme_mod_top_categories_id' ) ) :
 endif;
 if ( ! ( defined( 'SCX_DESACTIVAR_FILTROS_THEME_MODS' ) && SCX_DESACTIVAR_FILTROS_THEME_MODS ) ) :
 	add_filter( 'theme_mod_top_categories_id', 'storex_child_theme_mod_top_categories_id', 999 );
+	// ↳ 2026-08-29 REACTIVADO (sección featured-section vacía sin él).
+	//   Este filtro es FALLBACK BENIGNO: solo usa 6 categorías auto CUANDO el
+	//   Customizer NO TIENE NADA seleccionado (empty). Si el usuario
+	//   sí selecciona categorías en el panel, return $value (las respeta).
 endif;
 
 if ( ! function_exists( 'storex_child_theme_mod_product_cat02_id' ) ) :

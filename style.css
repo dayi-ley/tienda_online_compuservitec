@@ -179,18 +179,169 @@ a.btn:focus, button.btn:focus, .btn:focus,
 }
 
 /* --------------------------------------------------------------------------
-   8) CAJA DE CATEGORÍAS (botón "Todas las categorías" del buscador)
-   -------------------------------------------------------------------------- */
+   8) CAJA DE CATEGORÍAS (botón "Todas las categorías" HEADER LOWER)
+   --------------------------------------------------------------------------
+   ⚠️ ESTRUCTURA EXACTA (2 niveles de .category-box, NO confundir):
+     <div class="outer-box">                                  ← header-lower
+       <div class="category-box">                             ← ✅ NIVEL 1 = BOTÓN (azul #1c6eab)
+         <a class="text"><i class="fa-align-left"></i><span>All Categories</span></a>
+         <div class="category-menu category-mobile-menu">
+           <div class="outer-box">
+             <div class="category-box">                       ← ❌ NIVEL 2 = LISTA DROPDOWN (fondo BLANCO)
+               <ul class="category-list">…
+   
+   BUG que tuvimos: selector genérico div.category-box le aplicaba azul AMBOS
+   niveles → el dropdown list salía todo azul, no se leía.
+   FIX 1: .category-box AZUL sólo al PRIMER .category-box HIJO DIRECTO (>)
+   del .outer-box del header-lower.
+   FIX 2: cualquier .category-box DESCENDIENTE dentro de .category-menu = BLANCO.*/
+
+/* ===== NIVEL 1 · BOTÓN (HIJO DIRECTO del outer-box del header) ===== */
+.main-header .header-lower .outer-box > .category-box,
+.main-header .outer-box > .category-box,
+.header-lower.is-sticky-on .large-container .outer-box > .category-box{
+  background-color: #1c6eab !important;        /* ← COLOR PEDIDO: todo el botón azul */
+  background-image: none !important;
+  border-color: #1c6eab !important;            /* borde mismo azul (no gris E6E6E6) */
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-bottom: 1px solid #1c6eab !important;
+  border-radius: 8px !important;               /* esquinas redondeadas (desktop) */
+  box-shadow: 0 1px 2px rgba(28,110,171,.18) !important;
+  padding: 15px 20px !important;
+  color: #ffffff !important;
+}
+/* Hover sólo del BOTÓN (nivel 1, nunca la lista interior) */
+.main-header .header-lower .outer-box > .category-box:hover,
+.main-header .outer-box > .category-box:hover,
+.main-header .outer-box > .category-box:focus-within{
+  background-color: #1d8ec8 !important;
+  border-color: #1d8ec8 !important;
+  border-bottom-color: #1d8ec8 !important;
+}
+
+/* ===== NIVEL 2 · LISTA DROPDOWN (dentro de .category-menu) · FONDO BLANCO ===== */
+.header-lower .category-menu .category-box,
+.header-lower .category-mobile-menu .category-box,
+.category-menu .category-box,
+.category-mobile-menu .category-box,
+.main-header .header-lower .outer-box .category-menu .category-box,
+.main-header .outer-box .category-box .category-menu .category-box{
+  background-color: #ffffff !important;        /* ← BLANCO (nunca azul) */
+  background-image: none !important;
+  color: var(--title-color) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: auto !important;
+  position: relative !important;
+  text-align: left !important;
+}
+.category-menu .category-list,
+.category-mobile-menu .category-list{
+  background-color: #ffffff !important;
+  color: var(--title-color) !important;
+}
+
+/* ===== Texto interior del BOTÓN NIVEL 1 (ya no aplica a la lista interior) ===== */
 .header-upper .search-area .category-inner .nice-select,
-.main-header .outer-box .category-box .text,
-.category-box .text{
-  background: var(--theme-color) !important;
+.main-header .header-lower .outer-box > .category-box .text,
+.main-header .outer-box > .category-box .text{
+  background: transparent !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding-left: 28px !important;
 }
 .header-upper .search-area .category-inner .nice-select:hover,
 .header-upper .search-area .category-inner .nice-select:focus,
-.main-header .outer-box .category-box .text:hover,
-.main-header .outer-box .category-box .text:focus{
-  background: var(--accent-color) !important;
+.main-header .header-lower .outer-box > .category-box:hover .text,
+.main-header .outer-box > .category-box:hover .text,
+.main-header .outer-box > .category-box .text:hover,
+.main-header .outer-box > .category-box .text:focus{
+  background: transparent !important;
+  color: #e0f2fe !important;
+}
+
+/* ===== TABLET / MÓVIL ≤1200px · BOTÓN 30×30px + ÍCONO HAMBURGUESA VISIBLE ===== */
+@media only screen and (max-width: 1200px){
+  /* Sobrescribir nuestro padding desktop (15-20) al formato 30×30 del responsive padre */
+  .main-header .header-lower .outer-box > .category-box,
+  .main-header .outer-box > .category-box{
+    padding: 0 !important;                /* ← padding desktop anulado */
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    border: 1px solid #1c6eab !important; /* borde azul que antes era gris E6E6E6 */
+    border-radius: 0px !important;        /* cuadrados como pide responsive.css L87 */
+    text-align: center !important;
+    top: 0 !important;
+    box-shadow: none !important;
+  }
+  /* Hover del botón cuadrado 30×30 */
+  .main-header .header-lower .outer-box > .category-box:hover,
+  .main-header .outer-box > .category-box:hover{
+    background-color: #1d8ec8 !important;
+    border-color: #1d8ec8 !important;
+  }
+  /* Texto/ancla del botón: padding-left:28 ANULADO → de lo contrario ícono se sale de la caja de 30px */
+  .main-header .header-lower .outer-box > .category-box .text,
+  .main-header .outer-box > .category-box .text{
+    padding: 0 !important;                /* ← anulamos padding-left:28px */
+    line-height: 30px !important;
+    display: block !important;
+    text-align: center !important;
+  }
+  /* ÍCONO HAMBURGUESA · FORZADO CENTRADO · selector MÁS ESPECÍFICO (gana a main.css L863) */
+  .main-header .outer-box .category-box .text i,
+  .main-header .header-lower .outer-box > .category-box .text i,
+  .main-header .outer-box > .category-box .text i{
+    /* ✅ PRIMERO: MATAMOS EL POSITION ABSOLUTE ORIGINAL (ESTE ERA EL BUG REAL!) */
+    position: relative !important;       /* NO STATIC → relative block correcto */
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;            /* flexbox 100% infalible (no inline-block) */
+    align-items: center !important;      /* VERTICAL CENTRADO */
+    justify-content: center !important;  /* HORIZONTAL CENTRADO */
+    /* ✅ ELIMINAMOS width:30 height:30 line-height:30 del propio i → estos causan overflow */
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+    vertical-align: baseline !important;
+    font-size: 16px !important;
+    color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-indent: 0 !important;           /* NUNCA text-indent: -9999 que se vaya a robar el icono */
+    transform: none !important;          /* ni transform translate negativo de plugins */
+    float: none !important;
+    clip-path: none !important;
+    overflow: visible !important;        /* NUNCA se corta */
+    margin-top: -5px !important;   /* ← ✅ SUbe el ícono 3px hacia ARRIBA */
+  }
+  /* Texto escrito ("All Categories") · OCULTO, como pide responsive.css L60-62 */
+  .main-header .outer-box > .category-box .text span{
+    display: none !important;
+  }
+  /* Flecha :before fa-angle-down · OCULTA, como pide responsive.css L57-59 */
+  .main-header .outer-box > .category-box .text:before{
+    display: none !important;
+  }
+  /* LISTA DROPDOWN en ≤1200px: fondo BLANCO (doble seguridad) + sombra visible */
+  .category-menu .category-box,
+  .category-mobile-menu .category-box{
+    background-color: #ffffff !important;
+    color: var(--title-color) !important;
+    border: none !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -254,6 +405,172 @@ a:active{
 }
 
 /* --------------------------------------------------------------------------
+   12.1) MINI-CART HEADER: LAYOUT NUEVO (CORREGIDO: PRECIO DEBAJO)
+   --------------------------------------------------------------------------
+   Basado en HTML REAL que me pegó HOY (F12):
+     <li class="woocommerce-mini-cart-item mini_cart_item">
+       [<a> IMG + TÍTULO (clases varias)</a>]
+       <span class="quantity item-price"> PRECIO </span>
+       [<a class="remove_from_cart_button"> ✕ </a>]
+
+   === DISEÑO NUEVO (EXACTO lo que pidió el usuario): ===
+
+   ┌──────────────────────────────────────────────────────────────────┐ B(✕)
+   │  (PARTE 1 - ARRIBA): img + título (fila horizontal)              │
+   │  ┌──────────┐  ┌──────────────────────────────────────────────┐  │
+   │  │ 1a) IMG │  │ 1b) TÍTULO PRODUCTO (ancho completo)         │  │
+   │  │  50×50  │  │ (máx 2 líneas ellipsis)                      │  │
+   │  └──────────┘  └──────────────────────────────────────────────┘  │
+   │                                                                  │
+   │  (PARTE 2 - ABAJO): PRECIO (toda la anchura, alineado izq/der)  │
+   │  ┌──────────────────────────────────────────────────────────┐   │
+   │  │ 2) <span class="quantity item-price"> S/ 99.00           │   │
+   │  └──────────────────────────────────────────────────────────┘   │
+   └──────────────────────────────────────────────────────────────────┘
+
+   B) ✕ Eliminar: ABSOLUTE top-right → ocupa ZERO espacio flex.
+   PADRE (<li>): FLEX COLUMNA (ahora sí).
+     • HIJO 1 (arriba): <a> → img + título (flex row dentro)
+     • HIJO 2 (abajo):  <span.quantity.item-price> (precio, 100% ancho)
+-------------------------------------------------------------------------- */
+
+/* ========== PADRE = cada <li class="mini_cart_item"> (AHORA EN COLUMNA!) ========== */
+.main-header .cart-menu .woocommerce-mini-cart-item.mini_cart_item,
+.info-list .cart-menu .mini_cart_item,
+.cart-menu .cart_list li.mini_cart_item,
+.cart-menu .woocommerce-mini-cart li.mini_cart_item{
+  position: relative !important;          /* ← ✕ ABSOLUTE quede DENTRO */
+  display: flex !important;
+  flex-direction: column !important;      /* 🔥 COLUMNA (antes row) → Parte1 ARRIBA / Parte2 ABAJO */
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;        /* stretch = hijos ocupan 100% ancho */
+  justify-content: flex-start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 30px 14px 0 !important;   /* ← padding-right: hueco para ✕, padding-bottom espacio precio */
+  margin: 0 0 12px 0 !important;
+  border-bottom: none !important;         /* ✅ QUITADO marco divisor gris entre productos */
+  box-shadow: none !important;
+  background: transparent !important;
+  gap: 8px !important;                    /* ← espacio VERTICAL entre Parte1 (img+título) y Parte2 (precio) */
+}
+
+/* ========== B) ✕ BOTÓN ELIMINAR: ABSOLUTE TOP-RIGHT (no ocupa espacio flex) ========== */
+.main-header .cart-menu .mini_cart_item a.remove_from_cart_button,
+.main-header .cart-menu .mini_cart_item a.remove,
+.cart-menu .mini_cart_item .remove_from_cart_button,
+.info-list .cart-menu .mini_cart_item a.remove{
+  position: absolute !important;
+  top: 6px !important;
+  right: -4px !important;
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 20px !important;
+  font-size: 16px !important;
+  text-align: center !important;
+  color: #999 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 2 !important;
+  flex-shrink: 0 !important;
+}
+.main-header .cart-menu .mini_cart_item a.remove_from_cart_button:hover,
+.main-header .cart-menu .mini_cart_item a.remove:focus{
+  color: #E92530 !important;
+  background-color: #fde8ea !important;
+}
+
+/* ========== PARTE 1 - ARRIBA: <a> (IMG + TÍTULO) = FILA HORIZONTAL ========== */
+.main-header .cart-menu .mini_cart_item > a:not(.remove_from_cart_button),
+.cart-menu .mini_cart_item > a:not(.remove),
+.woocommerce-mini-cart-item.mini_cart_item > a.product-name,
+.info-list .cart-menu .mini_cart_item > a{
+  display: flex !important;
+  flex-direction: row !important;          /* ← FILA (img + título costados) */
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;                 /* ← 100% ancho */
+  flex-grow: 1 !important;
+  flex-shrink: 1 !important;
+  min-width: 0 !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* PARTE 1.1: MINIATURA (IMG) 50x50 - SIN MARCOS */
+.cart-menu .mini_cart_item > a:not(.remove_from_cart_button) img,
+.mini_cart_item img.attachment-woocommerce_thumbnail,
+.woocommerce-mini-cart-item.mini_cart_item a img{
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  flex-shrink: 0 !important;
+  object-fit: cover !important;
+  border: 0 !important;                   /* ✅ QUITADO el marco gris de la foto */
+  border-radius: 0 !important;            /* ✅ QUITADO esquinas redondeadas de la foto */
+  box-shadow: none !important;
+  background: transparent !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* PARTE 1.2: TÍTULO PRODUCTO (ancho completo, 2 líneas máx) */
+.cart-menu .mini_cart_item > a:not(.remove_from_cart_button),
+.cart-menu .woocommerce-mini-cart-item a.product-name{
+  font-size: clamp(12.5px, 1.25vw, 14px) !important;
+  line-height: 1.28 !important;
+  color: var(--title-color, #1a1a1a) !important;
+  word-break: break-word !important;
+}
+
+/* ========== PARTE 2 - ABAJO: PRECIO (tu <span class="quantity item-price">) ==========
+   Toda la anchura (no va a la derecha, va DEBAJO). SIN FONDOS AZULES, SIN MARCOS.  */
+.cart-menu .mini_cart_item span.quantity.item-price,
+.main-header .mini_cart_item .quantity.item-price,
+.info-list .cart-menu .mini_cart_item span.quantity.item-price{
+  display: block !important;              /* ← BLOCK, no flex */
+  width: 100% !important;                 /* 🔥 100% ANCHO (toda la fila inferior) */
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+  font-size: clamp(12px, 1.2vw, 13.5px) !important;  /* PEQUEÑO */
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  color: #E92530 !important;
+  white-space: nowrap !important;             /* S/ X,XXX.XX 1 sola línea */
+  padding-left: 60px !important;              /* 👉 ALINEADO con el TÍTULO (50px img + 10px gap) */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;                /* 👉 TEXTO ALINEADO A LA IZQUIERDA (debajo título) */
+  /* ✅ QUITADOS FONDO AZULADO / SOMBRA / MARCO del precio */
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.cart-menu .mini_cart_item span.quantity.item-price .woocommerce-Price-amount,
+.cart-menu .mini_cart_item span.quantity.item-price bdi{
+  font-size: 1em !important;
+  white-space: nowrap !important;
+}
+.cart-menu .mini_cart_item span.quantity.item-price .woocommerce-Price-currencySymbol{
+  font-size: 1em !important;
+  white-space: nowrap !important;
+}
+
+/* --------------------------------------------------------------------------
    13) BOTÓN "Ver todas las categorías" (Popular Categories link)
    -------------------------------------------------------------------------- */
 .popular-categories .view-all a,
@@ -268,6 +585,147 @@ a:active{
   color: var(--theme-color) !important;
 }
 
+/* --------------------------------------------------------------------------
+   13.1) BOTÓN product-action "Añadir al carrito" · OCUPA 92% DE product-single
+   --------------------------------------------------------------------------
+   Fix JERARQUÍA (era el bug REAL por qué no cambiaba):
+   NIVEL 1:  <div class="product-single"> → position:relative! (NEW, no existía)
+   NIVEL 2:  <div class="product-action"> → width 100% + padding 4% izq/der (8% total)
+   NIVEL 3:  <a class="button"> → width 100% de su padre = 92% ANCHO TARJETA ✅
+-------------------------------------------------------------------------- */
+
+/* ========== 🔥 NIVEL 1: CONTENEDOR COMPLETO TARJETA (product-single)
+   SIN ESTO, el position:absolute a veces se refería a un div PADRE superior
+   y width:100% NO medía el ancho de la tarjeta. NUNCA LO QUITES. ========== */
+.product .product-single,
+.woocommerce ul.products li.product,
+.shop-block-two .inner-box{
+  position: relative !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* ========== NIVEL 2: CAJA product-action (position absolute)
+   APARECE SÓLO AL HOVER / FOCUS-WITHIN (interactividad original intacta).
+   padding 4% izq + 4% der = botón final ocupa 92% del ancho product-single ========== */
+.product .product-single .product-content-outer .product-action,
+.woocommerce li.product .product-action,
+.shop-block-two .inner-box .lower-content .cart-btn{
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  padding: 0 4% !important;
+  box-sizing: border-box !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  bottom: -49px !important;
+  transition: all 500ms ease !important;
+  overflow: visible !important;
+}
+.product .product-single:hover .product-content-outer .product-action,
+.product .product-single:focus-within .product-content-outer .product-action,
+.shop-block-two .inner-box:hover .lower-content .cart-btn,
+.shop-block-two .inner-box:focus-within .lower-content .cart-btn{
+  opacity: 1 !important;
+  visibility: visible !important;
+  bottom: -69px !important;
+}
+
+/* ========== NIVEL 3: BOTÓN (add_to_cart_button / button)
+   width 100% = se ajusta al padre product-action (que ya tiene padding 4% x2)
+   RESULTADO FINAL = 92% del ancho product-single.
+   NUNCA circular · SIEMPRE horizontal 1 línea · NUNCA apilado vertical. ========== */
+.product .product-single .product-content-outer .add_to_cart_button,
+.product .product-single .product-content-outer .added_to_cart,
+.woocommerce li.product .product-action .button,
+.product .product-single .product-content-outer .button,
+.shop-block-two .inner-box .lower-content .cart-btn .theme-btn{
+  border-radius: 8px !important;
+  clip-path: none !important;
+
+  /* 🔥 ANCHO 100% del padre (NIVEL 2 → padding 4%) = 92% del product-single */
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+
+  padding: clamp(8px, 1vw, 11px) clamp(16px, 2.3vw, 28px) !important;
+  font-size: clamp(13px, 1.4vw, 15px) !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  box-sizing: border-box !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+}
+
+/* ========== TABLET 768-1199px ========== */
+@media (min-width: 768px) and (max-width: 1199px){
+  .product .product-single .product-content-outer .product-action,
+  .woocommerce li.product .product-action,
+  .shop-block-two .inner-box .lower-content .cart-btn{
+    padding: 0 4% !important;
+    width: 100% !important;
+  }
+  .product .product-single .product-content-outer .add_to_cart_button,
+  .product .product-single .product-content-outer .added_to_cart,
+  .woocommerce li.product .product-action .button,
+  .product .product-single .product-content-outer .button,
+  .shop-block-two .inner-box .lower-content .cart-btn .theme-btn{
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    padding: clamp(7px, 0.9vw, 9px) clamp(15px, 2.1vw, 24px) !important;
+    font-size: clamp(12px, 1.3vw, 13.5px) !important;
+    border-radius: 7px !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ========== MÓVIL ≤767px ========== */
+@media (max-width: 767px){
+  .product .product-single .product-content-outer .product-action,
+  .woocommerce li.product .product-action,
+  .shop-block-two .inner-box .lower-content .cart-btn{
+    bottom: 4px !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 4% !important;
+  }
+  .product .product-single .product-content-outer .add_to_cart_button,
+  .product .product-single .product-content-outer .added_to_cart,
+  .woocommerce li.product .product-action .button,
+  .product .product-single .product-content-outer .button,
+  .shop-block-two .inner-box .lower-content .cart-btn .theme-btn{
+    border-radius: 6px !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    padding: clamp(8px, 1.7vw, 10px) clamp(14px, 3vw, 20px) !important;
+    font-size: clamp(12px, 2.9vw, 14px) !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+}
 /* --------------------------------------------------------------------------
    14) TARJETAS INFO (efecto hover) → borde/acento en complementario
    -------------------------------------------------------------------------- */
@@ -291,6 +749,123 @@ a:active{
 /* --------------------------------------------------------------------------
    15) WOOCOMMERCE: breadcrumb / pagination / price filter
    -------------------------------------------------------------------------- */
+
+/* 🔥 15.1) OCULTAR BREADCRUMB (satura visualización en página producto individual).
+         Forma 1 (CSS reversible): si mañana quieres volver a ver, sólo comentas este bloque. */
+#breadcrumb-section.breadcrumb-area,
+section#breadcrumb-section.breadcrumb-area.breadcrumb-center,
+body.single-product #breadcrumb-section,
+body.tax-product_cat #breadcrumb-section,
+body.post-type-archive-product #breadcrumb-section,
+body.page #breadcrumb-section,
+body.home #breadcrumb-section{
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+/* --------------------------------------------------------------------------
+   15.3) PÁGINA DE PRODUCTO INDIVIDUAL: ocultar elementos que saturan / no necesarios
+   --------------------------------------------------------------------------
+   Quitar:
+     • SKU (código interno, útil solo para admins, no clientes).
+     • "inc. IGV" / "incluye IGV" / tax_label.
+     • Botón / sección "Preguntar por este producto" (plugin ask_product).
+-------------------------------------------------------------------------- */
+
+/* 1. SKU (código interno producto) — NUNCA mostrar a cliente final */
+body.single-product .product_meta .sku_wrapper,
+body.single-product .product_meta span.sku,
+body.single-product div.product .sku_wrapper,
+body.single-product .summary .sku_wrapper,
+body.single-product .summary .product_meta .sku,
+body.single-product .summary entry-summary .sku,
+body.single-product span.sku,
+body.single-product .sku{
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
+}
+
+/* 2. Inc IGV / incluye IGV / tax_label (texto tax).
+     ORIGEN confirmado HTML REAL 2026-08-29:
+       <p class="price"><small class="woocommerce-price-suffix"> (incluye IGV) </small></p>
+     Fix: la clase era woocommerce-price-suffix, NO includes_tax / tax_label. */
+body.single-product .woocommerce-price-suffix,
+body.single-product p.price .woocommerce-price-suffix,
+body.single-product .summary .price .woocommerce-price-suffix,
+body.single-product .summary .price .includes_tax,
+body.single-product .summary .price .tax_label,
+body.single-product p.price .includes_tax,
+body.single-product .product .price .includes_tax,
+body.single-product .woocommerce-Price-taxLabel,
+body.single-product .price .tax-amount,
+body.single-product .woocommerce-product-details__short-description .includes_tax,
+body.single-product .price:has(.includes_tax) small,
+body.single-product .price small.includes_tax,
+body.single-product .price .tax-info,
+body.single-product [class*="tax_label"],
+body.single-product [class*="includes_tax"]{
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
+}
+
+/* 3. Botón / sección "Preguntar por este producto" / Consulta WCFM.
+     ORIGEN confirmado HTML REAL 2026-08-29:
+       <div class="wcfm_ele_wrapper wcfm_catalog_enquiry_button_wrapper">
+         <a href="#" class="wcfm_catalog_enquiry">
+     (plugins: WCFM Marketplace, WCFM Catalog Enquiry, YITH Ask, etc.) */
+body.single-product .wcfm_ele_wrapper,
+body.single-product .wcfm_catalog_enquiry_button_wrapper,
+body.single-product a.wcfm_catalog_enquiry,
+body.single-product .wcfm_catalog_enquiry_wrapper,
+body.single-product .ask_product,
+body.single-product .ask_about_product,
+body.single-product .ask-product-question,
+body.single-product .wcas-ask-question,
+body.single-product .yith-wapq,
+body.single-product .yith-ask-question,
+body.single-product .product-question,
+body.single-product .woocommerce-ask-question,
+body.single-product a[href*="ask_about_product"],
+body.single-product a[href*="ask-product"],
+body.single-product a[href*="preguntar"]{
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
+}
+/* 15.2) Colores breadcrumb interno Woo (si se usara en otros sitios) */
 .woocommerce .woocommerce-breadcrumb a,
 .woocommerce-breadcrumb a{
   color: var(--theme-color) !important;
@@ -313,6 +888,683 @@ a:active{
 .woocommerce ul.products li.product .price ins .amount,
 .product-block .price ins .amount{
   color: var(--accent-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   15.4) PÁGINAS WOO (CARRITO / TIENDA / CHECKOUT): limpiar ruido de layout BLOG
+   --------------------------------------------------------------------------
+   Problema: templates StoreX meten páginas Woo DENTRO de:
+     section#post-section (BLOG) → row.gy-5 → col-lg-9 (75% ancho)
+       → article.post-items.post-single (formato entrada blog)
+   Resultado: carrito angosto, márgenes/sombras de blog, espacio muerto sidebar.
+
+   Fix Opción A (solo CSS, no tocar PHP):
+     • body.woocommerce-cart = página Carrito.
+     • body.woocommerce-checkout = Pagar.
+     • body.post-type-archive-product / body.tax-product_cat = Tienda / Categoría.
+     • body.woocommerce-account = Mi Cuenta.
+   Todas estas: post-section NO formato blog.
+-------------------------------------------------------------------------- */
+
+/* 1. SECCIÓN EXTERIOR + #content:
+   PADDING-TOP DINÁMICO GRANDE para que el HEADER STICKY (position:fixed / z999)
+   NUNCA TAPE el contenido carrito/checkout. Este padding-top = RESERVA DE ESPACIO.
+   ESPECIFICIDAD: html body.woocommerce-cart → gana SIEMPRE al tema padre. */
+html body.woocommerce-cart section#post-section,
+html body.woocommerce-cart section#post-section.st-py-default,
+html body.woocommerce-cart section#post-section.kg,
+html body.woocommerce-cart #content.storex-content > section#post-section,
+html body.woocommerce-checkout section#post-section,
+html body.woocommerce-checkout section#post-section.st-py-default,
+html body.woocommerce-checkout #content.storex-content > section#post-section,
+html body.post-type-archive-product section#post-section,
+html body.tax-product_cat section#post-section,
+html body.woocommerce-account section#post-section{
+  /* 🔥 ALTO MÍNIMO 120px DESDE EL PRINCIPIO. Mobile = 170px más seguro */
+  padding-top: clamp(5px, 14vw, 10px) !important;
+  padding-bottom: clamp(16px, 2vw, 32px) !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+/* Padding top SEGÚN DISPOSITIVO (móvil más alto) */
+@media (min-width: 1200px){
+  html body.woocommerce-cart section#post-section,
+  html body.woocommerce-checkout section#post-section{ padding-top: 120px !important; }
+}
+@media (min-width: 768px) and (max-width: 1199px){
+  html body.woocommerce-cart section#post-section,
+  html body.woocommerce-checkout section#post-section{ padding-top: 150px !important; }
+}
+@media (max-width: 767px){
+  html body.woocommerce-cart section#post-section,
+  html body.woocommerce-checkout section#post-section{ padding-top: 175px !important; }
+}
+/* StoreX specific break: ≤992px menú hamburguesa crece más alto → +10px extra aire */
+@media (max-width: 991px){
+  html body.woocommerce-cart section#post-section,
+  html body.woocommerce-checkout section#post-section{ padding-top: 170px !important; }
+}
+@media (max-width: 767px){
+  html body.woocommerce-cart section#post-section,
+  html body.woocommerce-checkout section#post-section{ padding-top: 190px !important; }
+}
+
+/* 2. ROW (antes gy-5 = gap 48px vertical): espacio muerto → 0 */
+html body.woocommerce-cart section#post-section > .container > .row,
+html body.woocommerce-checkout section#post-section > .container > .row,
+html body.post-type-archive-product section#post-section > .container > .row,
+html body.tax-product_cat section#post-section > .container > .row,
+html body.woocommerce-account section#post-section > .container > .row{
+  row-gap: 0 !important;
+  column-gap: 0 !important;
+  gap: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+}
+/* 2.b ROW: matar animación WOW fadeInUp que DEFAZABA HACIA ARRIBA = se acercaba al header */
+html body.woocommerce-cart section#post-section > .container > .row.wow,
+html body.woocommerce-cart section#post-section > .container > .row.fadeInUp,
+html body.woocommerce-cart section#post-section > .container > .row.wow.fadeInUp,
+html body.woocommerce-checkout section#post-section > .container > .row.wow.fadeInUp,
+html body.post-type-archive-product section#post-section > .container > .row.wow.fadeInUp,
+html body.tax-product_cat section#post-section > .container > .row.wow.fadeInUp,
+html body.woocommerce-account section#post-section > .container > .row.wow.fadeInUp{
+  animation: none !important;
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  animation-name: none !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* aire seguro EXTRA entre el header y el primer elemento del carrito (tabla thead) */
+  padding-top: clamp(6px, 1vw, 14px) !important;
+  margin-top: clamp(4px, 0.6vw, 12px) !important;
+}
+
+/* 3. COLUMNA (antes col-lg-9 75% ancho): 100% ANCHO (ocupa todo el ancho container).
+     NUNCA más sidebar blog vacío de 25% a la derecha. */
+html body.woocommerce-cart section#post-section > .container > .row > .col-lg-9,
+html body.woocommerce-checkout section#post-section > .container > .row > .col-lg-9,
+html body.post-type-archive-product section#post-section > .container > .row > .col-lg-9,
+html body.tax-product_cat section#post-section > .container > .row > .col-lg-9,
+html body.woocommerce-account section#post-section > .container > .row > .col-lg-9{
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  flex: 0 0 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* 4. ARTÍCULO (antes post-items.post-single clearfix FORMATO ENTRADA BLOG):
+     Quitar sombras, padding, bordes, datebox/catbox/author-box invisibles.
+     Dejarlo 100% transparente y sin formato → solo muestra el bloque Woo Cart. */
+html body.woocommerce-cart article.post-items.post-single.clearfix,
+html body.woocommerce-checkout article.post-items.post-single.clearfix,
+html body.post-type-archive-product article.post-items.post-single.clearfix,
+html body.tax-product_cat article.post-items.post-single.clearfix,
+html body.woocommerce-account article.post-items.post-single.clearfix{
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  float: none !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+html body.woocommerce-cart article.post-items.post-single.clearfix::after,
+html body.woocommerce-checkout article.post-items.post-single.clearfix::after,
+html body.post-type-archive-product article.post-items.post-single.clearfix::after,
+html body.tax-product_cat article.post-items.post-single.clearfix::after,
+html body.woocommerce-account article.post-items.post-single.clearfix::after{
+  display: none !important;
+  content: none !important;
+}
+html body.woocommerce-cart article .post-content.clearfix,
+html body.woocommerce-checkout article .post-content.clearfix,
+html body.post-type-archive-product article .post-content.clearfix,
+html body.tax-product_cat article .post-content.clearfix,
+html body.woocommerce-account article .post-content.clearfix{
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+  float: none !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* =========================================================
+   4.b BLOQUE WOO CART / CHECKOUT (wp-block-woocommerce-cart)
+   ========================================================= */
+html body.woocommerce-cart .wp-block-woocommerce-cart,
+html body.woocommerce-cart .wp-block-woocommerce-cart.alignwide,
+html body.woocommerce-cart .wc-block-cart,
+html body.woocommerce-cart .wc-block-components-sidebar-layout,
+html body.woocommerce-cart .wc-block-cart.is-mobile,
+html body.woocommerce-cart .wp-block-woocommerce-filled-cart-block,
+html body.woocommerce-checkout .wp-block-woocommerce-checkout,
+html body.woocommerce-checkout .wc-block-checkout{
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 clamp(8px, 1vw, 18px) !important;
+  box-sizing: border-box !important;
+}
+
+/* =========================================================
+   4.c CARRITO DESKTOP: LAYOUT 2 COLUMNAS HORIZONTALES (inline)
+       70% productos (izq)  +  30% resumen orden (der sticky)
+   Clases reales de Woo Blocks confirmadas:
+       .wc-block-components-main    (productos / tabla)
+       .wc-block-components-sidebar (totales / resumen)
+   ========================================================= */
+/* Base (DESKTOP >= 1200px = is-large) */
+html body.woocommerce-cart .wc-block-components-sidebar-layout,
+html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block.is-large,
+html body.woocommerce-cart .wp-block-woocommerce-filled-cart-block .wc-block-components-sidebar-layout{
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: clamp(16px, 2vw, 28px) !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+/* COLUMNA IZQUIERDA (70%): productos / tabla */
+html body.woocommerce-cart .wc-block-components-main,
+html body.woocommerce-cart .wc-block-cart__main,
+html body.woocommerce-cart .wc-block-components-main.wp-block-woocommerce-cart-items-block{
+  width: 70% !important;
+  flex: 0 0 70% !important;
+  max-width: 70% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  order: 1 !important;
+}
+/* COLUMNA DERECHA (30%): Resumen de la orden (TOTALES / CTA Checkout)
+   position:sticky → permanece visible al scrollear hacia abajo (como Buypal/Falabella) */
+html body.woocommerce-cart .wc-block-components-sidebar,
+html body.woocommerce-cart .wc-block-cart__totals,
+html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block{
+  width: 30% !important;
+  flex: 0 0 30% !important;
+  max-width: 30% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  order: 2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: sticky !important;
+  top: 120px !important;
+  align-self: flex-start !important;
+}
+
+/* --- TABLET 768-1199px: 65% productos / 35% totales (más aire al resumen) --- */
+@media (min-width: 768px) and (max-width: 1199px){
+  html body.woocommerce-cart .wc-block-components-sidebar-layout{ gap: clamp(14px, 1.8vw, 22px) !important; }
+  html body.woocommerce-cart .wc-block-components-main{
+    width: 65% !important; flex: 0 0 65% !important; max-width: 65% !important;
+  }
+  html body.woocommerce-cart .wc-block-components-sidebar{
+    width: 35% !important; flex: 0 0 35% !important; max-width: 35% !important;
+    top: 150px !important; /* header tablet más alto */
+  }
+}
+
+/* --- MÓVIL ≤767px: LAYOUT VERTICAL por defecto (1 sola columna).
+       Woo ya le pone is-mobile. 100% cada uno. --- */
+@media (max-width: 767px){
+  html body.woocommerce-cart .wc-block-components-sidebar-layout,
+  html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block.is-mobile{
+    display: block !important;
+    flex-direction: column !important;
+    gap: clamp(16px, 4vw, 28px) !important;
+  }
+  html body.woocommerce-cart .wc-block-components-main,
+  html body.woocommerce-cart .wc-block-cart__main{
+    width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important;
+  }
+  html body.woocommerce-cart .wc-block-components-sidebar,
+  html body.woocommerce-cart .wc-block-cart__totals{
+    width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important;
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+/* =========================================================
+   4.d RESUMEN PEDIDO (columna 30% derecha): REORGANIZACIÓN SÓLO CUPÓN.
+   ✅ FIX QUIRÚRGICO: NO TOCAR padding/margin/gap de componentes originales.
+      SÓLO agregamos: (a) flex column + order numérico, (b) ocultar botón
+      panel Woo original, (c) input cupón oculto toggleable por link nuevo.
+   PADRE FLEX: .wp-block-woocommerce-cart-order-summary-block
+   ORDEN FINAL FLEX:
+     10  = Título Resumen
+     20  = Subtotales (Subtotal / Descuento / Envío)
+     50  = TOTAL FINAL
+     70  = Cupón input+botón Aplicar (OCULTO por defecto)
+     80  = Link gris "¿Tienes cupón?" (ANTES del Finalizar)
+     90  = Botón Finalizar Compra (MUY AL FINAL)
+   ========================================================= */
+
+/* ---------- A. WRAPPER EXTERIOR: sólo estilo, NUNCA flex aquí ---------- */
+html body.woocommerce-cart .wp-block-woocommerce-cart-totals-block,
+html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block,
+html body.woocommerce-cart .wc-block-cart__sidebar.wp-block-woocommerce-cart-totals-block{
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------- B. PADRE FLEX REAL (order-summary-block)
+   ⚠️ SIN padding, SIN margin, SIN gap, SIN align-items stretch que
+   estire verticalmente. Sólo flex-direction column y order. ---------- */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open{
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;    /* 🔥 QUITADO stretch = NO estira */
+  align-content: flex-start !important;
+  gap: 0 !important;                     /* 🔥 SIN gap entre hijos */
+  row-gap: 0 !important;
+  column-gap: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+/* CADA HIJO DIRECTO del flex: ancho 100% SIN estiramiento, margin/padding 0 por
+   defecto, para que Woo mantenga sus tamaños compactos originales. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > *{
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+/* Reset adicional: todo componente totals-wrapper NO agregue espacio */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper{
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+/* ---------- C. ORDEN NUMÉRICO DE LOS COMPONENTES ---------- */
+
+/* [10] TÍTULO PRINCIPAL "Resumen de la orden" */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > h2,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-cart__totals-title,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-title{
+  order: 10 !important;
+}
+
+/* [20] BLOQUES DE SUBTOTALES (cada wp-block hijo del order-summary) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-subtotal-block{ order: 20 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-discount-block{ order: 20 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-shipping-block{ order: 20 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-fee-block{ order: 20 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-tax-block{ order: 20 !important; }
+
+/* [50] TOTAL FINAL destacado */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-total-block,
+html body.woocommerce-cart .wc-block-components-totals-footer-item,
+html body.woocommerce-cart .wc-block-components-totals-item.wc-block-components-totals-footer-item{
+  order: 50 !important;
+}
+
+/* [70] BLOQUE CUPÓN (input+botón Aplicar). OCULTO por defecto. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block,
+html body.woocommerce-cart .wc-block-components-totals-coupon,
+html body.woocommerce-cart .wp-block-woocommerce-cart-coupon,
+html body.woocommerce-cart .scx-coupon-block{
+  order: 70 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  /* OCULTO POR DEFECTO (height 0 + opacity 0) */
+  height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-4px) !important;
+  transition: all 320ms ease !important;
+  -webkit-transition: all 320ms ease !important;
+}
+
+/* [80] LINK TOGGLE CUPÓN DISCRETO (ANTES del Finalizar Compra) */
+html body.woocommerce-cart a.scx-coupon-toggle{
+  order: 80 !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 8px 0 0 0 !important;   /* 🔥 margin-top chico fijo, no clamp gigante */
+  padding: 2px 0 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #6B7280 !important;
+  font-size: 13px !important;        /* 🔥 fijo compacto, no clamp */
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  box-sizing: border-box !important;
+}
+html body.woocommerce-cart a.scx-coupon-toggle:hover,
+html body.woocommerce-cart a.scx-coupon-toggle:focus,
+html body.woocommerce-cart a.scx-coupon-toggle:active{
+  color: #1c6eab !important;
+  text-decoration: underline 1px solid #1c6eab !important;
+  text-underline-offset: 2px !important;
+}
+html body.woocommerce-cart a.scx-coupon-toggle .scx-coupon-toggle__icon{
+  display: inline-block !important;
+  margin-right: 5px !important;
+  font-size: 0.92em !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  color: #94a3b8 !important;
+}
+html body.woocommerce-cart a.scx-coupon-toggle:hover .scx-coupon-toggle__icon{
+  color: #1c6eab !important;
+}
+
+/* [90] BOTÓN FINALIZAR COMPRA (MUY AL FINAL, después del link cupón) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-actions,
+html body.woocommerce-cart .wc-block-cart__submit,
+html body.woocommerce-cart .wc-block-cart__submit-button-container,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-actions{
+  order: 90 !important;
+  width: 100% !important;
+  margin: 8px 0 0 0 !important;    /* 🔥 margin-top chico fijo */
+  padding: 0 !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+html body.woocommerce-cart .wc-block-cart__submit-button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-actions .wc-block-components-button,
+html body.woocommerce-cart .wc-block-components-button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-actions button.components-button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-actions button[type="submit"]{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------- D. 🐛 MATAR el panel BOTÓN original de Woo
+   (wc-block-components-panel__button / header) — sólo NUESTRO link abre. ---------- */
+html body.woocommerce-cart .wc-block-components-panel__button,
+html body.woocommerce-cart .wc-block-components-totals-coupon__header,
+html body.woocommerce-cart .wc-block-components-panel__title,
+html body.woocommerce-cart button.wc-block-components-panel__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block .wc-block-components-panel__header,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block > button{
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -99999px !important;
+}
+/* El contenido real del panel (input + botón aplicar) se muestra SÓLO cuando
+   nuestro link toggle lo activa, a través de la clase .scx-coupon-block abierta. */
+html body.woocommerce-cart .wc-block-components-panel .wc-block-components-panel__content,
+html body.woocommerce-cart .wc-block-components-totals-coupon__content{
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ---------- E. ABIERTO: link toggle clickeado = padre .scx-coupon-open
+   Sólo entonces se VE el input cupón con animación suave. ---------- */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wp-block-woocommerce-cart-order-summary-coupon-form-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon{
+  height: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+  margin: 8px 0 0 0 !important;       /* 🔥 margen chico fijo, nada excesivo */
+  padding: 8px 0 4px 0 !important;    /* 🔥 padding compacto fijo */
+  border-top: 1px dashed #D9DEE6 !important;
+}
+/* Evitar que el input y botón Aplicar se estiren verticalmente */
+html body.woocommerce-cart .scx-coupon-block input[type="text"],
+html body.woocommerce-cart .scx-coupon-block .wc-block-components-totals-coupon__input input,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block input[type="text"],
+html body.woocommerce-cart .scx-coupon-block button,
+html body.woocommerce-cart .scx-coupon-block .wc-block-components-totals-coupon__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block button{
+  margin: 0 !important;
+}
+
+/* ---------- RESPONSIVE: NADA extra, sólo mantener width 100% ---------- */
+@media (max-width: 767px){
+  html body.woocommerce-cart .wp-block-woocommerce-cart-totals-block{
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+/* =========================================================
+   5. TABLA CARRITO (thead se estiraba vertical = bug real del usuario)
+      ESPECIFICIDAD: html body + clases exactas del HTML que pegó.
+      MAX-HEIGHT 48-54 px. NUNCA MÁS se estira.
+   ========================================================= */
+html body.woocommerce-cart table.wc-block-cart-items,
+html body.woocommerce-cart .wc-block-cart-items,
+html body.woocommerce-cart .wp-block-woocommerce-cart-line-items-block,
+html body.woocommerce-cart .wc-block-cart__main table,
+html body.woocommerce-cart .wc-block-components-main table,
+html body.woocommerce-cart .wc-block-cart.is-mobile table.wc-block-cart-items{
+  width: 100% !important;
+  max-width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  /* ============= FIX VERTICAL REAL NUNCA MÁS SE ESTIRA ============= */
+  line-height: 1.15 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+/* THEAD (encabezados Producto/Precio/Cantidad/Total) */
+html body.woocommerce-cart table.wc-block-cart-items thead,
+html body.woocommerce-cart .wc-block-cart-items__header,
+html body.woocommerce-cart table.wc-block-cart-items thead tr,
+html body.woocommerce-cart table.wc-block-cart-items thead th,
+html body.woocommerce-cart .wc-block-cart.is-mobile .wc-block-cart-items__header{
+  /* 🔥 TAMAÑO COMPACTO FIJO (max-height 48px siempre) */
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 48px !important;
+  line-height: 1.1 !important;
+  padding-top: clamp(5px, 0.8vw, 8px) !important;
+  padding-bottom: clamp(5px, 0.8vw, 8px) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  font-size: clamp(10.5px, 1.3vw, 12.5px) !important;
+  box-sizing: border-box !important;
+}
+/* TBODY items */
+html body.woocommerce-cart table.wc-block-cart-items tbody,
+html body.woocommerce-cart table.wc-block-cart-items tbody tr,
+html body.woocommerce-cart table.wc-block-cart-items tbody td{
+  height: auto !important;
+  min-height: 0 !important;
+  line-height: 1.2 !important;
+  padding-top: clamp(8px, 1vw, 12px) !important;
+  padding-bottom: clamp(8px, 1vw, 12px) !important;
+  font-size: clamp(12px, 1.4vw, 14px) !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+/* =========================================================
+   15.5) TÍTULO H2 "Carrito (X productos)" — Página /cart/
+   - ESPECIFICIDAD ASESINA (3 niveles padre antes): .post-content .wc-block-components-main h2...
+   - IZQUIERDA (left 0, text-align LEFT, NO CENTER).
+   - COMPACTO (min padding/margin, sin espacio innecesario).
+   - JUSTO ENCIMA DE LA TABLA (margin-bottom MUY corto).
+   ========================================================= */
+body.woocommerce-cart article.post-items.post-single.clearfix .post-content .wc-block-components-main h2.scx-carrito-titulo,
+body.woocommerce-cart article.post-items.post-single.clearfix .post-content .wc-block-cart__main h2#scx-carrito-titulo,
+body.woocommerce-cart .wp-block-woocommerce-cart .wc-block-components-main h2.scx-carrito-titulo,
+body.woocommerce-cart .wp-block-woocommerce-cart .wc-block-cart__main h2#scx-carrito-titulo,
+body.woocommerce-cart h2.scx-carrito-titulo,
+body.woocommerce-cart #scx-carrito-titulo{
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+
+  /* =========================================================
+     🔥 ALINEACIÓN IZQUIERDA (FORZADA, GANA A CUALQUIER CENTER).
+     ========================================================= */
+  margin: 0 0 clamp(4px, 0.7vw, 8px) 0 !important;   /* solo MARGIN INFERIOR 4-8px (el justo antes de tabla) */
+  padding: 0 0 clamp(4px, 0.7vw, 8px) 0 !important;  /* solo PADDING INFERIOR 4-8px (separador) */
+  text-align: left !important;                        /* ← IZQUIERDA NUNCA CENTER */
+  text-indent: 0 !important;
+  -webkit-text-align-last: left !important;
+          text-align-last: left !important;
+  float: none !important;
+  display: block !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  justify-content: flex-start !important;
+  align-self: flex-start !important;
+  place-items: start !important;
+
+  /* Título compacto (no tosco, no enorme) */
+  font-size: clamp(18px, 2vw, 24px) !important;
+  line-height: 1.05 !important;
+  font-weight: 800 !important;
+  font-family: inherit !important;
+  letter-spacing: -0.01em !important;
+  color: #12375c !important;
+
+  /* Separador FINO (no tosco) — #F0F2F5 (más claro que E6EAF0) */
+  border-bottom: 1px solid #F0F2F5 !important;
+
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+/* Cada span INTERNO también fuerza ALINEACIÓN IZQUIERDA */
+body.woocommerce-cart h2.scx-carrito-titulo > *,
+body.woocommerce-cart h2#scx-carrito-titulo > *{
+  text-align: left !important;
+  float: none !important;
+  display: inline-block !important;
+}
+body.woocommerce-cart h2.scx-carrito-titulo .scx-carrito-titulo__txt,
+body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__txt{
+  color: #12375c !important;
+  font-weight: 800 !important;
+}
+body.woocommerce-cart h2.scx-carrito-titulo .scx-carrito-titulo__sep,
+body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__sep{
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+  font-size: 0.92em !important;
+}
+/* Globo número (compacto NO ENORME) */
+body.woocommerce-cart h2.scx-carrito-titulo .scx-carrito-titulo__count,
+body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__count{
+  display: inline-block !important;
+  font-size: 0.88em !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  padding: 2px 7px 2px 7px !important;
+  margin: 0 1px 0 1px !important;
+  border-radius: 999px !important;
+  background-color: #1c6eab !important;
+  color: #ffffff !important;
+  min-width: 24px !important;
+  text-align: center !important;
+  vertical-align: baseline !important;
+}
+body.woocommerce-cart h2.scx-carrito-titulo .scx-carrito-titulo__lbl,
+body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__lbl{
+  color: #6B7280 !important;
+  font-weight: 500 !important;
+  font-size: 0.9em !important;
+}
+
+/* RESPONSIVE compacto (más pequeño, no tosco) */
+@media (min-width: 768px) and (max-width: 1199px){
+  body.woocommerce-cart h2.scx-carrito-titulo,
+  body.woocommerce-cart h2#scx-carrito-titulo{
+    font-size: clamp(17px, 1.9vw, 22px) !important;
+    margin-bottom: clamp(3px, 0.6vw, 7px) !important;
+    padding-bottom: clamp(3px, 0.6vw, 7px) !important;
+  }
+}
+@media (max-width: 767px){
+  body.woocommerce-cart h2.scx-carrito-titulo,
+  body.woocommerce-cart h2#scx-carrito-titulo{
+    font-size: clamp(16px, 4.4vw, 20px) !important;
+    margin-bottom: clamp(3px, 1vw, 6px) !important;
+    padding-bottom: clamp(3px, 1vw, 6px) !important;
+  }
+  body.woocommerce-cart h2.scx-carrito-titulo .scx-carrito-titulo__count,
+  body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__count{
+    padding: 2px 6px 2px 6px !important;
+    min-width: 22px !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -370,7 +1622,7 @@ a:active{
 .header-search-select.nice-select:after,
 .search-area .nice-select:after,
 .category-inner .nice-select:after{
-  color: #ffffff !important;
+  color: #282828 !important;
 }
 .header-search-select.nice-select .option,
 .search-area .nice-select .option,
@@ -603,9 +1855,12 @@ section.banner-section .banner-carousel .owl-item{
    el padding del padre. */
 section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
 section.banner-section div.slide-producto.p_relative,
-section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+section.banner-section div.banner-carousel .owl-item > div.slide-producto,
+section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-item.p_relative,
+section.banner-section div.slide-item.p_relative,
+section.banner-section div.banner-carousel .owl-item > div.slide-item{
   position: relative !important;
-  padding: clamp(160px, 22vw, 360px) 0 !important;   /* ← ✅ AHORA SÍ aplica (clase correcta). Banner alto. */
+  padding: clamp(160px, 22vw, 360px) 0 !important;
   margin: 0 !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
@@ -620,7 +1875,10 @@ section.banner-section div.banner-carousel .owl-item > div.slide-producto{
 @media only screen and (min-width: 1200px){
   section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
   section.banner-section div.slide-producto.p_relative,
-  section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+  section.banner-section div.banner-carousel .owl-item > div.slide-producto,
+  section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-item.p_relative,
+  section.banner-section div.slide-item.p_relative,
+  section.banner-section div.banner-carousel .owl-item > div.slide-item{
     padding: clamp(60px, 25vw, 120px) 0 !important;
   }
 }
@@ -628,7 +1886,10 @@ section.banner-section div.banner-carousel .owl-item > div.slide-producto{
 @media only screen and (min-width: 768px) and (max-width: 1199px){
   section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative,
   section.banner-section div.slide-producto.p_relative,
-  section.banner-section div.banner-carousel .owl-item > div.slide-producto{
+  section.banner-section div.banner-carousel .owl-item > div.slide-producto,
+  section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-item.p_relative,
+  section.banner-section div.slide-item.p_relative,
+  section.banner-section div.banner-carousel .owl-item > div.slide-item{
     padding: clamp(180px, 23vw, 320px) 0 !important;
   }
 }
@@ -669,7 +1930,9 @@ section.banner-section .pattern-layer{
    del lado IZQUIERDO, que es el espacio libre para texto (limpio, no hay objetos
    que se corten visualmente). */
 div.banner-carousel div.slide-producto .pattern-layer,
-div.slide-producto.p_relative .pattern-layer{
+div.slide-producto.p_relative .pattern-layer,
+div.banner-carousel div.slide-item .pattern-layer,
+div.slide-item.p_relative .pattern-layer{
   position: absolute !important;
   left: 0 !important;
   top: 0 !important;
@@ -708,7 +1971,8 @@ div.slide-producto.p_relative .pattern-layer{
      · [rgba(18, 55, 92, X) 0%] → opacidad inicio overlay. Cambia el 0.68:
            0.10 muy claro / 0.35 medio / 0.55 oscuro / 0.68 actual / 0.80 muy oscuro.
      · [rgba(18, 55, 92, X) 30%] → opacidad mitad overlay (0.50 actual). */
-section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative::after{
+section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-producto.p_relative::after,
+section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide-item.p_relative::after{
   content: "" !important;
   display: block !important;
   visibility: visible !important;
@@ -725,7 +1989,7 @@ section.banner-section div.banner-carousel.owl-carousel div.owl-item > div.slide
   transform: translateZ(0) !important;     /* ← Forzar pintado capa GPU (no cache viejo) */
   will-change: opacity, background, width !important;
   background: linear-gradient(90deg,
-      rgb(18, 55, 92) 0%,   /* ←☝️ OPACIDAD INICIO OVERLAY (cambia el valor X de rgba) */
+      rgb(18, 55, 92) 0%,
       rgba(18, 55, 92, 0.50) 30%,
       rgba(18, 55, 92, 0.28) 58%,
       rgba(18, 55, 92, 0.08) 82%,
@@ -739,7 +2003,8 @@ div.banner-carousel .large-container,
 section.banner-section .auto-container,
 div.banner-carousel .auto-container,
 div.banner-carousel .content-box,
-div.slide-producto.p_relative .content-box{
+div.slide-producto.p_relative .content-box,
+div.slide-item.p_relative .content-box{
   position: relative !important;
   z-index: 2 !important;
 }
@@ -766,7 +2031,9 @@ div.banner-carousel .content-box{
 /* Badge 🔥 OFERTAS SEMANALES · fuente + márgenes ORIGINALES (grandes, para banner alto) */
 div.banner-carousel div.slide-producto .upper-text,
 div.banner-carousel .content-box .upper-text,
-section.banner-section .slide-producto .upper-text{
+section.banner-section .slide-producto .upper-text,
+div.banner-carousel div.slide-item .upper-text,
+section.banner-section .slide-item .upper-text{
   color: #ffffff !important;
   letter-spacing: 1.2px !important;
   text-transform: uppercase !important;
@@ -782,7 +2049,9 @@ section.banner-section .slide-producto .upper-text{
 /* Título grande H2 · fuente + márgenes ORIGINALES (grande, banner alto) */
 div.banner-carousel div.slide-producto h2,
 div.banner-carousel .content-box h2,
-section.banner-section .slide-producto h2{
+section.banner-section .slide-producto h2,
+div.banner-carousel div.slide-item h2,
+section.banner-section .slide-item h2{
   color: #ffffff !important;
   text-shadow: 0 2px 6px rgba(18, 55, 92, 0.338) !important;
   line-height: 1.15 !important;
@@ -791,7 +2060,9 @@ section.banner-section .slide-producto h2{
   font-weight: 700 !important;
 }
 div.banner-carousel div.slide-producto h2 span,
-section.banner-section .slide-producto h2 span{
+section.banner-section .slide-producto h2 span,
+div.banner-carousel div.slide-item h2 span,
+section.banner-section .slide-item h2 span{
   color: #ffffff !important;
 }
 
@@ -800,7 +2071,12 @@ div.banner-carousel div.slide-producto h3,
 div.banner-carousel .content-box h3,
 section.banner-section .slide-producto h3,
 div.banner-carousel div.slide-producto h3 span,
-section.banner-section .slide-producto h3 span{
+section.banner-section .slide-producto h3 span,
+div.banner-carousel div.slide-item h3,
+div.banner-carousel .content-box .slide-item h3,
+section.banner-section .slide-item h3,
+div.banner-carousel div.slide-item h3 span,
+section.banner-section .slide-item h3 span{
   color: #ffffff !important;
   text-shadow: 0 2px 6px rgba(18,55,92,0.3) !important;
   font-size: clamp(24px, 3vw, 30px) !important;
@@ -815,7 +2091,10 @@ div.banner-carousel .content-box .btn-box{
 }
 div.banner-carousel div.slide-producto .theme-btn.btn-one,
 div.banner-carousel .content-box .theme-btn.btn-one,
-section.banner-section .slide-producto .theme-btn.btn-one{
+section.banner-section .slide-producto .theme-btn.btn-one,
+div.banner-carousel div.slide-item .theme-btn.btn-one,
+div.banner-carousel .content-box .slide-item .theme-btn.btn-one,
+section.banner-section .slide-item .theme-btn.btn-one{
   clip-path: none !important;
   -webkit-clip-path: none !important;
   border-top-left-radius: 12px !important;
@@ -832,7 +2111,8 @@ section.banner-section .slide-producto .theme-btn.btn-one{
 /* Anulación fotos demo Burger (image-layer / shape-2.png) · clase correcta */
 section.banner-section .image-layer,
 div.slide-producto.p_relative figure.image-layer,
-div.banner-carousel figure.image-layer{
+div.banner-carousel figure.image-layer,
+div.slide-item.p_relative figure.image-layer{
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -840,7 +2120,8 @@ div.banner-carousel figure.image-layer{
   height: 0 !important;
   overflow: hidden !important;
 }
-div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"]{
+div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"],
+div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
   background-image: none !important;
 }
 
@@ -1978,7 +3259,7 @@ div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"]{
   max-width: 100% !important;
   display: flex !important;
   flex-wrap: wrap !important;
-  gap: 32px !important;
+  gap: 5px !important;
   align-items: flex-start !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -2174,7 +3455,7 @@ div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"]{
 .wc-block-cart__sidebar,
 .wc-block-components-sidebar,
 .wp-block-woocommerce-cart .wc-block-components-totals-wrapper {
-  flex: 1 1 420px !important;
+  flex: 1 1 80px !important;
   min-width: 300px !important;
   max-width: 520px !important;
   width: 100% !important;
@@ -2204,7 +3485,7 @@ div.banner-carousel div.slide-producto .pattern-layer[style*="shape-2.png"]{
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 11px 0 !important;
+  padding: 2px 0 !important;
   border-top: 1px dashed #e4ecf6 !important;
   font-size: 1rem !important;
 }

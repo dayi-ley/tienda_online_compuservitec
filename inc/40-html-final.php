@@ -87,19 +87,34 @@ if ( ! function_exists( 'storex_child_traducciones_html_final' ) ) :
 			'>Sort by price: low to high<'               => '>Ordenar por precio: menor a mayor<',
 			'>Sort by price: high to low<'               => '>Ordenar por precio: mayor a menor<',
 
+			// ====== Página Tienda (Shop) hardcodeada ======
+			// 👉 EJEMPLO: palabra menú/link "Shop" → "Tienda"
+			'Shop'                                       => 'Tienda',
+			'>Shop<'                                     => '>Tienda<',
+			'The Shop'                                   => 'La Tienda',
+			'Back to shop'                               => 'Volver a la tienda',
+			'>Back to shop<'                             => '>Volver a la tienda<',
+			'Return to shop'                             => 'Regresar a la tienda',
+			'>Return to shop<'                           => '>Regresar a la tienda<',
+
 			// ====== Página Carrito (Cart) hardcodeada ======
-			'Cart'                                       => 'Carrito',
-			'>Cart<'                                     => '>Carrito<',
-			'Product'                                    => 'Producto',
-			'>Product<'                                  => '>Producto<',
-			'Image'                                      => 'Imagen',
-			'>Image<'                                    => '>Imagen<',
-			'Price'                                      => 'Precio',
-			'>Price<'                                    => '>Precio<',
-			'Quantity'                                   => 'Cantidad',
-			'>Quantity<'                                 => '>Cantidad<',
-			'Qty'                                        => 'Cant.',
-			'>Qty<'                                      => '>Cant.<',
+		// ⚠️ 2026-08-29 FIX BUG SUBSTRING "Cartoon → Carritoon" / "Cartulina → Carritulina":
+		//    NUNCA usar reemplazos GENERICOS ('Cart'/'Product' solos, sin <> ni contexto)
+		//    porque str_replace atrapa substrings DENTRO de nombres categorías Woo.
+		//    Las reglas ESPECÍFICAS (>Cart<, Update cart, Cart totals...) de más abajo
+		//    YA CUBREN todos los usos reales del texto "Cart" en botones/menús.
+		// 'Cart'                                       => 'Carrito',   // ❌ COMENTADO (bug Cartoon/Cartulina)
+		'>Cart<'                                     => '>Carrito<',
+		// 'Product'                                    => 'Producto',  // ❌ COMENTADO (bug substring nombres producto)
+		'>Product<'                                  => '>Producto<',
+		// 'Image'                                      => 'Imagen',    // ❌ COMENTADO (substring ImageMagick/imágenes)
+		'>Image<'                                    => '>Imagen<',
+		// 'Price'                                      => 'Precio',    // ❌ COMENTADO (substring PriceList/PrecioX)
+		'>Price<'                                    => '>Precio<',
+		// 'Quantity'                                   => 'Cantidad',  // ❌ COMENTADO (substring QuantityX)
+		'>Quantity<'                                 => '>Cantidad<',
+		// 'Qty'                                        => 'Cant.',     // ❌ COMENTADO (substring QtyCode)
+		'>Qty<'                                      => '>Cant.<',
 			'Cart totals'                                => 'Totales del carrito',
 			'Cart Totals'                                => 'Totales del carrito',
 			'>Cart totals<'                              => '>Totales del carrito<',
@@ -239,12 +254,12 @@ if ( ! function_exists( 'storex_child_traducciones_html_final' ) ) :
 			'>Place order<'                              => '>Finalizar compra<',
 			'Order summary'                              => 'Resumen del pedido',
 			'>Order summary<'                            => '>Resumen del pedido<',
-			'Summary'                                    => 'Resumen',
-			'>Summary<'                                  => '>Resumen<',
-			'item'                                       => 'producto',
-			'items'                                      => 'productos',
-			'>item<'                                     => '>producto<',
-			'>items<'                                    => '>productos<',
+			// 'Summary'                                    => 'Resumen',     // ❌ COMENTADO (bug substring)
+		'>Summary<'                                  => '>Resumen<',
+		// 'item'                                       => 'producto',    // ❌ COMENTADO (substring itemX/menuItem)
+		// 'items'                                      => 'productos',   // ❌ COMENTADO (mismo bug)
+		'>item<'                                     => '>producto<',
+		'>items<'                                    => '>productos<',
 			'Product'                                    => 'Producto',
 			'>Product<'                                  => '>Producto<',
 			'Total price for'                            => 'Precio total por',
@@ -472,3 +487,249 @@ if ( ! function_exists( 'storex_child_traducciones_html_final' ) ) :
 	}
 endif;
 add_filter( 'storex_child_final_html_output', 'storex_child_traducciones_html_final', 25, 1 );
+
+/* =============================================================================
+   FIX FINAL 2026-09-04: TRADUCCIONES WOO BLOCKS REACT (client-side)
+
+   ¿POR QUÉ AQUÍ y con JS?
+      Bloques Gutenberg de WooCommerce (carrito/checkout React) RENDERIZAN
+      sus textos en el NAVEGADOR del usuario VÍA JAVASCRIPT, DESPUÉS de que PHP
+      entregue el HTML inicial. Consecuencia:
+         ✘ gettext (20-traducciones.php) → NO LO VE
+         ✘ OB Shutdown (esta misma función storex_child_traducciones_html_final)
+           porque el HTML buffer no contiene los textos aún.
+
+   TRUCO ANTI-FLASH (no se ve inglés por ningún lado):
+      1. <head> inline CSS = #post-section.woocommerce-cart / checkout { opacity: 0; visibility: hidden; }
+         Mientras React + traducciones terminan, la sección está INVISIBLE.
+      2. JS en footer hace MutationObserver del DOM hasta que aparezcan los
+         bloques Woo, reemplaza TODOS los textos del array.
+      3. Una vez reemplazado = opacity 1, visibilidad visible. 0 flashes.
+
+   Archivo correcto: 40-html-final.php (FIX HTML FINAL, NO en 56-carrito-titulo).
+   ============================================================================= */
+
+/* 1) CSS inline en wp_head: OCULTAR momentáneamente el área de Woo hasta que
+      el JS termine de traducir. Evita 100% el flash "inglés → español". */
+add_action( 'wp_head', function(){
+	if ( is_admin() ) return;
+	// Solo en carrito / pagar / páginas de Woo relevantes.
+	if ( ! ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() || is_shop() || is_product() || is_product_category() ) ) ) return;
+	?>
+<style id="scx-woo-anti-flash-css">
+	/* Toda la sección del contenido principal permanece opaca
+	   mientras React pinta + JS traduce frases client-side. */
+	html body.woocommerce-cart #post-section.scx-woo-translating,
+	html body.woocommerce-checkout #post-section.scx-woo-translating,
+	html body.woocommerce-page #post-section.scx-woo-translating {
+		opacity: 0 !important;
+		visibility: hidden !important;
+		transition: opacity .28s ease, visibility .28s ease !important;
+	}
+	/* Traslado visual: desfase 2px arriba = desaparece como siempre, 
+	   no se ve saltito al finalizar traducción. */
+	html body #post-section.scx-woo-translating {
+		transform: translateY(-2px) !important;
+	}
+</style>
+<script id="scx-woo-anti-flash-init">
+	// AGREGAR la clase SCX ANTES de que React renderice nada (lo antes posible).
+	// El head se ejecuta MUY temprano, así que el body no existe todavía →
+	// esperamos la primera escritura del body y le ponemos la clase.
+	(function(){
+		var f = function(){
+			var sec = document.getElementById('post-section');
+			if ( sec && sec.classList && ! sec.classList.contains('scx-woo-translating') ) {
+				sec.classList.add('scx-woo-translating');
+			}
+		};
+		if (document.body) f();
+		else if (document.addEventListener) document.addEventListener('DOMContentLoaded', f);
+		// Repetir varias veces por si la sección se pinta después.
+		setTimeout(f, 30); setTimeout(f, 120); setTimeout(f, 400);
+	})();
+</script>
+	<?php
+}, 1 );
+
+/* 2) SCRIPT EN FOOTER: reemplaza frases (MutationObserver) y QUITA la clase
+      SCX de ocultamiento cuando termina. */
+add_action( 'wp_footer', function(){
+	if ( is_admin() ) return;
+	?>
+<script id="scx-woo-traducciones-ft">
+(function(){
+  // =====================================================
+  // TABLA de traducciones (orden de más larga a más corta
+  // para evitar pises por substring).
+  // =====================================================
+  var TR = [
+    ['Proceed to Checkout',                 'Finalizar compra'],
+    ['Proceed to checkout',                 'Finalizar compra'],
+    ['Place Order',                         'Finalizar compra'],
+    ['Place order',                         'Finalizar compra'],
+
+    ['Cart totals',                         'Resumen del pedido'],
+    ['Cart Totals',                         'Resumen del pedido'],
+    ['Order summary',                       'Resumen del pedido'],
+    ['Order Summary',                       'Resumen del pedido'],
+
+    ['If you have a coupon code, please apply it below.', 'Si tienes un código de cupón, aplícalo a continuación.'],
+    ['Click here to enter your code',       'Haz clic aquí para introducir tu código'],
+    ['Enter your code',                     'Introduce tu código'],
+    ['Estimated total',                     'Total estimado'],
+    ['Estimated Total',                     'Total estimado'],
+    ['Estimated tax',                       'Impuesto estimado'],
+    ['Remove this item',                    'Eliminar este producto'],
+    ['Contact information',                 'Información de contacto'],
+    ['Direct bank transfer',                'Transferencia bancaria'],
+    ['Cash on delivery',                    'Pago contra entrega'],
+    ['Terms and Conditions',                'Términos y Condiciones'],
+    ['Terms & Conditions',                  'Términos y Condiciones'],
+    ['Privacy Policy',                      'Política de Privacidad'],
+    ['Shipping options',                    'Opciones de envío'],
+    ['Shipping method',                     'Método de envío'],
+    ['Local pickup',                        'Recojo en tienda'],
+    ['Pickup locations',                    'Puntos de recojo'],
+    ['Pickup location',                     'Punto de recojo'],
+    ['Payment options',                     'Métodos de pago'],
+    ['Payment method',                      'Método de pago'],
+    ['Payment methods',                     'Métodos de pago'],
+    ['Billing address',                     'Dirección de facturación'],
+    ['Billing details',                     'Datos de facturación'],
+    ['Shipping address',                    'Dirección de envío'],
+    ['Have a coupon?',                      '¿Tienes un cupón?'],
+    ['Apply coupon',                        'Aplicar cupón'],
+    ['Apply Coupon',                        'Aplicar cupón'],
+    ['Coupon code',                         'Código de cupón'],
+    ['Coupon Code',                         'Código de cupón'],
+    ['Add coupon',                          'Añadir cupón'],
+    ['Add coupons',                         'Añadir cupones'],
+    ['Remove coupon',                       'Quitar cupón'],
+    ['Update cart',                         'Actualizar carrito'],
+    ['Update Cart',                         'Actualizar carrito'],
+    ['Empty cart',                          'Vaciar carrito'],
+    ['Empty Cart',                          'Vaciar carrito'],
+    ['View cart',                           'Ver carrito'],
+    ['View Cart',                           'Ver carrito'],
+    ['Add to cart',                         'Añadir al carrito'],
+    ['Add to Cart',                         'Añadir al carrito'],
+    ['Return to shop',                      'Volver a la tienda'],
+    ['Back to shop',                        'Volver a la tienda'],
+    ['Browse store',                        'Ver tienda'],
+    ['Contact info',                        'Datos de contacto'],
+    ['Cart is empty',                       'Carrito vacío'],
+    ['Remove item',                         'Eliminar'],
+    ['Your cart is currently empty!',       '¡Tu carrito está vacío!'],
+    ['Your cart is currently empty.',       'Tu carrito está vacío.'],
+    ['No products in the cart.',            'No hay productos en el carrito.'],
+    ['Grand total',                         'Total final'],
+    ['Delivery',                            'Entrega'],
+    ['Shipping',                            'Envío'],
+    ['Subtotal',                            'Subtotal'],
+    ['Discount',                            'Descuento'],
+    ['Coupon:',                             'Cupón:'],
+    ['Checkout',                            'Pagar'],
+    ['Change',                              'Cambiar'],
+    ['Edit',                                'Editar'],
+    ['Total',                               'Total'],
+    ['Taxes',                               'Impuestos'],
+    ['Tax',                                 'Impuesto'],
+    ['Free',                                'Gratis'],
+    ['Ship',                                'Envío a domicilio'],
+    ['Pickup',                              'Recojo en tienda']
+  ];
+
+  function walkReplace(root){
+    if (!root) return;
+    try {
+      var walker = document.createTreeWalker(
+        root, NodeFilter.SHOW_TEXT,
+        { acceptNode: function(n) {
+            if (!n.nodeValue || n.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT;
+            var p = n.parentNode; if (!p || !p.tagName) return NodeFilter.FILTER_REJECT;
+            var t = p.tagName.toUpperCase();
+            if (t === 'SCRIPT' || t === 'STYLE' || t === 'NOSCRIPT' || t === 'TEMPLATE' || t === 'IFRAME' ||
+                t === 'INPUT'  || t === 'TEXTAREA' || t === 'SELECT' || t === 'OPTION') return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+        }}
+      );
+      var nod;
+      while ((nod = walker.nextNode())) {
+        var v = nod.nodeValue, orig = v;
+        for (var i = 0; i < TR.length; i++) {
+          if (v.indexOf(TR[i][0]) !== -1) v = v.split(TR[i][0]).join(TR[i][1]);
+        }
+        if (v !== orig) nod.nodeValue = v;
+      }
+      // Atributos placeholder / aria-label / value (input submit)
+      if (root.querySelectorAll) {
+        root.querySelectorAll('[placeholder], [aria-label]').forEach(function(el){
+          ['placeholder','aria-label'].forEach(function(a){
+            var val = el.getAttribute(a); if (!val) return;
+            var nv = val;
+            for (var i = 0; i < TR.length; i++) {
+              if (nv.indexOf(TR[i][0]) !== -1) nv = nv.split(TR[i][0]).join(TR[i][1]);
+            }
+            if (nv !== val) el.setAttribute(a, nv);
+          });
+        });
+        root.querySelectorAll('input[type="submit"][value]').forEach(function(el){
+          var v2 = el.value, nv2 = v2;
+          for (var i = 0; i < TR.length; i++) {
+            if (nv2.indexOf(TR[i][0]) !== -1) nv2 = nv2.split(TR[i][0]).join(TR[i][1]);
+          }
+          if (nv2 !== v2) el.value = nv2;
+        });
+      }
+    } catch(e) {}
+  }
+
+  // Quitar clase "oculto" cuando esté TODO traducido (o timeout máximo 2.5s por si acaso)
+  var traducidoYA = false;
+  function mostrar(){
+    if (traducidoYA) return;
+    traducidoYA = true;
+    var sec = document.getElementById('post-section');
+    if (sec && sec.classList) sec.classList.remove('scx-woo-translating');
+  }
+
+  function init(){
+    walkReplace(document.body);
+    // Si ya hay bloques del carrito visibles → traducido ok.
+    var bloques = document.querySelectorAll(
+      '.wp-block-woocommerce-cart, .wp-block-woocommerce-checkout, .wc-block-cart, .wc-block-checkout, .woocommerce-cart-form'
+    );
+    if (bloques && bloques.length > 0) setTimeout(mostrar, 180);
+    else setTimeout(mostrar, 500);
+  }
+
+  // Pasadas rápidas
+  try { init(); } catch(e) {}
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ try { init(); } catch(e){} });
+  }
+
+  // MutationObserver: atrapar todos los renderizados React / AJAX
+  try {
+    var tm = null, pasos = 0, MAX_PASOS = 40; // ~5s máximo
+    var ob = new MutationObserver(function(){
+      clearTimeout(tm);
+      pasos++;
+      tm = setTimeout(function(){
+        walkReplace(document.body);
+        if ( pasos > 2 ) mostrar(); // tras 3 re-renderizados React → ok mostramos
+        if ( pasos >= MAX_PASOS ) { try { ob.disconnect(); } catch(e){} mostrar(); }
+      }, 90);
+    });
+    ob.observe(document.body, { childList:true, subtree:true, characterData:true });
+    setTimeout(function(){ try { ob.disconnect(); } catch(e){} mostrar(); }, 6000);
+  } catch(e){}
+
+  // Fallback final (si nada más funciona, no dejar la página oculta)
+  setTimeout(mostrar, 2500);
+  window.addEventListener('load', function(){ setTimeout(mostrar, 200); });
+})();
+</script>
+	<?php
+}, 99999 ); // MUY AL FINAL del footer.

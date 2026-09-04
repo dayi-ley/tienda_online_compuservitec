@@ -43,6 +43,7 @@ $scx_modulos = array(
 	'inc' . DIRECTORY_SEPARATOR . '30-woocommerce.php',
 	'inc' . DIRECTORY_SEPARATOR . '40-html-final.php',
 	'inc' . DIRECTORY_SEPARATOR . '50-tema.php',
+	'inc' . DIRECTORY_SEPARATOR . '56-carrito-titulo.php',
 	'inc' . DIRECTORY_SEPARATOR . '60-metricas.php',
 );
 foreach ( $scx_modulos as $scx_mod ) {

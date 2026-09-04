@@ -127,18 +127,35 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Proceed to Checkout'                        => 'Proceder a pagar',
 			'Search products&hellip;'                    => 'Buscar productos&hellip;',
 			'Search for:'                                => 'Buscar:',
-			'Cart'                                       => 'Carrito',
-			'>Cart<'                                     => '>Carrito<',
-			'Product'                                    => 'Producto',
-			'>Product<'                                  => '>Producto<',
-			'Image'                                      => 'Imagen',
-			'>Image<'                                    => '>Imagen<',
-			'Price'                                      => 'Precio',
-			'>Price<'                                    => '>Precio<',
-			'Quantity'                                   => 'Cantidad',
-			'>Quantity<'                                 => '>Cantidad<',
-			'Qty'                                        => 'Cant.',
-			'>Qty<'                                      => '>Cant.<',
+			/* ===== 2026-08-29 Nuevas traducciones manuales ===== */
+			// 👉 EJEMPLO: palabra menú/link "Shop" → "Tienda"
+			'Shop'                                       => 'Tienda',
+			'>Shop<'                                     => '>Tienda<',        // versión segura dentro de links HTML (<a>Shop</a>)
+			'The Shop'                                   => 'La Tienda',
+			'Back to shop'                               => 'Volver a la tienda',
+			'>Back to shop<'                             => '>Volver a la tienda<',
+			'Return to shop'                             => 'Regresar a la tienda',
+			'>Return to shop<'                           => '>Regresar a la tienda<',
+			'Shop page'                                  => 'Página de la tienda',
+			'View shop'                                  => 'Ver tienda',
+		// ⚠️ 2026-08-29 FIX BUG SUBSTRING: NO usar genéricos solos.
+		//   'Cart'    → Cartoon→Carritoon / Cartulina→Carritulina / Carteras / Cartón...
+		//   'Product' → Productora/ProductoX dentro de nombres...
+		//   'Image'   → Imagina / ImagenMagick...
+		// Los >Cart< / >Product< / Add to cart / Cart totals / etc. de líneas anteriores
+		// y posteriores YA cubren el 100% de los botones/menús reales.
+		// 'Cart'                                       => 'Carrito',  // ❌ BUG
+		'>Cart<'                                     => '>Carrito<',
+		// 'Product'                                    => 'Producto', // ❌ BUG (también L300)
+		'>Product<'                                  => '>Producto<',
+		// 'Image'                                      => 'Imagen',   // ❌ BUG
+		'>Image<'                                    => '>Imagen<',
+		// 'Price'                                      => 'Precio',   // ❌ BUG
+		'>Price<'                                    => '>Precio<',
+		// 'Quantity'                                   => 'Cantidad', // ❌ BUG (también L89, L302)
+		'>Quantity<'                                 => '>Cantidad<',
+		// 'Qty'                                        => 'Cant.',    // ❌ BUG
+		'>Qty<'                                      => '>Cant.<',
 			'Total'                                      => 'Total',
 			'>Total<'                                    => '>Total<',
 			'Cart totals'                                => 'Totales del carrito',
@@ -198,6 +215,7 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Shop now'                                   => 'Comprar ahora',
 			'Browse store'                               => 'Ver tienda',
 			'Return to shop'                             => 'Volver a la tienda',
+			'Shop'                                       => 'Tienda',
 
 			// ====== Página My Account (Mi Cuenta) ======
 			'My Account'                                 => 'Mi Cuenta',
@@ -294,12 +312,13 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Place Order'                                => 'Finalizar compra',
 			'Place order'                                => 'Finalizar compra',
 			'Order summary'                              => 'Resumen del pedido',
-			'Summary'                                    => 'Resumen',
-			'item'                                       => 'producto',
-			'items'                                      => 'productos',
-			'Product'                                    => 'Producto',
-			'Total price for'                            => 'Precio total por',
-			'Quantity'                                   => 'Cantidad',
+		// ⚠️ 2026-08-29 FIX BUG SUBSTRING genéricos sin <> (iguales motivos arriba)
+		// 'Summary'                                    => 'Resumen',   // ❌ BUG
+		// 'item'                                       => 'producto',  // ❌ BUG menuItem / itemCount
+		// 'items'                                      => 'productos', // ❌ BUG
+		// 'Product'                                    => 'Producto',  // ❌ BUG (duplicado L132)
+		'Total price for'                            => 'Precio total por',
+		// 'Quantity'                                   => 'Cantidad',  // ❌ BUG (duplicado L89, L138)
 			'Grand total'                                => 'Total final',
 			'Tax'                                        => 'Impuesto',
 			'Remove coupon'                              => 'Quitar cupón',
