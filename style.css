@@ -770,6 +770,29 @@ body.home #breadcrumb-section{
   pointer-events: none !important;
   z-index: -1 !important;
 }
+/* Ocultar globalmente "(inc. IGV)" en TODOS los precios del sitio
+   ===============================================
+   IMPORTANTE: USAMOS display:none NO .remove() (SIGUE en el DOM)
+   Woo sigue calculando IGV correctamente. No rompe nada. */
+html body .woocommerce-price-suffix,
+html body span.woocommerce-price-suffix,
+html body small.woocommerce-price-suffix,
+html body .price .woocommerce-price-suffix,
+html body p.price > small.woocommerce-price-suffix {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    clip: rect(0,0,0,0) !important;
+    clip-path: inset(50%) !important;
+}
+
 /* --------------------------------------------------------------------------
    15.3) PÁGINA DE PRODUCTO INDIVIDUAL: ocultar elementos que saturan / no necesarios
    --------------------------------------------------------------------------
@@ -906,6 +929,38 @@ body.single-product a[href*="preguntar"]{
    Todas estas: post-section NO formato blog.
 -------------------------------------------------------------------------- */
 
+/* ==========================================================
+   🧯 ANTI FLASH de títulos CARRITO VACÍO.
+   Oculta SOLO los 2 h2 del bloque empty-cart MIENTRAS React pinta en
+   inglés + JS los traduce a español. Cuando body tiene .wc-lang-ready
+   (JS lo agrega recién cuando ambos títulos están traducidos) aparecen
+   con fade SUAVE. Nótese: visibility:hidden + opacity:0 NO elimina
+   el espacio (no hay salto/desajuste vertical), solo hace el texto
+   invisible durante el hueco temporal del flash.
+   ========================================================== */
+html body.woocommerce-cart:not(.wc-lang-ready) .wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title,
+html body.woocommerce-cart:not(.wc-lang-ready) .wp-block-woocommerce-empty-cart-block h2.wp-block-heading:not(.wc-block-cart__empty-cart__title){
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+html body.woocommerce-cart.wc-lang-ready .wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title,
+html body.woocommerce-cart.wc-lang-ready .wp-block-woocommerce-empty-cart-block h2.wp-block-heading:not(.wc-block-cart__empty-cart__title){
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: opacity .28s ease, visibility .28s ease !important;
+}
+/* Fallback: si por X razón JS nunca marca wc-lang-ready, forzar MOSTRAR
+   después de 1.3s (max tiempo de hidratación React). Esto evita que los
+   títulos se queden ocultos para siempre. */
+html body.woocommerce-cart:not(.wc-lang-ready) .wp-block-woocommerce-empty-cart-block h2{
+    animation: scx-show-empty-cart-titles 0s linear 1.3s forwards !important;
+}
+@keyframes scx-show-empty-cart-titles {
+    to { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+}
+
 /* 1. SECCIÓN EXTERIOR + #content:
    PADDING-TOP DINÁMICO GRANDE para que el HEADER STICKY (position:fixed / z999)
    NUNCA TAPE el contenido carrito/checkout. Este padding-top = RESERVA DE ESPACIO.
@@ -951,18 +1006,44 @@ html body.woocommerce-account section#post-section{
   html body.woocommerce-checkout section#post-section{ padding-top: 190px !important; }
 }
 
-/* 2. ROW (antes gy-5 = gap 48px vertical): espacio muerto → 0 */
+/* 2. ROW (antes gy-5 = gap 48px vertical): espacio muerto → margin:5px uniforme. PADDING ABSOLUTO 0. */
 html body.woocommerce-cart section#post-section > .container > .row,
 html body.woocommerce-checkout section#post-section > .container > .row,
 html body.post-type-archive-product section#post-section > .container > .row,
 html body.tax-product_cat section#post-section > .container > .row,
 html body.woocommerce-account section#post-section > .container > .row{
-  row-gap: 0 !important;
-  column-gap: 0 !important;
-  gap: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  --bs-gutter-x: 0 !important;
+  --bs-gutter-y: 0 !important;
+  margin: 5px !important;
+  row-gap: 5px !important;
+  column-gap: 5px !important;
+  gap: 5px !important;
   padding: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+/* 2.bis) 🔥 Selector ESPECÍFICO contra .row.gy-5.wow.fadeInUp → le gana a la variable --bs-gutter-y:3rem de StoreX padre. */
+html body.woocommerce-cart section#post-section > .container > div.row.gy-5,
+html body.woocommerce-cart section#post-section > .container > div.row.gy-lg-0.gy-5.wow.fadeInUp,
+html body.woocommerce-checkout section#post-section > .container > div.row.gy-5,
+html body.post-type-archive-product section#post-section > .container > div.row.gy-5,
+html body.tax-product_cat section#post-section > .container > div.row.gy-5,
+html body.woocommerce-account section#post-section > .container > div.row.gy-5{
+  --bs-gutter-x: 0 !important;
+  --bs-gutter-y: 0 !important;
+  /* Matar inline style="visibility: visible;" de WOW.js */
+  visibility: inherit !important;
+  /* Override !important que GANA a cualquier BS */
+  margin-top: 5px !important;
+  margin-right: 5px !important;
+  margin-bottom: 5px !important;
+  margin-left: 5px !important;
+  padding-top: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
 }
 /* 2.b ROW: matar animación WOW fadeInUp que DEFAZABA HACIA ARRIBA = se acercaba al header */
 html body.woocommerce-cart section#post-section > .container > .row.wow,
@@ -1048,6 +1129,85 @@ html body.woocommerce-account article .post-content.clearfix{
   box-sizing: border-box !important;
 }
 
+/* 5-bis) AJUSTE SOLO DE MARGEN/PADDING HORIZONTAL (izq / der) — NUNCA vertical.
+   Sección WOO: container, article.post-content, bloque Woo alignwide.
+   Desktop tiene buen espacio, reducir solo en tablet y MUCHO en móvil (<=767).
+   Paddings verticales (top/bottom) NO tocar — estaban correctos. */
+html body.woocommerce-cart section#post-section > .container,
+html body.woocommerce-checkout section#post-section > .container,
+html body.post-type-archive-product section#post-section > .container,
+html body.tax-product_cat section#post-section > .container,
+html body.woocommerce-account section#post-section > .container{
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+html body.woocommerce-cart article.post-items.post-single.clearfix > .post-content,
+html body.woocommerce-checkout article.post-items.post-single.clearfix > .post-content,
+html body.post-type-archive-product article.post-items.post-single.clearfix > .post-content,
+html body.tax-product_cat article.post-items.post-single.clearfix > .post-content,
+html body.woocommerce-account article.post-items.post-single.clearfix > .post-content{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart.alignwide,
+html body.woocommerce-checkout .wp-block-woocommerce-checkout.alignwide,
+html body.woocommerce-cart .wp-block-woocommerce-cart.alignfull,
+html body.woocommerce-checkout .wp-block-woocommerce-checkout.alignfull{
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+/* Desktop ≥1200px: container usa padding relativamente amplio pero no exagerado */
+@media (min-width: 1200px){
+  html body.woocommerce-cart section#post-section > .container,
+  html body.woocommerce-checkout section#post-section > .container,
+  html body.post-type-archive-product section#post-section > .container,
+  html body.tax-product_cat section#post-section > .container,
+  html body.woocommerce-account section#post-section > .container{
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+}
+/* Tablet 768-1199px: reducir padding horizontal para aprovechar espacio */
+@media (min-width: 768px) and (max-width: 1199px){
+  html body.woocommerce-cart section#post-section > .container,
+  html body.woocommerce-checkout section#post-section > .container,
+  html body.post-type-archive-product section#post-section > .container,
+  html body.tax-product_cat section#post-section > .container,
+  html body.woocommerce-account section#post-section > .container{
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+/* Móvil ≤767px: padding muy reducido. NO tocar padding-top / padding-bottom */
+@media (max-width: 767px){
+  html body.woocommerce-cart section#post-section > .container,
+  html body.woocommerce-checkout section#post-section > .container,
+  html body.post-type-archive-product section#post-section > .container,
+  html body.tax-product_cat section#post-section > .container,
+  html body.woocommerce-account section#post-section > .container{
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+}
+/* Móvil muy pequeño ≤480px: padding extremadamente compacto. */
+@media (max-width: 480px){
+  html body.woocommerce-cart section#post-section > .container,
+  html body.woocommerce-checkout section#post-section > .container,
+  html body.post-type-archive-product section#post-section > .container,
+  html body.tax-product_cat section#post-section > .container,
+  html body.woocommerce-account section#post-section > .container{
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+}
+
 /* =========================================================
    4.b BLOQUE WOO CART / CHECKOUT (wp-block-woocommerce-cart)
    ========================================================= */
@@ -1068,87 +1228,93 @@ html body.woocommerce-checkout .wc-block-checkout{
 }
 
 /* =========================================================
-   4.c CARRITO DESKTOP: LAYOUT 2 COLUMNAS HORIZONTALES (inline)
-       70% productos (izq)  +  30% resumen orden (der sticky)
-   Clases reales de Woo Blocks confirmadas:
-       .wc-block-components-main    (productos / tabla)
-       .wc-block-components-sidebar (totales / resumen)
+   4.c CARRITO: LAYOUT 2 COLUMNAS SOLO SI VENTANA >= 1100px (desktop ancho).
+   Todo <=1099px (tablet + móvil) = 1 columna vertical (items arriba, resumen abajo).
+   Eliminado breakpoint 768-1199 de 65/35, que era feo y desorganizado.
    ========================================================= */
-/* Base (DESKTOP >= 1200px = is-large) */
-html body.woocommerce-cart .wc-block-components-sidebar-layout,
-html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block.is-large,
-html body.woocommerce-cart .wp-block-woocommerce-filled-cart-block .wc-block-components-sidebar-layout{
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  gap: clamp(16px, 2vw, 28px) !important;
-  justify-content: space-between !important;
-  align-items: flex-start !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-/* COLUMNA IZQUIERDA (70%): productos / tabla */
-html body.woocommerce-cart .wc-block-components-main,
-html body.woocommerce-cart .wc-block-cart__main,
-html body.woocommerce-cart .wc-block-components-main.wp-block-woocommerce-cart-items-block{
-  width: 70% !important;
-  flex: 0 0 70% !important;
-  max-width: 70% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  overflow: visible !important;
-  order: 1 !important;
-}
-/* COLUMNA DERECHA (30%): Resumen de la orden (TOTALES / CTA Checkout)
-   position:sticky → permanece visible al scrollear hacia abajo (como Buypal/Falabella) */
-html body.woocommerce-cart .wc-block-components-sidebar,
-html body.woocommerce-cart .wc-block-cart__totals,
-html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block{
-  width: 30% !important;
-  flex: 0 0 30% !important;
-  max-width: 30% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  overflow: visible !important;
-  order: 2 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: sticky !important;
-  top: 120px !important;
-  align-self: flex-start !important;
-}
 
-/* --- TABLET 768-1199px: 65% productos / 35% totales (más aire al resumen) --- */
-@media (min-width: 768px) and (max-width: 1199px){
-  html body.woocommerce-cart .wc-block-components-sidebar-layout{ gap: clamp(14px, 1.8vw, 22px) !important; }
-  html body.woocommerce-cart .wc-block-components-main{
-    width: 65% !important; flex: 0 0 65% !important; max-width: 65% !important;
-  }
-  html body.woocommerce-cart .wc-block-components-sidebar{
-    width: 35% !important; flex: 0 0 35% !important; max-width: 35% !important;
-    top: 150px !important; /* header tablet más alto */
-  }
-}
-
-/* --- MÓVIL ≤767px: LAYOUT VERTICAL por defecto (1 sola columna).
-       Woo ya le pone is-mobile. 100% cada uno. --- */
-@media (max-width: 767px){
+/* --- 1) DESKTOP >= 1100px: 70% productos (izq) + 30% resumen (der sticky) --- */
+@media (min-width: 1100px){
   html body.woocommerce-cart .wc-block-components-sidebar-layout,
-  html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block.is-mobile{
+  html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block.is-large,
+  html body.woocommerce-cart .wp-block-woocommerce-filled-cart-block .wc-block-components-sidebar-layout{
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: clamp(16px, 2vw, 28px) !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  /* COLUMNA IZQUIERDA (70%): productos / tabla */
+  html body.woocommerce-cart .wc-block-components-main,
+  html body.woocommerce-cart .wc-block-cart__main,
+  html body.woocommerce-cart .wc-block-components-main.wp-block-woocommerce-cart-items-block{
+    width: 70% !important;
+    flex: 0 0 70% !important;
+    max-width: 70% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    order: 1 !important;
+  }
+  /* COLUMNA DERECHA (30%): Resumen sticky */
+  html body.woocommerce-cart .wc-block-components-sidebar,
+  html body.woocommerce-cart .wc-block-cart__totals,
+  html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block{
+    width: 30% !important;
+    flex: 0 0 30% !important;
+    max-width: 30% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    order: 2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: sticky !important;
+    top: 120px !important;
+    align-self: flex-start !important;
+  }
+}
+
+/* --- 2) TABLET + MOVIL (todo <=1099px: 1 SOLA COLUMNA VERTICAL.
+   Items ARRIBA, Resumen ABAJO. Resumen NO sticky (position:static. --- */
+@media (max-width: 1099px){
+  html body.woocommerce-cart .wc-block-components-sidebar-layout,
+  html body.woocommerce-cart .wc-block-cart.wp-block-woocommerce-filled-cart-block,
+  html body.woocommerce-cart .wp-block-woocommerce-filled-cart-block .wc-block-components-sidebar-layout{
     display: block !important;
     flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
     gap: clamp(16px, 4vw, 28px) !important;
+    box-sizing: border-box !important;
   }
+  /* COLUMNA IZQUIERDA (items): 100% ancho, orden 1 (arriba) */
   html body.woocommerce-cart .wc-block-components-main,
-  html body.woocommerce-cart .wc-block-cart__main{
-    width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important;
+  html body.woocommerce-cart .wc-block-cart__main,
+  html body.woocommerce-cart .wc-block-components-main.wp-block-woocommerce-cart-items-block{
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    order: 1 !important;
   }
+  /* COLUMNA DERECHA (resumen): 100% ancho, orden 2 (abajo), NO sticky */
   html body.woocommerce-cart .wc-block-components-sidebar,
-  html body.woocommerce-cart .wc-block-cart__totals{
-    width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important;
+  html body.woocommerce-cart .wc-block-cart__totals,
+  html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block{
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    order: 2 !important;
     position: static !important;
     top: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
 
@@ -1178,10 +1344,15 @@ html body.woocommerce-cart .wc-block-cart__sidebar.wp-block-woocommerce-cart-tot
   overflow: visible !important;
   box-sizing: border-box !important;
 }
+/* A.1) Margin 3px uniforme en los 4 HIJOS DIRECTOS del padre RESUMEN (ver sus compartimentos). SOLO margin. */
+html body.woocommerce-cart .wc-block-components-sidebar.wp-block-woocommerce-cart-totals-block.scx-coupon-wrap > *{
+  margin: 3px !important;
+}
 
-/* ---------- B. PADRE FLEX REAL (order-summary-block)
-   ⚠️ SIN padding, SIN margin, SIN gap, SIN align-items stretch que
-   estire verticalmente. Sólo flex-direction column y order. ---------- */
+/* ---------- B. PADRE FLEX REAL (order-summary-block) - DESKTOP + TODOS LOS BREAKPOINTS
+   ⚠️ SIN margin, con PADDING para que hijos width:100% NO se salgan (overflow).
+   Sólo flex-direction column y order.
+   Aplicado en TODOS los tamaños para que no se sobresalga en tablet/móvil ---------- */
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open{
@@ -1189,15 +1360,74 @@ html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-co
   flex-direction: column !important;
   flex-wrap: nowrap !important;
   justify-content: flex-start !important;
-  align-items: flex-start !important;    /* 🔥 QUITADO stretch = NO estira */
+  align-items: flex-start !important;
   align-content: flex-start !important;
-  gap: 0 !important;                     /* 🔥 SIN gap entre hijos */
+  gap: 0 !important;
   row-gap: 0 !important;
   column-gap: 0 !important;
   width: 100% !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 3px !important;
   box-sizing: border-box !important;
+}
+/* B.1) Margin 3px SOLO VERTICAL entre hijos (DESKTOP). Horizontal = padding del padre. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > *{
+  margin: 3px 0 !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+/* Si el hijo YA tiene padding inline style (scx-rl-productos / descuentos), sumar padding-left/right SIN eliminar el padding vertical propio del elemento */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .scx-resumen-linea {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* ----------- Tablet 768-1199px ----------- */
+@media (min-width: 768px) and (max-width: 1199px){
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open{
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 3px !important;
+    box-sizing: border-box !important;
+  }
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > *{
+    margin: 3px 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ----------- Móvil ≤767px ----------- */
+@media (max-width: 767px){
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open{
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 3px !important;
+    box-sizing: border-box !important;
+  }
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > *{
+    margin: 3px 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ----------- Móvil pequeño ≤480px ----------- */
+@media (max-width: 480px){
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap,
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open{
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 3px !important;
+    box-sizing: border-box !important;
+  }
+  html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > *{
+    margin: 3px 0 !important;
+    max-width: 100% !important;
+  }
 }
 /* CADA HIJO DIRECTO del flex: ancho 100% SIN estiramiento, margin/padding 0 por
    defecto, para que Woo mantenga sus tamaños compactos originales. */
@@ -1214,47 +1444,185 @@ html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > *{
 /* Reset adicional: todo componente totals-wrapper NO agregue espacio */
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper{
   margin: 0 !important;
-  padding: 0 !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
   width: 100% !important;
   box-sizing: border-box !important;
   display: block !important;
 }
+/* ====== REDUCIR TAMAÑO DE LA CAJA (bloque) DEL TOTAL FINAL (order:99) ======
+   SOLO el bloque .wc-block-components-totals-wrapper que NO es el cupón.
+   NO tocar font-size, NO tocar precio, NO tocar texto, NO tocar contenido.
+   Solo cambiar TAMAÑO FÍSICO DE LA CAJA: height, padding top/bottom, margin top/bottom, width, max-height.
+   Ajuste usuario: max-height: 35px (su valor perfecto). Solución overflow interno (flecha morada arriba) = padding 0 hijos internos.
+*/
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block) {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 35px !important;
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+  /* Elimina barras de scroll internas que generan la flecha morada */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block)::-webkit-scrollbar{
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+/* Interior del footer-item (SIN tocar font): SOLO PADDING y MARGIN 0 para que scrollHeight < 35px. Nada de font-size. Nada de letras. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block) .wc-block-components-totals-item,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block) .wc-block-components-totals-footer-item {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  box-sizing: border-box !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+/* Label y Value: padding 0, sin modificar fuente ni tamaño de letra. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block) .wc-block-components-totals-item__label,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block) .wc-block-components-totals-item__value {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
 
+/* ============ QUITAR BORDES INTERIORES RESUMEN ============
+   SOLO MANTENER el borde EXTERIOR del PADRE (.wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap).
+   Eliminar CUALQUIER border (top/bottom/left/right/dashed/solid/groove) de TODOS los HIJOS internos.
+*/
+/* Productos (X) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > #scx-rl-productos.scx-resumen-linea,
+html body.woocommerce-cart #scx-rl-productos {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Descuentos (X) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > #scx-rl-descuentos.scx-resumen-linea,
+html body.woocommerce-cart #scx-rl-descuentos {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Cupon bloque */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-coupon-form-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .scx-coupon-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-totals-coupon {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Shipping oculto / subtotales antiguos */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-totals-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-subtotal-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-discount-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-shipping-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-tax-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-fee-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-total-block {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Totals items */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-totals-item,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-totals-footer-item {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Labels / Values / Totals-wrapper internos (no el padre!) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-totals-wrapper:not(.wp-block-woocommerce-cart-totals-block) {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Panel Button y content */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-panel,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-panel__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-panel__content {
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+/* Input cupon y boton aplicar */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap input.wc-block-components-totals-coupon__input-field,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap button.wc-block-components-totals-coupon__button {
+  border: 1px solid #d1d5db !important; /* SOLO mantener borde del input/boton para que se vea */
+  border-radius: 8px !important;
+}
+/* ========================================================
+   SOLO MANTENER: BORDE EXTERIOR DEL RESUMEN (PADRE)
+   Comenta / activa el que tu quieras. Ahora SIN borde por si no lo tienes. */
+/*
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 18px !important;
+}
+*/
 /* ---------- C. ORDEN NUMÉRICO DE LOS COMPONENTES ---------- */
 
-/* [10] TÍTULO PRINCIPAL "Resumen de la orden" */
+/* [10] TÍTULO PRINCIPAL "Resumen de la orden" = PRIMERO EN PARTE SUPERIOR */
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > h2,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-cart__totals-title,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-title{
   order: 10 !important;
 }
 
-/* [20] BLOQUES DE SUBTOTALES (cada wp-block hijo del order-summary) */
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-subtotal-block{ order: 20 !important; }
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-discount-block{ order: 20 !important; }
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-shipping-block{ order: 20 !important; }
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-fee-block{ order: 20 !important; }
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-tax-block{ order: 20 !important; }
-
-/* [50] TOTAL FINAL destacado */
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-total-block,
-html body.woocommerce-cart .wc-block-components-totals-footer-item,
-html body.woocommerce-cart .wc-block-components-totals-item.wc-block-components-totals-footer-item{
-  order: 50 !important;
-}
-
-/* [70] BLOQUE CUPÓN (input+botón Aplicar). OCULTO por defecto. */
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block,
-html body.woocommerce-cart .wc-block-components-totals-coupon,
-html body.woocommerce-cart .wp-block-woocommerce-cart-coupon,
-html body.woocommerce-cart .scx-coupon-block{
-  order: 70 !important;
+/* BLOQUE CUPON NATIVO WOO (input + boton Aplicar). POSICION VISUAL: order 79, justo ARRIBA del link toggle order:80, justo DEBAJO del Total Final order:50. */
+/* Por defecto OCULTO (height 0 + opacity 0) hasta que clickean el link toggle, activando clase scx-coupon-open en el padre. */
+/* Selector con MAXIMA ESPECIFICIDAD: empieza por .scx-coupon-wrap para ganarle a reglas por defecto Woo. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-order-summary-coupon-form-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wc-block-components-totals-coupon,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .wp-block-woocommerce-cart-coupon,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap .scx-coupon-block{
+  order: 79 !important;
   width: 100% !important;
   max-width: 100% !important;
+  min-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-  /* OCULTO POR DEFECTO (height 0 + opacity 0) */
+  /* OCULTO POR DEFECTO */
+  display: block !important;
   height: 0 !important;
   opacity: 0 !important;
   visibility: hidden !important;
@@ -1263,6 +1631,42 @@ html body.woocommerce-cart .scx-coupon-block{
   transform: translateY(-4px) !important;
   transition: all 320ms ease !important;
   -webkit-transition: all 320ms ease !important;
+}
+
+/* [30] SUBTOTALES. Contenido actual: SOLO shipping duplicado.
+   Bloque innecesario visible: "Recojo en Tienda Gratis" ya aparece en totals-wrapper.
+   OCULTAR (NO eliminar) — Woo mantiene cálculos de envío OK. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-totals-block{
+  order: 30 !important;
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 100% !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+/* [30.b] Sub-bloques de subtotal dentro del order-summary-totals-block */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-subtotal-block{ order: 30 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-discount-block{ order: 30 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-shipping-block{ order: 30 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-fee-block{ order: 30 !important; }
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wp-block-woocommerce-cart-order-summary-tax-block{ order: 30 !important; }
+
+/* [50] TOTAL FINAL destacado. Último componente, ANTES del botón pagar. */
+/* PADRE wrapper (exclusivo TOTAL FINAL, NO cupón). Order = mismo 99 que el JS inline, empate sin error. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block > .wc-block-components-totals-wrapper:not(.scx-coupon-block):not(.wp-block-woocommerce-cart-order-summary-coupon-form-block){
+  order: 99 !important;
+}
+/* HIJO INTERIOR footer-item: NUNCA necesita order. Solo se asegura display flex. */
+html body.woocommerce-cart .wc-block-components-totals-item.wc-block-components-totals-footer-item{
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  /* SIN order: evita doble overlay inspector al pasar mouse. */
 }
 
 /* [80] LINK TOGGLE CUPÓN DISCRETO (ANTES del Finalizar Compra) */
@@ -1366,8 +1770,7 @@ html body.woocommerce-cart .wc-block-components-totals-coupon__content{
   padding: 0 !important;
 }
 
-/* ---------- E. ABIERTO: link toggle clickeado = padre .scx-coupon-open
-   Sólo entonces se VE el input cupón con animación suave. ---------- */
+/* ABIERTO: link toggle clickeado = padre .scx-coupon-open. Solo entonces se VE el input cupon. */
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wp-block-woocommerce-cart-order-summary-coupon-form-block,
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon{
@@ -1377,17 +1780,184 @@ html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-co
   overflow: visible !important;
   pointer-events: auto !important;
   transform: translateY(0) !important;
-  margin: 8px 0 0 0 !important;       /* 🔥 margen chico fijo, nada excesivo */
-  padding: 8px 0 4px 0 !important;    /* 🔥 padding compacto fijo */
-  border-top: 1px dashed #D9DEE6 !important;
+  margin: 8px 0 !important;
+  padding: 0 !important;
+}
+
+/* Hijo interior cupon: panel Woo con data-scx-panel-killed. Padding y margin vertical SIMETRICO. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon.wc-block-components-panel,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-panel{
+  margin: 8px 0 8px 0 !important;      /* vertical SIMETRICO: 8px arriba / 8px abajo */
+  padding: 8px 0 8px 0 !important;     /* vertical SIMETRICO: 8px arriba / 8px abajo */
+  /* Horizontales INTACTOS, NO tocar */
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Hijo IMPORTANTE: el __content DENTRO del panel contiene el INPUT + BOTON APLICAR. SIEMPRE visible (no display:none). */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-panel__content,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__content{
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* POSICIONAMIENTO INPUT (IZQ) + BOTON APLICAR (DER). Grid 1fr auto, nunca se solapan. GANA al style inline flex. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__form{
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 12px !important;
+  margin-top: 10px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  align-items: center !important;
+  justify-content: normal !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  overflow: visible !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-wrap{
+  grid-column: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 1 1 auto !important;
+  min-width: 180px !important;
+  display: block !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__button-wrapper{
+  grid-column: 2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-left: 0 !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-shrink: 0 !important;
+}
+/* INPUT campo cupon + placeholder gris transparente cursiva. GANA a inline style. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input input,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-field,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open input[name="coupon_code"]{
+  width: 100% !important;
+  min-width: 180px !important;
+  max-width: 100% !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  border: 1px solid #c8cbd1 !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  color: #1f2937 !important;
+  background: #fafafa !important;
+  font-style: normal !important; /* el texto real NO cursiva, solo placeholder */
+  height: auto !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  box-shadow: none !important;
+}
+/* PSEUDO PLACEHOLDER: gris transparente + cursiva. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-field::-webkit-input-placeholder,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open input[name="coupon_code"]::-webkit-input-placeholder{
+  color: #9aa0a6 !important;
+  font-style: italic !important;
+  opacity: 1 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-field::-moz-placeholder,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open input[name="coupon_code"]::-moz-placeholder{
+  color: #9aa0a6 !important;
+  font-style: italic !important;
+  opacity: 1 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-field::placeholder,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open input[name="coupon_code"]::placeholder{
+  color: #9aa0a6 !important;
+  font-style: italic !important;
+  opacity: 1 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__input-field:focus,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open input[name="coupon_code"]:focus{
+  border-color: #8b8f96 !important;
+  outline: 1px solid #8b8f96 !important;
+}
+/* BOTON APLICAR CUPON: MUY POCO VISIBLE, GRIS SUAVE (no blanco total). GANA a inline style. */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-button.wp-block-button__link.contained{
+  /* Tamaño compacto */
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;        /* normal, SIN negrita (nada de 700) */
+  line-height: 1.2 !important;
+  border-radius: 8px !important;
+  height: auto !important;
+  /* GRIS SUAVE (no blanco total): fondo gris muerto, borde gris, texto gris */
+  background: #f3f4f6 !important;
+  border: 1px solid #d6d9de !important;
+  color: #6b7280 !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  /* Sin efectos saltarines */
+  transition: all 160ms ease !important;
+  transform: none !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  display: inline-block !important;
+  text-indent: 0 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__button:hover,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-button.wp-block-button__link.contained:hover{
+  background: #e4e7eb !important;
+  border-color: #c5c9cf !important;
+  color: #4b5563 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-totals-coupon__button:focus-visible,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-button.wp-block-button__link.contained:focus-visible{
+  outline: 1px solid #8b8f96 !important;
+  outline-offset: 1px !important;
+  box-shadow: none !important;
+}
+
+/* Ocultar boton flecha inutil wc-block-components-panel__button (abrir/cerrar lo hace el link toggle scx-coupon-toggle). */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-panel__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wc-block-components-panel__button-icon{
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 /* Evitar que el input y botón Aplicar se estiren verticalmente */
-html body.woocommerce-cart .scx-coupon-block input[type="text"],
-html body.woocommerce-cart .scx-coupon-block .wc-block-components-totals-coupon__input input,
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block input[type="text"],
-html body.woocommerce-cart .scx-coupon-block button,
-html body.woocommerce-cart .scx-coupon-block .wc-block-components-totals-coupon__button,
-html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block button{
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block input[type="text"],
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block .wc-block-components-totals-coupon__input input,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wp-block-woocommerce-cart-order-summary-coupon-form-block input[type="text"],
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .scx-coupon-block .wc-block-components-totals-coupon__button,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap.scx-coupon-open .wp-block-woocommerce-cart-order-summary-coupon-form-block button{
   margin: 0 !important;
 }
 
@@ -3506,9 +4076,10 @@ div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
 .wc-block-components-totals-footer,
 .wc-block-components-order-total {
   border-top: 2px solid #0e2c4a !important;
-  margin-top: 10px !important;
-  padding-top: 16px !important;
-  padding-bottom: 8px !important;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
 }
 .wc-block-components-totals-footer-item .wc-block-components-totals-item__label,
 .wc-block-components-order-total .wc-block-components-totals-item__label {
@@ -3967,7 +4538,7 @@ body.woocommerce-cart li.product .woocommerce-Price-amount.amount {
   text-align: center !important;
   color: #1e6faa !important;
   font-weight: 900 !important;
-  font-size: 1.08rem !important;
+  font-size: 1.18rem !important; /*Tamaño del precio Global */
   line-height: 1.2 !important;
   margin: 0 14px 10px 14px !important;
   padding: 0 !important;
@@ -4149,6 +4720,466 @@ body.woocommerce-cart li.product .button:hover {
     grid-template-columns: 1fr !important;
     gap: 18px !important;
   }
+}
+
+/* =========================================================================
+   BLOQUE 09-bis · Carrito VACÍO — Grid WOO BLOCKS React (wc-block-grid)
+   Diagnóstico: los estilos del Bloque 09 eran solo para ul.products clásico
+   (shortcode Woo). React / Woo Blocks usa clases DIFERENTES:
+     .wc-block-grid.wp-block-product-new.has-4-columns > ul.wc-block-grid__products > li.wc-block-grid__product
+   Solución: aplicar MISMA filosofía (tarjetas = altura uniforme,
+   botón al fondo, padding títulos, etc.) PERO SOLO para esas clases Y
+   DENTRO de .wp-block-woocommerce-empty-cart-block (así NO afectamos
+   el grid Novedades del Home ni otros grids).
+   ========================================================================= */
+
+/* 1) PADRE del grid: siempre DENTRO del empty cart */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid.wp-block-product-new,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-woocommerce-product-new,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-product-new {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 40px auto 60px auto !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+    clear: both !important;
+    float: none !important;
+}
+
+/* 2) UL = row principal: GRID EXPLÍCITO POR COLUMNAS, NO auto-fill,
+   para que coincida exactamente con los breakpoints user. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    padding-inline-start: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    grid-auto-flow: row !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    gap: 20px 18px !important;
+    clear: both !important;
+    float: none !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products::before,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products::after {
+    content: "" !important;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    float: none !important;
+}
+
+/* 3) Cada <li> producto = TARJETA. Flex columna + height:100% para
+   ALTURA UNIFORME en toda la fila. min-height evita tarjetas desiguales. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 0 18px 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 380px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    background: #ffffff !important;
+    border: 1px solid #dbe3ef !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+    transition: all 220ms ease !important;
+    position: relative !important;
+    box-shadow: 0 2px 12px rgba(14, 44, 74, 0.05) !important;
+    float: none !important;
+    clear: none !important;
+    box-sizing: border-box !important;
+    flex: 1 1 auto !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    z-index: 1 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product::before,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product::marker {
+    content: "" !important;
+    display: none !important;
+    list-style-type: none !important;
+    visibility: hidden !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 14px 30px rgba(14, 44, 74, 0.12) !important;
+    border-color: #1e6faa !important;
+    z-index: 2 !important;
+}
+
+/* 4) Link del producto (img + título) */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block a.wc-block-grid__product-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 5) IMAGEN producto: aspect ratio 1:1 CUADRADO, padding suave.
+   Todas las imágenes tienen MISMA altura → tarjetas simétricas. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    float: none !important;
+    flex: 0 0 auto !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image {
+    padding: 16px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #eef3fa !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image img {
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: contain !important;
+    padding: 0 !important;
+}
+
+/* 6) TÍTULO del producto: PADDING 14px左右上下 (user decia "muy pegado al borde").
+   Truco: min-height + 2 line clamp para títulos largos/cortos = espacio uniforme
+   entre filas. Text-align centrado igual que en el grid clásico. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-title,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block h3.wc-block-grid__product-title,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block h2.wc-block-grid__product-title {
+    font-size: 0.94rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #0e2c4a !important;
+    margin: 14px 14px 6px 14px !important;
+    padding: 0 !important;
+    text-align: center !important;
+    min-height: 48px !important;
+    max-height: none !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    float: none !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+}
+
+/* 7) SALES badge (si hay ofertas) */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-onsale {
+    position: absolute !important;
+    top: 12px !important;
+    left: 12px !important;
+    background: #ef4444 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.2px !important;
+    z-index: 3 !important;
+    border: 0 !important;
+}
+
+/* 8) STAR rating: centrado, pequeño, uniforme */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-rating,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-components-product-rating {
+    display: flex !important;
+    justify-content: center !important;
+    margin: 0 14px 6px 14px !important;
+    color: #f59e0b !important;
+    padding: 0 !important;
+    float: none !important;
+    clear: both !important;
+    flex: 0 0 auto !important;
+}
+
+/* 9) PRECIO: centrado, azul corporativo, uniforme.
+   Flex: 0 0 auto para quitar superposiciones. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price.price,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-components-product-price {
+    display: block !important;
+    text-align: center !important;
+    color: #c73a3a !important;
+    font-weight: 500 !important;
+    font-size: 1.28rem !important; /* Tamaño + color + peso del precio en: grid Novedades del carrito VACÍO */
+    line-height: 1.2 !important;
+    margin: 0 14px 12px 14px !important;
+    padding: 0 !important;
+    word-break: break-word !important;
+    float: none !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price ins,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-components-product-price ins {
+    text-decoration: none !important;
+    color: #1e6faa !important;
+    background: transparent !important;
+    font-weight: 900 !important;
+    display: inline !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price del,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-components-product-price del {
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    font-size: 0.86rem !important;
+    display: block !important;
+    margin-bottom: 2px !important;
+    text-align: center !important;
+    text-decoration: line-through !important;
+}
+
+/* 10) BOTÓN Añadir al carrito.
+   🛠️ CRÍTICO user: "botón se superpone, no ubicado bien, no adapta".
+   Fix: margin-top: AUTO (empuja el botón HASTA EL FONDO de la tarjeta flex).
+   Quitar clip-path raro, bordes uniformes degradado azul. */
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-button.wc-block-grid__product-add-to-cart,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart {
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+    flex: 0 0 auto !important;
+    align-self: flex-end !important;
+    justify-self: stretch !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-button.wc-block-grid__product-add-to-cart .wp-block-button__link,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart button,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart a.add_to_cart_button,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart .wp-element-button,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-components-product-button button {
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    shape-outside: none !important;
+    overflow: visible !important;
+    display: block !important;
+    width: calc(100% - 28px) !important;
+    min-width: calc(100% - 28px) !important;
+    max-width: calc(100% - 28px) !important;
+    min-height: 44px !important;
+    height: auto !important;
+    margin: 0 auto 0 auto !important;
+    padding: 12px 10px !important;
+    text-align: center !important;
+    line-height: 1.15 !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.2px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    border-radius: 14px !important;
+    -webkit-border-radius: 14px !important;
+    -moz-border-radius: 14px !important;
+    border-top-left-radius: 14px !important;
+    border-top-right-radius: 14px !important;
+    border-bottom-left-radius: 14px !important;
+    border-bottom-right-radius: 14px !important;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+    background-image: linear-gradient(135deg, #1c6eab 0%, #1d8ec8 100%) !important;
+    background-color: #1c6eab !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+    border: 0 !important;
+    box-shadow: 0 8px 18px rgba(30, 111, 170, 0.26) !important;
+    outline: none !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    text-shadow: none !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    float: none !important;
+    clear: both !important;
+    flex: 0 0 auto !important;
+    align-self: center !important;
+    justify-self: center !important;
+    transition: all 180ms ease !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-button.wc-block-grid__product-add-to-cart .wp-block-button__link:hover,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart button:hover,
+html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart a.add_to_cart_button:hover {
+    background: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+    background-image: linear-gradient(135deg, #145484 0%, #13739e 100%) !important;
+    background-color: #145484 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 12px 24px rgba(30, 111, 170, 0.36) !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    border-top-left-radius: 14px !important;
+    border-top-right-radius: 14px !important;
+    border-bottom-left-radius: 14px !important;
+    border-bottom-right-radius: 14px !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+}
+
+/* =========================================================================
+   MEDIA QUERIES del GRID wc-block-grid (vacío cart)
+   Siguen EL MISMO ESTÁNDAR del usuario:
+     Desktop ≥1200px: 4 columnas (ya base)
+     Tablet 768-1199: 2 columnas
+     Móvil ≤767: 2 columnas compacto
+     Móvil pequeño ≤480: 1 columna + reducir paddings y fuentes
+   ========================================================================= */
+
+/* ---- Desktop ≥1200px (solo ajustes finos, 4 cols ya base) ---- */
+@media (min-width: 1200px) {
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 22px 20px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product {
+        min-height: 400px !important;
+    }
+}
+
+/* ---- Tablet 768 - 1199px: 2 cols (no 4) ---- */
+@media (min-width: 768px) and (max-width: 1199px) {
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid.wp-block-product-new,
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid {
+        padding: 0 14px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 22px 20px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product {
+        min-height: 390px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-title {
+        font-size: 1rem !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price {
+        font-size: 1.12rem !important;
+    }
+}
+
+/* ---- Móvil ≤767px: 2 columnas compacto ---- */
+@media (max-width: 767px) {
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid.wp-block-product-new,
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid {
+        padding: 0 12px !important;
+        margin: 28px auto 44px auto !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px 14px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product {
+        min-height: 340px !important;
+        padding: 0 0 14px 0 !important;
+        border-radius: 16px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image {
+        padding: 12px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-title {
+        font-size: 0.86rem !important;
+        margin: 12px 10px 6px 10px !important;
+        min-height: 44px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-rating {
+        margin: 0 10px 4px 10px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price {
+        font-size: 0.96rem !important;
+        margin: 0 10px 10px 10px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-button.wc-block-grid__product-add-to-cart .wp-block-button__link,
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart button {
+        width: calc(100% - 20px) !important;
+        min-width: calc(100% - 20px) !important;
+        max-width: calc(100% - 20px) !important;
+        padding: 10px 8px !important;
+        min-height: 42px !important;
+        font-size: 0.86rem !important;
+        border-radius: 12px !important;
+        -webkit-border-radius: 12px !important;
+        border-top-left-radius: 12px !important;
+        border-top-right-radius: 12px !important;
+        border-bottom-left-radius: 12px !important;
+        border-bottom-right-radius: 12px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-onsale {
+        top: 10px !important;
+        left: 10px !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        font-size: 0.72rem !important;
+    }
+}
+
+/* ---- Móvil pequeño ≤480px: 1 SOLA columna + paddings/fuentes reducidos ---- */
+@media (max-width: 480px) {
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid.wp-block-product-new,
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid {
+        padding: 0 10px !important;
+        margin: 24px auto 40px auto !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__products {
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block li.wc-block-grid__product {
+        min-height: auto !important;
+        padding: 0 0 16px 0 !important;
+        border-radius: 18px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-image {
+        padding: 18px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-title {
+        font-size: 1rem !important;
+        margin: 14px 14px 6px 14px !important;
+        min-height: auto !important;
+        -webkit-line-clamp: 3 !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-price {
+        font-size: 1.1rem !important;
+        margin: 0 14px 14px 14px !important;
+    }
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wp-block-button.wc-block-grid__product-add-to-cart .wp-block-button__link,
+    html body.woocommerce-cart .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart button {
+        width: calc(100% - 28px) !important;
+        min-width: calc(100% - 28px) !important;
+        max-width: calc(100% - 28px) !important;
+        padding: 13px 10px !important;
+        min-height: 46px !important;
+        font-size: 0.94rem !important;
+        border-radius: 14px !important;
+        -webkit-border-radius: 14px !important;
+        border-top-left-radius: 14px !important;
+        border-top-right-radius: 14px !important;
+        border-bottom-left-radius: 14px !important;
+        border-bottom-right-radius: 14px !important;
+    }
 }
 
 /* BLOQUE 11 · Checkout / Pagar · minimalista 2 columnas ================ */

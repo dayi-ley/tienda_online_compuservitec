@@ -485,251 +485,87 @@ if ( ! function_exists( 'storex_child_traducciones_html_final' ) ) :
 
 		return $html;
 	}
+
+	
 endif;
-add_filter( 'storex_child_final_html_output', 'storex_child_traducciones_html_final', 25, 1 );
-
-/* =============================================================================
-   FIX FINAL 2026-09-04: TRADUCCIONES WOO BLOCKS REACT (client-side)
-
-   ¿POR QUÉ AQUÍ y con JS?
-      Bloques Gutenberg de WooCommerce (carrito/checkout React) RENDERIZAN
-      sus textos en el NAVEGADOR del usuario VÍA JAVASCRIPT, DESPUÉS de que PHP
-      entregue el HTML inicial. Consecuencia:
-         ✘ gettext (20-traducciones.php) → NO LO VE
-         ✘ OB Shutdown (esta misma función storex_child_traducciones_html_final)
-           porque el HTML buffer no contiene los textos aún.
-
-   TRUCO ANTI-FLASH (no se ve inglés por ningún lado):
-      1. <head> inline CSS = #post-section.woocommerce-cart / checkout { opacity: 0; visibility: hidden; }
-         Mientras React + traducciones terminan, la sección está INVISIBLE.
-      2. JS en footer hace MutationObserver del DOM hasta que aparezcan los
-         bloques Woo, reemplaza TODOS los textos del array.
-      3. Una vez reemplazado = opacity 1, visibilidad visible. 0 flashes.
-
-   Archivo correcto: 40-html-final.php (FIX HTML FINAL, NO en 56-carrito-titulo).
-   ============================================================================= */
-
-/* 1) CSS inline en wp_head: OCULTAR momentáneamente el área de Woo hasta que
-      el JS termine de traducir. Evita 100% el flash "inglés → español". */
-add_action( 'wp_head', function(){
-	if ( is_admin() ) return;
-	// Solo en carrito / pagar / páginas de Woo relevantes.
-	if ( ! ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() || is_shop() || is_product() || is_product_category() ) ) ) return;
-	?>
-<style id="scx-woo-anti-flash-css">
-	/* Toda la sección del contenido principal permanece opaca
-	   mientras React pinta + JS traduce frases client-side. */
-	html body.woocommerce-cart #post-section.scx-woo-translating,
-	html body.woocommerce-checkout #post-section.scx-woo-translating,
-	html body.woocommerce-page #post-section.scx-woo-translating {
-		opacity: 0 !important;
-		visibility: hidden !important;
-		transition: opacity .28s ease, visibility .28s ease !important;
-	}
-	/* Traslado visual: desfase 2px arriba = desaparece como siempre, 
-	   no se ve saltito al finalizar traducción. */
-	html body #post-section.scx-woo-translating {
-		transform: translateY(-2px) !important;
-	}
-</style>
-<script id="scx-woo-anti-flash-init">
-	// AGREGAR la clase SCX ANTES de que React renderice nada (lo antes posible).
-	// El head se ejecuta MUY temprano, así que el body no existe todavía →
-	// esperamos la primera escritura del body y le ponemos la clase.
-	(function(){
-		var f = function(){
-			var sec = document.getElementById('post-section');
-			if ( sec && sec.classList && ! sec.classList.contains('scx-woo-translating') ) {
-				sec.classList.add('scx-woo-translating');
-			}
-		};
-		if (document.body) f();
-		else if (document.addEventListener) document.addEventListener('DOMContentLoaded', f);
-		// Repetir varias veces por si la sección se pinta después.
-		setTimeout(f, 30); setTimeout(f, 120); setTimeout(f, 400);
-	})();
-</script>
-	<?php
-}, 1 );
-
-/* 2) SCRIPT EN FOOTER: reemplaza frases (MutationObserver) y QUITA la clase
-      SCX de ocultamiento cuando termina. */
-add_action( 'wp_footer', function(){
-	if ( is_admin() ) return;
-	?>
-<script id="scx-woo-traducciones-ft">
+add_filter( 'storex_child_final_html_output', function( $html ){
+	// ============================================================
+	// TRADUCCIONES WOO BLOCKS REACT (100% SÍ O SÍ)
+	// Inyecto el script LO ÚLTIMO del HTML, justo ANTES de </body>.
+	// Se ejecuta DESPUÉS de TODOS los scripts de Woo/React.
+	// ============================================================
+	if ( is_admin() || stripos( (string)$html, '</body>' ) === false ) return $html;
+	if ( stripos( (string)$html, 'id="scx-woo-ft"' ) !== false ) return $html;
+	$script = <<<'JS'
+<script id="scx-woo-ft">
 (function(){
-  // =====================================================
-  // TABLA de traducciones (orden de más larga a más corta
-  // para evitar pises por substring).
-  // =====================================================
   var TR = [
-    ['Proceed to Checkout',                 'Finalizar compra'],
-    ['Proceed to checkout',                 'Finalizar compra'],
-    ['Place Order',                         'Finalizar compra'],
-    ['Place order',                         'Finalizar compra'],
+    // ========== SOLO 2 TÍTULOS del BLOQUE CARRITO VACÍO (selectores EXACTOS F12 user) ==========
+    ['Your cart is currently empty!', '¡Tu carrito está vacío!', '.wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title'],
+    ['Your cart is currently empty.', '¡Tu carrito está vacío!', '.wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title'],
+    ['Your cart is currently empty',  '¡Tu carrito está vacío!', '.wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title'],
+    ['New in store',                  'Novedades en tienda',  '.wp-block-woocommerce-empty-cart-block h2.wp-block-heading:not(.wc-block-cart__empty-cart__title)'],
+    ['New In Store',                  'Novedades en tienda',  '.wp-block-woocommerce-empty-cart-block h2.wp-block-heading:not(.wc-block-cart__empty-cart__title)'],
 
-    ['Cart totals',                         'Resumen del pedido'],
-    ['Cart Totals',                         'Resumen del pedido'],
-    ['Order summary',                       'Resumen del pedido'],
-    ['Order Summary',                       'Resumen del pedido'],
-
-    ['If you have a coupon code, please apply it below.', 'Si tienes un código de cupón, aplícalo a continuación.'],
-    ['Click here to enter your code',       'Haz clic aquí para introducir tu código'],
-    ['Enter your code',                     'Introduce tu código'],
-    ['Estimated total',                     'Total estimado'],
-    ['Estimated Total',                     'Total estimado'],
-    ['Estimated tax',                       'Impuesto estimado'],
-    ['Remove this item',                    'Eliminar este producto'],
-    ['Contact information',                 'Información de contacto'],
-    ['Direct bank transfer',                'Transferencia bancaria'],
-    ['Cash on delivery',                    'Pago contra entrega'],
-    ['Terms and Conditions',                'Términos y Condiciones'],
-    ['Terms & Conditions',                  'Términos y Condiciones'],
-    ['Privacy Policy',                      'Política de Privacidad'],
-    ['Shipping options',                    'Opciones de envío'],
-    ['Shipping method',                     'Método de envío'],
-    ['Local pickup',                        'Recojo en tienda'],
-    ['Pickup locations',                    'Puntos de recojo'],
-    ['Pickup location',                     'Punto de recojo'],
-    ['Payment options',                     'Métodos de pago'],
-    ['Payment method',                      'Método de pago'],
-    ['Payment methods',                     'Métodos de pago'],
-    ['Billing address',                     'Dirección de facturación'],
-    ['Billing details',                     'Datos de facturación'],
-    ['Shipping address',                    'Dirección de envío'],
-    ['Have a coupon?',                      '¿Tienes un cupón?'],
-    ['Apply coupon',                        'Aplicar cupón'],
-    ['Apply Coupon',                        'Aplicar cupón'],
-    ['Coupon code',                         'Código de cupón'],
-    ['Coupon Code',                         'Código de cupón'],
-    ['Add coupon',                          'Añadir cupón'],
-    ['Add coupons',                         'Añadir cupones'],
-    ['Remove coupon',                       'Quitar cupón'],
-    ['Update cart',                         'Actualizar carrito'],
-    ['Update Cart',                         'Actualizar carrito'],
-    ['Empty cart',                          'Vaciar carrito'],
-    ['Empty Cart',                          'Vaciar carrito'],
-    ['View cart',                           'Ver carrito'],
-    ['View Cart',                           'Ver carrito'],
-    ['Add to cart',                         'Añadir al carrito'],
-    ['Add to Cart',                         'Añadir al carrito'],
-    ['Return to shop',                      'Volver a la tienda'],
-    ['Back to shop',                        'Volver a la tienda'],
-    ['Browse store',                        'Ver tienda'],
-    ['Contact info',                        'Datos de contacto'],
-    ['Cart is empty',                       'Carrito vacío'],
-    ['Remove item',                         'Eliminar'],
-    ['Your cart is currently empty!',       '¡Tu carrito está vacío!'],
-    ['Your cart is currently empty.',       'Tu carrito está vacío.'],
-    ['No products in the cart.',            'No hay productos en el carrito.'],
-    ['Grand total',                         'Total final'],
-    ['Delivery',                            'Entrega'],
-    ['Shipping',                            'Envío'],
-    ['Subtotal',                            'Subtotal'],
-    ['Discount',                            'Descuento'],
-    ['Coupon:',                             'Cupón:'],
-    ['Checkout',                            'Pagar'],
-    ['Change',                              'Cambiar'],
-    ['Edit',                                'Editar'],
-    ['Total',                               'Total'],
-    ['Taxes',                               'Impuestos'],
-    ['Tax',                                 'Impuesto'],
-    ['Free',                                'Gratis'],
-    ['Ship',                                'Envío a domicilio'],
-    ['Pickup',                              'Recojo en tienda']
+    // ========== BOTÓN FINALIZAR COMPRA ==========
+    ['Proceed to Checkout','Pagar ahora','.wc-block-cart__submit-button .wc-block-components-button__text'],
+    ['Proceed to checkout','Pagar ahora','.wc-block-cart__submit-button .wc-block-components-button__text'],
+    ['Place Order',        'Pagar ahora','.wc-block-cart__submit-button .wc-block-components-button__text'],
+    ['Place order',        'Finalizar compra','.wc-block-cart__submit-button .wc-block-components-button__text'],
+    ['Cart totals',        'Resumen del pedido','.wp-block-woocommerce-cart-totals-block > h2, .wc-block-cart__totals-title, .wp-block-woocommerce-cart-order-summary-block h2'],
+    ['Cart Totals',        'Resumen del pedido','.wp-block-woocommerce-cart-totals-block > h2, .wc-block-cart__totals-title, .wp-block-woocommerce-cart-order-summary-block h2'],
+    ['Order summary',      'Resumen del pedido','.wp-block-woocommerce-cart-order-summary-block h2'],
+    ['Order Summary',      'Resumen del pedido','.wp-block-woocommerce-cart-order-summary-block h2'],
+    ['Taxes',              'Impuestos',       '.wc-block-components-totals-item__label, .wc-block-components-totals-footer-item label'],
+    ['Tax',                'Impuesto',        '.wc-block-components-totals-item__label'],
+    ['Estimated total',    'Total estimado',  '.wc-block-components-totals-item__label'],
+    ['Estimated Total',    'Total estimado',  '.wc-block-components-totals-item__label'],
+    ['Subtotal',           'Subtotal',        '.wc-block-components-totals-item__label'],
+    ['Shipping',           'Envío',           '.wc-block-components-totals-item__label, .wc-block-components-totals-shipping *'],
+    ['Discount',           'Descuento',       '.wc-block-components-totals-item__label'],
+    ['Total',              'Total',           '.wc-block-components-totals-footer-item__label, .wc-block-components-totals-item__label'],
+    ['Free',               'Gratis',          '.wc-block-components-totals-item__description, .wc-block-components-totals-item__value'],
+    ['Local pickup',       'Recojo en tienda','.wc-block-components-shipping-rates-control *, .wc-block-components-totals-item__label'],
+    ['Apply coupon',       'Aplicar cupón',   '.wp-block-woocommerce-cart-order-summary-coupon-form-block button, .wc-block-components-totals-coupon button'],
+    ['Apply Coupon',       'Aplicar cupón',   '.wp-block-woocommerce-cart-order-summary-coupon-form-block button, .wc-block-components-totals-coupon button'],
+    ['Coupon code',        'Código de cupón', '.wp-block-woocommerce-cart-order-summary-coupon-form-block input, .wc-block-components-totals-coupon input'],
+    ['Coupon Code',        'Código de cupón', '.wp-block-woocommerce-cart-order-summary-coupon-form-block input, .wc-block-components-totals-coupon input'],
+    ['Remove this item',   'Eliminar este producto','.wc-block-cart-item__remove-link, a[aria-label*="Remove" i]'],
+    ['Remove item',        'Eliminar',             '.wc-block-cart-item__remove-link, a[aria-label*="Remove" i]'],
+    ['Update cart',        'Actualizar carrito',   '.wp-block-woocommerce-cart-items-block button, .wc-block-cart-items button'],
+    ['Update Cart',        'Actualizar carrito',   '.wp-block-woocommerce-cart-items-block button, .wc-block-cart-items button']
   ];
-
-  function walkReplace(root){
-    if (!root) return;
+  var SK={SCRIPT:1,STYLE:1,NOSCRIPT:1,TEMPLATE:1,IFRAME:1,INPUT:1,TEXTAREA:1,SELECT:1,OPTION:1};
+  function T(o,s,f){if(!o)return;var t=o.tagName&&o.tagName.toUpperCase();if(!t||SK[t])return;if(o.textContent&&o.textContent.indexOf(s)!==-1)o.textContent=o.textContent.split(s).join(f);}
+  function _listo(){
+    // 🧯 SOLO cuando AMBOS h2 del empty cart ya están en español,
+    // marcamos el body para que CSS los muestre (sin flash inglés).
     try {
-      var walker = document.createTreeWalker(
-        root, NodeFilter.SHOW_TEXT,
-        { acceptNode: function(n) {
-            if (!n.nodeValue || n.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT;
-            var p = n.parentNode; if (!p || !p.tagName) return NodeFilter.FILTER_REJECT;
-            var t = p.tagName.toUpperCase();
-            if (t === 'SCRIPT' || t === 'STYLE' || t === 'NOSCRIPT' || t === 'TEMPLATE' || t === 'IFRAME' ||
-                t === 'INPUT'  || t === 'TEXTAREA' || t === 'SELECT' || t === 'OPTION') return NodeFilter.FILTER_REJECT;
-            return NodeFilter.FILTER_ACCEPT;
-        }}
-      );
-      var nod;
-      while ((nod = walker.nextNode())) {
-        var v = nod.nodeValue, orig = v;
-        for (var i = 0; i < TR.length; i++) {
-          if (v.indexOf(TR[i][0]) !== -1) v = v.split(TR[i][0]).join(TR[i][1]);
-        }
-        if (v !== orig) nod.nodeValue = v;
+      var h1 = document.querySelector('.wp-block-woocommerce-empty-cart-block h2.wc-block-cart__empty-cart__title');
+      var h2 = document.querySelector('.wp-block-woocommerce-empty-cart-block h2.wp-block-heading:not(.wc-block-cart__empty-cart__title)');
+      var ok = true;
+      if (h1) {
+        var t1 = (h1.textContent || '').trim();
+        if (t1 && /Your\\s+cart\\s+is\\s+currently\\s+empty/i.test(t1)) ok = false;
       }
-      // Atributos placeholder / aria-label / value (input submit)
-      if (root.querySelectorAll) {
-        root.querySelectorAll('[placeholder], [aria-label]').forEach(function(el){
-          ['placeholder','aria-label'].forEach(function(a){
-            var val = el.getAttribute(a); if (!val) return;
-            var nv = val;
-            for (var i = 0; i < TR.length; i++) {
-              if (nv.indexOf(TR[i][0]) !== -1) nv = nv.split(TR[i][0]).join(TR[i][1]);
-            }
-            if (nv !== val) el.setAttribute(a, nv);
-          });
-        });
-        root.querySelectorAll('input[type="submit"][value]').forEach(function(el){
-          var v2 = el.value, nv2 = v2;
-          for (var i = 0; i < TR.length; i++) {
-            if (nv2.indexOf(TR[i][0]) !== -1) nv2 = nv2.split(TR[i][0]).join(TR[i][1]);
-          }
-          if (nv2 !== v2) el.value = nv2;
-        });
+      if (h2) {
+        var t2 = (h2.textContent || '').trim();
+        if (t2 && /New\\s+in\\s+store/i.test(t2)) ok = false;
+      }
+      if (ok && document.body && !document.body.classList.contains('wc-lang-ready')) {
+        document.body.classList.add('wc-lang-ready');
       }
     } catch(e) {}
   }
-
-  // Quitar clase "oculto" cuando esté TODO traducido (o timeout máximo 2.5s por si acaso)
-  var traducidoYA = false;
-  function mostrar(){
-    if (traducidoYA) return;
-    traducidoYA = true;
-    var sec = document.getElementById('post-section');
-    if (sec && sec.classList) sec.classList.remove('scx-woo-translating');
-  }
-
-  function init(){
-    walkReplace(document.body);
-    // Si ya hay bloques del carrito visibles → traducido ok.
-    var bloques = document.querySelectorAll(
-      '.wp-block-woocommerce-cart, .wp-block-woocommerce-checkout, .wc-block-cart, .wc-block-checkout, .woocommerce-cart-form'
-    );
-    if (bloques && bloques.length > 0) setTimeout(mostrar, 180);
-    else setTimeout(mostrar, 500);
-  }
-
-  // Pasadas rápidas
-  try { init(); } catch(e) {}
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function(){ try { init(); } catch(e){} });
-  }
-
-  // MutationObserver: atrapar todos los renderizados React / AJAX
-  try {
-    var tm = null, pasos = 0, MAX_PASOS = 40; // ~5s máximo
-    var ob = new MutationObserver(function(){
-      clearTimeout(tm);
-      pasos++;
-      tm = setTimeout(function(){
-        walkReplace(document.body);
-        if ( pasos > 2 ) mostrar(); // tras 3 re-renderizados React → ok mostramos
-        if ( pasos >= MAX_PASOS ) { try { ob.disconnect(); } catch(e){} mostrar(); }
-      }, 90);
-    });
-    ob.observe(document.body, { childList:true, subtree:true, characterData:true });
-    setTimeout(function(){ try { ob.disconnect(); } catch(e){} mostrar(); }, 6000);
-  } catch(e){}
-
-  // Fallback final (si nada más funciona, no dejar la página oculta)
-  setTimeout(mostrar, 2500);
-  window.addEventListener('load', function(){ setTimeout(mostrar, 200); });
+  function ciclo(){for(var i=0;i<TR.length;i++){try{var n=document.querySelectorAll(TR[i][2]);for(var j=0;j<n.length;j++)T(n[j],TR[i][0],TR[i][1]);}catch(e){}}_listo();}
+  var c=0,itv=setInterval(function(){c++;ciclo();if(c>=50){clearInterval(itv);setTimeout(ciclo,250);setTimeout(ciclo,600);}},100);
+  // Fallback extremo: si por cualquier motivo JS no detectó traducciones,
+  // mostrar títulos igual a los 1.3s (igual que el CSS @keyframes).
+  setTimeout(function(){ try { if(document.body) document.body.classList.add('wc-lang-ready');} catch(e){} }, 1300);
+  ciclo();document.addEventListener&&document.addEventListener('DOMContentLoaded',ciclo);
+  window.addEventListener('load',function(){ciclo();setTimeout(ciclo,500);setTimeout(ciclo,1200);});
 })();
 </script>
-	<?php
-}, 99999 ); // MUY AL FINAL del footer.
+JS;
+	return str_ireplace( '</body>', $script . "\n</body>", (string)$html );
+}, 99999 );

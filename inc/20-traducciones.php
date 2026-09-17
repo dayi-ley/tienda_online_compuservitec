@@ -411,6 +411,105 @@ add_filter( 'ngettext', 'storex_child_traducciones_numericas_personalizadas', 99
 endif; // ! is_admin() — fin de bloque traducciones gettext solo front-end.
 
 /* =============================================================================
+   TRADUCCIONES ESPECÍFICAS PARA ÍTEMS DEL MENÚ DE NAVEGACIÓN
+   (no afectan nombres de categorías, solo <li> y <a> del menú header ul#menu-menu-1)
+   Diagnóstico user: menús 'Cart', 'Shop', 'Checkout' del header aparecían sin traducir
+   porque WordPress guarda título original hardcodeado y no pasa siempre por gettext.
+   Solución: 2 filtros wp_nav_menu_items + wp_get_nav_menu_items.
+   REGLA: nunca usar genéricos 'Cart' → siempre >Cart< o >Checkout< (solo
+   dentro del HTML del link → no afectan Cartoon, Cartulina, etc.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_traducir_menu_nav_items' ) ) :
+function storex_child_traducir_menu_nav_items( $items, $args = null ) {
+	if ( is_string( $items ) && trim( $items ) === '' ) return $items;
+	// 1) Forma string (wp_nav_menu_items): HTML del menú renderizado
+	if ( is_string( $items ) ) {
+		$buscar = array(
+			'>Shop<',
+			'>Cart<',
+			'>Checkout<',
+			'>My account<',
+			'>My Account<',
+			'>Wishlist',
+			'>WishList',
+			'>Blog<',
+			'>Contact<',
+			'>About us<',
+			'>About Us<',
+			'>Home<'
+		);
+		$reemplazar = array(
+			'>Tienda<',
+			'>Carrito<',
+			'>Pagar<',
+			'>Mi Cuenta<',
+			'>Mi Cuenta<',
+			'>Lista de deseos',
+			'>Lista de deseos',
+			'>Blog<',
+			'>Contacto<',
+			'>Sobre nosotros<',
+			'>Sobre nosotros<',
+			'>Inicio<'
+		);
+		return str_replace( $buscar, $reemplazar, $items );
+	}
+	// 2) Forma objetos (wp_get_nav_menu_items): array de objetos WP_Post -> title/post_title
+	if ( is_array( $items ) ) {
+		foreach ( $items as $k => $item ) {
+			if ( is_object( $item ) && isset( $item->title ) ) {
+				$title = trim( (string)$item->title );
+				switch ( $title ) {
+					case 'Shop':         $item->title = 'Tienda'; break;
+					case 'Cart':         $item->title = 'Carrito'; break;
+					case 'Checkout':     $item->title = 'Pagar'; break;
+					case 'My account':
+					case 'My Account':   $item->title = 'Mi Cuenta'; break;
+					case 'Wishlist':
+					case 'WishList':   $item->title = 'Lista de deseos'; break;
+					case 'Blog':         $item->title = 'Blog'; break;
+					case 'Contact':      $item->title = 'Contacto'; break;
+					case 'About us':
+					case 'About Us':   $item->title = 'Sobre nosotros'; break;
+					case 'Home':         $item->title = 'Inicio'; break;
+				}
+			}
+			if ( is_object( $item ) && isset( $item->post_title ) && $item->post_title !== $item->title ) {
+				$pt = trim( (string)$item->post_title );
+				switch ( $pt ) {
+					case 'Shop':         $item->post_title = 'Tienda'; break;
+					case 'Cart':         $item->post_title = 'Carrito'; break;
+					case 'Checkout':     $item->post_title = 'Pagar'; break;
+					case 'My account':
+					case 'My Account':   $item->post_title = 'Mi Cuenta'; break;
+					case 'Wishlist':
+					case 'WishList':   $item->post_title = 'Lista de deseos'; break;
+					case 'Blog':         $item->post_title = 'Blog'; break;
+					case 'Contact':      $item->post_title = 'Contacto'; break;
+					case 'About us':
+					case 'About Us':   $item->post_title = 'Sobre nosotros'; break;
+					case 'Home':         $item->post_title = 'Inicio'; break;
+				}
+			}
+		}
+		return $items;
+	}
+	return $items;
+}
+endif;
+// Filtro 1: menú YA RENDERIZADO (string HTML) — prioridad MUY ALTA 999999
+add_filter( 'wp_nav_menu_items', 'storex_child_traducir_menu_nav_items', 999999, 2 );
+// Filtro 2: objetos ANTES de renderizar (por si StoreX usa wp_get_nav_menu_items() directo
+add_filter( 'wp_get_nav_menu_items', 'storex_child_traducir_menu_nav_items', 999999, 2 );
+// Filtro 3: widget_nav_menu (algunos temas usan este)
+add_filter( 'widget_nav_menu_args', function( $nav_menu_args, $nav_menu, $args ) {
+	if ( isset( $nav_menu_args['fallback_cb'] ) ) { /* noop */ }
+	return $nav_menu_args;
+}, 1, 3 );
+add_filter( 'pre_wp_nav_menu', function( $output, $args ){
+	return $output; // por si algún fallback
+}, 1, 2 );
+/* =============================================================================
    7-bis) Aumentar productos Novedades en carrito vacío (Woo shortcode limit=4 → 12)
    ========================================================================== */
 add_filter( 'shortcode_atts_products', 'storex_child_aumentar_productos_novedades', 999999, 4 );
