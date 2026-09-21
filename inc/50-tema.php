@@ -1607,8 +1607,6 @@ if ( ! function_exists( 'storex_child_shutdown_final' ) ) {
 			}
 
 			echo $_scx_html;
-		} else {
-			echo '<!-- SCX_SHUTDOWN_RAN_BUT_HTML_EMPTY -->';
 		}
 	}
 }

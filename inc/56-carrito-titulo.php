@@ -688,165 +688,241 @@ add_action( 'wp_footer', function(){
     var resumen = $('.wp-block-woocommerce-cart-order-summary-block, .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap');
     if(!resumen) return false;
     // ==========================================
-    // FORZAR ORDER A TODOS LOS HIJOS (SIN CONDICIONES RARAS)
-    // Order numérico (menor = más arriba):
-    // 10 = TITULO "Resumen del pedido"
-    // 20 = Cupon (input + btn Aplicar / oculto por defecto)
-    // 30 = Shipping oculto (wp-block-woocommerce-cart-order-summary-totals-block)
-    // 70 = Productos (scx-rl-productos)
-    // 75 = Descuentos (scx-rl-descuentos)
-    // 99 = TOTAL FINAL (wc-block-components-totals-wrapper SIN ser cupon)
+    // [ELIMINADO 17/09] BLOQUE FORZAR ORDER POR JS.
+    // AHORA ORDER ES SOLO POR CSS (style.css, selector por clase):
+    // 10 Título, 20 Cupón, 30 Shipping, 70 Productos, 75 Descuentos, 99 Total.
+    // Motivo: style.setProperty('order',X,'important') cada ciclo creaba race condition
+    // con React (quien borra/crea el nodo en cada repintado del resumen) = ERROR insertBefore
+    // Node is not child of this node. NUNCA MAS JS toca el order.
     // ==========================================
-    for(var i=0;i<resumen.children.length;i++){
-      var ch = resumen.children[i];
-      if(!ch) continue;
-      var ord = 50;
-      var isTitulo = (ch.classList && (
-        ch.classList.contains('wp-block-woocommerce-cart-order-summary-heading-block') ||
-        ch.classList.contains('wc-block-cart__totals-title')
-      )) || (ch.tagName && ch.tagName.toLowerCase() === 'h2');
-      var isCupon = ch.classList && (
-        ch.classList.contains('scx-coupon-block') ||
-        ch.classList.contains('wp-block-woocommerce-cart-order-summary-coupon-form-block')
-      );
-      var isShipping = ch.classList && ch.classList.contains('wp-block-woocommerce-cart-order-summary-totals-block');
-      var isProd = ch.id === 'scx-rl-productos';
-      var isDesc = ch.id === 'scx-rl-descuentos';
-      var esWrapperTotalsFinal = (
-        ch.classList &&
-        ch.classList.contains('wc-block-components-totals-wrapper') &&
-        !isCupon  // NO es el wrapper del cupon
-      );
-      if(isTitulo){ ord = 10; }
-      else if(isCupon){ ord = 20; }
-      else if(isShipping){ ord = 30; }
-      else if(isProd){ ord = 70; }
-      else if(isDesc){ ord = 75; }
-      else if(esWrapperTotalsFinal){ ord = 99; }
-      // Forzar con setProperty important (gana a style="order:X" normal y a CSS externo)
-      ch.style.setProperty('order', ord, 'important');
-      // Por si acaso: flex-order y orden CSS antiguo
-      try{ ch.style.setProperty('flex-order', ord, 'important'); }catch(err){}
-      // Debug color (solo usar temporal para ver cual es cual: ch.style.outline = '2px dashed #'+String(ord*333333).padStart(6,'0'));
-    }
-    // Si ya existen las 2 lineas, salir
+    // Si ya existen las 2 lineas, salir y solo actualizar textos (NO tocar el DOM)
     if(document.getElementById('scx-rl-productos') && document.getElementById('scx-rl-descuentos')){
       actualizarValores();
       return true;
     }
     var rows = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr, .wc-block-cart-item');
     if(!rows || rows.length === 0){ return false; }
-    // 1) Productos
+    // 1) Productos (CREAR UNA SOLA VEZ. NUNCA mas order por JS = CSS lo hace.)
     if(!document.getElementById('scx-rl-productos')){
       var p = document.createElement('div');
       p.id = 'scx-rl-productos';
       p.className = 'wc-block-components-totals-item wc-block-components-totals-subtotal-item scx-resumen-linea';
-      // Orden inline + setProperty
+      // Order 70 LO ASIGNA style.css por selector #scx-rl-productos. NUNCA JS order inline.
       p.style.cssText = 'display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 6px 0;padding:4px 0 10px 0;width:100%;border-bottom:1px dashed #e3e6ec;';
       p.innerHTML = '<span class="wc-block-components-totals-item__label scx-rl-label" style="font-size:14px;color:#374151;font-weight:400;flex:1 1 auto;">Productos (0)</span><span class="wc-block-components-totals-item__value scx-rl-value" style="font-size:14px;color:#1f2937;font-weight:500;white-space:nowrap;flex:0 0 auto;">S/ 0.00</span>';
-      p.style.setProperty('order', 70, 'important');
       resumen.appendChild(p);
     }
-    // 2) Descuentos (display none si no hay)
+    // 2) Descuentos (CREAR UNA SOLA VEZ. NUNCA mas order por JS).
     if(!document.getElementById('scx-rl-descuentos')){
       var d = document.createElement('div');
       d.id = 'scx-rl-descuentos';
       d.className = 'wc-block-components-totals-item wc-block-components-totals-discount-item scx-resumen-linea';
+      // Order 75 LO ASIGNA style.css por selector #scx-rl-descuentos. NUNCA JS order inline.
       d.style.cssText = 'display:none;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 8px 0;padding:4px 0 8px 0;width:100%;border-bottom:1px dashed #e3e6ec;';
-      d.innerHTML = '<span class="wc-block-components-totals-item__label scx-rl-label" style="font-size:14px;color:#b91c1c;font-weight:400;flex:1 1 auto;">Descuentos (1)</span><span class="wc-block-components-totals-item__value scx-rl-value" style="font-size:14px;color:#b91c1c;font-weight:500;white-space:nowrap;flex:0 0 auto;">- S/ 0.00</span>';
-      d.style.setProperty('order', 75, 'important');
+      d.innerHTML = '<span class="wc-block-components-totals-item__label scx-rl-label" style="font-size:14px;color:#b91c1c;font-weight:400;flex:1 1 auto;">Descuentos (0)</span><span class="wc-block-components-totals-item__value scx-rl-value" style="font-size:14px;color:#b91c1c;font-weight:500;white-space:nowrap;flex:0 0 auto;">- S/ 0.00</span>';
       resumen.appendChild(d);
     }
-    // Forzar orden DESPUES de agregar los nuevos hijos tambien
-    try{
-      var p1 = document.getElementById('scx-rl-productos'); if(p1) p1.style.setProperty('order', 70, 'important');
-      var d1 = document.getElementById('scx-rl-descuentos'); if(d1) d1.style.setProperty('order', 75, 'important');
-      var tit = resumen.querySelector('h2.wc-block-cart__totals-title, .wp-block-woocommerce-cart-order-summary-heading-block'); if(tit) tit.style.setProperty('order', 10, 'important');
-      var totalWrapFinal=null;
-      for(var j=0;j<resumen.children.length;j++){
-        var cj=resumen.children[j];
-        if(cj.classList && cj.classList.contains('wc-block-components-totals-wrapper') && !(cj.classList.contains('scx-coupon-block')||cj.classList.contains('wp-block-woocommerce-cart-order-summary-coupon-form-block'))){
-          totalWrapFinal = cj; break;
-        }
-      }
-      if(totalWrapFinal){ totalWrapFinal.style.setProperty('order', 99, 'important'); }
-    }catch(err){}
+    // [ELIMINADO 17/09] "Forzar orden DESPUES de agregar los nuevos hijos" (causaba crash insertBefore).
+    // Order ahora es SOLO por CSS. NUNCA MAS JS toca style.order de ningun hijo.
     actualizarValores();
     return true;
   }
-  // Actualizar valores: store async + fallback DOM
-  async function actualizarValores(){
+  // Actualizar valores: SOLO FALLBACK DOM (copiar valores YA actualizados por Woo React en sus nodos nativos).
+  // NUNCA mas wp.data.select() -> retorna datos CACHEADOS (no actualiza al cambiar cantidad hasta F5).
+  function actualizarValores(){
     var pLbl = $('#scx-rl-productos .scx-rl-label');
     var pVal = $('#scx-rl-productos .scx-rl-value');
-    var dEl = $('#scx-rl-descuentos');
+    var dEl  = $('#scx-rl-descuentos');
     var dLbl = dEl ? dEl.querySelector('.scx-rl-label') : null;
     var dVal = dEl ? dEl.querySelector('.scx-rl-value') : null;
+    // Total label "Subtotal / Total" -> solo "Total:"
     var totLbl = $('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item .wc-block-components-totals-item__label, .wc-block-components-totals-item.wc-block-components-totals-footer-item .wc-block-components-totals-item__label');
-    if(totLbl){ var txt = (totLbl.textContent||'').trim(); if(txt.toLowerCase().indexOf('total') === 0){ totLbl.textContent = 'Total:'; } }
+    if(totLbl){ var txtL = (totLbl.textContent||'').trim(); if(txtL.toLowerCase().indexOf('total') === 0){ totLbl.textContent = 'Total:'; } }
+    // Taxes description ocultar (SOLO display, no remove() para no romper React)
     var descEls = document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item .wc-block-components-totals-item__description, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-item[class*="footer"] [class*="description"]');
     descEls.forEach(function(el){
-      var txt=(el.textContent||'').toLowerCase();
-      if(txt.indexOf('tax') >= 0){ try{ el.remove(); }catch(err){ el.style.display='none'; } }
+      var tx=(el.textContent||'').toLowerCase();
+      if(tx.indexOf('tax') >= 0 || tx.indexOf('impuesto') >= 0){ try{ el.style.display='none'; }catch(err){} }
     });
-    // Valores del store async
+    // ==========================================
+    // OBTENER VALORES (SÓLO DOM, SIN wp.data = SIN cache.)
+    // Los nodos de Woo React (nativos) se actualizan AUTOMATICAMENTE cuando termina update-item 200 OK.
+    // Nosotros SÓLO COPIAMOS su textContent a nuestras lineas (Productos / Descuentos).
+    // ==========================================
     var itemsCount = 0;
     var sub = 0;
     var desc = 0;
     var descs = 0;
-    var total = 0;
-    try{
-      if(window.wp && window.wp.data && typeof window.wp.data.select === 'function'){
-        var sel = window.wp.data.select('wc/store/cart');
-        if(sel && typeof sel.getCartData === 'function'){
-          var cd;
-          try{ cd = await sel.getCartData(); }catch(err){ cd = sel.getCartData(); }
-          if(cd){
-            itemsCount = cd.itemsCount || cd.items_count || 0;
-            if(cd.coupons && Array.isArray(cd.coupons)){ descs = cd.coupons.length; }
-            if(cd.totals && typeof cd.totals === 'object'){
-              var mu = parseInt(cd.totals.currency_minor_unit||2, 10);
-              var div = Math.pow(10, mu);
-              if(cd.totals.total_items !== undefined){ sub = parseFloat(cd.totals.total_items)/div; }
-              else if(cd.totals.subtotal !== undefined){ sub = parseFloat(cd.totals.subtotal)/div; }
-              if(cd.totals.total_discount !== undefined){ desc = parseFloat(cd.totals.total_discount)/div; }
-              else if(cd.totals.discount_total !== undefined){ desc = parseFloat(cd.totals.discount_total)/div; }
-              if(cd.totals.total_price !== undefined){ total = parseFloat(cd.totals.total_price)/div; }
-              else if(cd.totals.total !== undefined){ total = parseFloat(cd.totals.total)/div; }
-            }
-          }
+    var rows = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr');
+    if(rows && rows.length){
+      for(var ix=0; ix<rows.length; ix++){
+        var row = rows[ix];
+        var qInput = row.querySelector('input[type="number"][class*="quantity"], input.wc-block-components-quantity-selector__input, input[name*="quantity"], [class*="quantity-selector"] input');
+        if(qInput){ var qty = parseInt(qInput.value||qInput.getAttribute('value')||'1',10); itemsCount += (qty>0 && !isNaN(qty)) ? qty : 1; }
+        else { itemsCount += 1; }
+        var moneyEls = row.querySelectorAll('span.woocommerce-Price-amount, span[class*="price"], td:last-child, [class*="price-amount"]');
+        var lineTot = 0;
+        if(moneyEls && moneyEls.length){ lineTot = parseMoney((moneyEls[moneyEls.length-1].textContent||'').trim()); }
+        if(lineTot===0){
+          var rowText = (row.textContent||'').replace(/\s+/g,' ');
+          var re = /S\/\s*([0-9.,]+)/g; var match; var lastMatch = null;
+          while( (match = re.exec(rowText)) !== null ){ lastMatch = match; }
+          if(lastMatch){ lineTot = parseMoney(lastMatch[0]); }
         }
+        if(lineTot>0){ sub += lineTot; }
       }
-    }catch(err){}
-    // Fallback DOM si store dio 0
-    if(!itemsCount){
-      var r = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr, .wc-block-cart-item');
-      if(r && r.length){ itemsCount = r.length; }
     }
-    if(!sub && total){ sub = total + desc; }
-    // Actualizar textos
+    // 2) Subtotal: buscar nodo WOO NATIVO "Subtotal" / subtotal-item en resumen padre
+    var natSub = document.querySelector('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-subtotal-item .wc-block-components-totals-item__value, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-item[class*="subtotal"] .wc-block-components-totals-item__value, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper > *:first-child .wc-block-components-totals-item__value, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-item .wc-block-components-totals-item__value');
+    if(natSub && sub===0){ sub = parseMoney( (natSub.textContent||'').trim() ); }
+    // 3) Descuento: buscar nodo WOO NATIVO "Descuentos" / discount-item en resumen padre.
+    //    Ademas, contar coupons aplicados (descs) para el label "Descuentos (N)".
+    var natDesc = document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-discount-item, .wp-block-woocommerce-cart-order-summary-block [class*="-discount"]');
+    if(natDesc && natDesc.length && sub===0){
+      descs = natDesc.length;
+      for(var k=0;k<natDesc.length;k++){
+        var vEl = natDesc[k].querySelector('.wc-block-components-totals-item__value');
+        if(vEl){ var vx = parseMoney( (vEl.textContent||'').trim() ); if(vx>0){ desc += vx; } }
+      }
+    }
+    // 4) Contar cupones aplicados (alternativa mas exacta: nodos .wc-block-components-totals-coupon)
+    var coupAplic = document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block [class*="coupon"] .wc-block-components-totals-item__value, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-coupon, .wp-block-woocommerce-cart-order-summary-block [data-coupon]');
+    if(coupAplic && coupAplic.length && descs===0){ descs = coupAplic.length; }
+    // DESCUENTO CALCULADO (preferido a natDesc, que no existe en tu resumen):
+    // Subtotal (por filas) - Total del resumen Woo = Descuento total aplicado:
+    if(sub > 0 && total > 0 && sub > total + 0.01 && desc === 0){
+      desc = sub - total;
+      descs = 1;
+      var chips = document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-chip, .wp-block-woocommerce-cart-order-summary-block [data-coupon]');
+      if(chips && chips.length){ descs = chips.length; }
+    }
+    // Fallback si itemsCount y sub son 0 pero Total no es 0 (carrito con datos):
+    var natTot = document.querySelector('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item .wc-block-components-totals-item__value');
+    var total = natTot ? parseMoney( (natTot.textContent||'').trim() ) : 0;
+    if(itemsCount===0 && total>0){ itemsCount = 1; }
+    if(sub===0 && total>0){ sub = total + desc; }
+    // ==========================================
+    // FIN: ACTUALIZAR SOLO textContent y display. NUNCA tocar order/create/remove.
+    // ==========================================
     if(pLbl){ pLbl.textContent = 'Productos (' + (itemsCount||0) + ')'; }
     if(pVal){ pVal.textContent = fmt(sub); }
+    var hayD = Number(desc) > 0.001;
     if(dEl){
-      var hayD = Number(desc) > 0.001;
       dEl.style.display = hayD ? 'flex' : 'none';
       if(hayD){
         if(dLbl){ dLbl.textContent = 'Descuentos (' + (Number(descs)||0) + ')'; }
         if(dVal){ dVal.textContent = '- ' + fmt(desc); }
       } else {
-        // NO hay descuento: LIMPIAR label y value para que no aparezcan textos viejos (bug "Descuentos (1)" visible)
         if(dLbl){ dLbl.textContent = 'Descuentos (0)'; }
         if(dVal){ dVal.textContent = '- S/ 0.00'; }
       }
     }
+    // ============================================================
+    // ACTUALIZAR TITULO "Carrito (N)" (h2#scx-carrito-titulo)
+    // PHP lo crea 1 sola vez al cargar la pagina. Se quedaba congelado.
+    // Actualizamos su numero y label "producto(s)" aqui.
+    // ============================================================
+    var titH2 = document.getElementById('scx-carrito-titulo');
+    if(titH2){
+      var n = Math.max(0, parseInt(itemsCount||0,10));
+      titH2.setAttribute('data-scx-count', String(n));
+      var spnCount = titH2.querySelector('.scx-carrito-titulo__count');
+      var spnLbl = titH2.querySelector('.scx-carrito-titulo__lbl');
+      if(spnCount){ spnCount.textContent = String(n); }
+      if(spnLbl){ spnLbl.textContent = (n === 1 ? 'producto' : 'productos'); }
+    }
+    // ============================================================
+    // UX NIVEL 2: Mensaje mini "No hay mas unidades" por fila carrito.
+    // Si input quantity VALUE == MAX (ej: max=1 value=1 ultimo stock)
+    // mostrar bajo el selector: "⚠ No hay más unidades en stock"
+    // Evita que usuario piense que el boton + esta roto.
+    // ============================================================
+    try{
+      var filas = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr');
+      if(filas && filas.length){
+        for(var ix=0; ix<filas.length; ix++){
+          var row = filas[ix];
+          var qInp = row.querySelector('.wc-block-cart-item__quantity input[type="number"], .wc-block-components-quantity-selector__input, [class*="quantity-selector"] input[type="number"]');
+          if(!qInp) continue;
+          var v = parseInt(qInp.value||'0',10);
+          var mx = parseInt(qInp.getAttribute('max')||'0',10);
+          var mn = parseInt(qInp.getAttribute('min')||'0',10);
+          // Contenedor CORRECTO para mostrar el msj: el bloque .wc-block-cart-item__quantity (TIENE overflow visible
+          // para mostrar children POR FUERA del flex box; el quantity selector interno TIENE overflow:hidden = cortaba el span).
+          var boxContainer = row.querySelector('.wc-block-cart-item__quantity') || qInp.closest('.wc-block-cart-item__quantity') || qInp.closest('.wc-block-components-quantity-selector') || qInp.parentElement;
+          if(!boxContainer) continue;
+          var msg = boxContainer.querySelector('.scx-no-stock-msg');
+          var debeMostrar = (mx>0 && v >= mx) || (mn===mx && mx>0 && v>0);
+          if(debeMostrar){
+            if(!msg){
+              msg = document.createElement('span');
+              msg.className = 'scx-no-stock-msg';
+              msg.textContent = '\u26A0 Ya no hay m\u00E1s unidades disponibles';
+              msg.setAttribute('role','status');
+              msg.setAttribute('aria-live','polite');
+              // Styles FUERA de cualquier overflow:hidden => width auto, alineado a la izquierda.
+              msg.style.cssText = 'display:block;margin:5px 0 0 0;padding:0;font-size:11px;font-weight:500;color:#b91c1c;line-height:1.3;letter-spacing:0;white-space:nowrap;width:auto;flex:0 0 auto;text-align:left;';
+              boxContainer.appendChild(msg);
+            }
+            try{ msg.style.display = 'block'; }catch(err){}
+          } else {
+            if(msg){ try{ msg.style.display = 'none'; }catch(err){} }
+          }
+        }
+      }
+    }catch(err){}
+    // ============================================================
+    // TRADUCCION UI (SOLO LECTOR - SOLO textContent, sin tocar DOM)
+    // Traduce los textos VISIBLES de la interfaz que siguen en ingles.
+    // Se actualiza en cada ciclo por si React re-renderiza (cambios cantidad).
+    // ============================================================
+    try{
+      // 1) Tabla lista productos: th/div header con texto "Product" -> "Producto"
+      var tbl = document.querySelector('table.wc-block-cart-items, .wp-block-woocommerce-cart-line-items-block');
+      if(tbl){
+        var headerEls = tbl.querySelectorAll('th, thead *');
+        headerEls.forEach(function(el){
+          for(var k=0;k<el.childNodes.length;k++){
+            var tn = el.childNodes[k];
+            if(tn.nodeType===3){ var tx=(tn.nodeValue||'').replace(/\s+/g,' ').trim(); if(tx==='Product'){ tn.nodeValue='Producto'; break; } }
+          }
+        });
+        // Fallback: si no es th, buscar div/span que tenga solo "Product" como texto visible.
+        var divsHd = tbl.querySelectorAll('[class*=header], [class*=title]');
+        divsHd.forEach(function(el){
+          var cur=(el.textContent||'').replace(/\s+/g,' ').trim();
+          if(cur==='Product'){ el.textContent='Producto'; }
+        });
+      }
+    }catch(err){}
+  }
+  // parseMoney: extraer numero correcto (1,234.56 INT o 1.234,56 PE). Evita bug: replace(/\./g,'') => "30,000.00" = 3,000,000 MAL.
+  function parseMoney(t){
+    if(!t) return 0;
+    // Si tiene patron "S/ ..." tomar de ahi
+    var mt = t.match(/S\/\s*([0-9.,]+)/);
+    var s = mt ? mt[1] : String(t).replace(/[^0-9,\.-]/g,'');
+    if(!s) return 0;
+    var lastComma = s.lastIndexOf(',');
+    var lastDot = s.lastIndexOf('.');
+    if(lastComma === -1 && lastDot === -1){ var n1 = parseInt(s,10); return isNaN(n1)?0:n1; }
+    if(lastDot > lastComma){ // '.' es el ultimo = decimal (formato INT): "30,000.00" -> quitar ',' -> parseFloat
+      s = s.replace(/,/g,'');
+    } else if(lastComma > lastDot){ // ',' es el ultimo = decimal (formato PE): "30.000,00" -> quitar '.' -> cambiar ',' por '.'
+      s = s.replace(/\./g,'').replace(',','.');
+    } else if(lastComma !== -1 && lastDot === -1){ // solo ',' -> "1234,56" -> cambiar ',' por '.'
+      s = s.replace(',','.');
+    }
+    var n = parseFloat(s); return (n && !isNaN(n)) ? n : 0;
   }
   // Polling CREAR lineas (sin limites, lo intentamos hasta que existan)
   var rl2Itv = setInterval(function(){
     if(insertar()){
       clearInterval(rl2Itv);
-      // Updates cada 2.5s (solo esto, no wp.data.subscribe para no romper el actualizar cantidad de Woo)
+      // Updates cada 1.3s (mas rapido que 2.5s, SIN wp.data.subscribe)
       actualizarValores();
-      setInterval(actualizarValores, 2500);
-      window.addEventListener('load', function(){ setTimeout(actualizarValores, 500); });
+      setInterval(actualizarValores, 1300);
+      window.addEventListener('load', function(){ setTimeout(actualizarValores, 400); });
       // ============== CORRECION ERROR "Something went wrong" ==============
       // DESACTIVADO wp.data.subscribe. Causaba error al actualizar cantidad en el carrito.
       // try{ if(window.wp && window.wp.data && typeof window.wp.data.subscribe === 'function'){ window.wp.data.subscribe(function(){ actualizarValores(); }); } }catch(err){}

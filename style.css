@@ -1376,6 +1376,36 @@ html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-co
   padding-left: 20px !important;
   padding-right: 20px !important;
 }
+/* Orden NUMERICO FIJO VIA CSS (NUNCA MAS style.order via JS = evita crash insertBefore React).
+   Asignacion por selector CLASSE / ETIQUETA / NTH-CHILD:
+   10 = TITULO Resumen del pedido
+   20 = BLOQUE CUPON (input Aplicar / wc-block-components-totals-coupon)
+   30 = SHIPPING OCULTO (recojo tienda, display:none por defecto)
+   70 = PRODUCTOS (.scx-rl-productos clase, la linea inyectada)
+   75 = DESCUENTOS (.scx-rl-descuentos clase, la linea inyectada)
+   99 = TOTAL FINAL (wc-block-components-totals-wrapper NO = cupon) */
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .wp-block-woocommerce-cart-order-summary-heading-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > h2.wc-block-cart__totals-title {
+  order: 10 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .wp-block-woocommerce-cart-order-summary-coupon-form-block,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .scx-coupon-block {
+  order: 20 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .wp-block-woocommerce-cart-order-summary-totals-block {
+  order: 30 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .scx-resumen-linea#scx-rl-productos,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > #scx-rl-productos {
+  order: 70 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .scx-resumen-linea#scx-rl-descuentos,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > #scx-rl-descuentos {
+  order: 75 !important;
+}
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .wc-block-components-totals-wrapper:not(.wp-block-woocommerce-cart-order-summary-coupon-form-block):not(.scx-coupon-block) {
+  order: 99 !important;
+}
 /* Si el hijo YA tiene padding inline style (scx-rl-productos / descuentos), sumar padding-left/right SIN eliminar el padding vertical propio del elemento */
 html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-block.scx-coupon-wrap > .scx-resumen-linea {
   padding-left: 20px !important;
