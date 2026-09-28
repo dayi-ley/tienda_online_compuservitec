@@ -416,48 +416,14 @@ add_action( 'wp_footer', function(){
       } catch(e){}
 
       // 5) CREAR LINK TOGGLE DISCRETO
-      var a = document.createElement('a');
-      a.href = 'javascript:void(0)';
-      a.setAttribute('role', 'button');
-      a.setAttribute('tabindex', '0');
-      a.className = 'scx-coupon-toggle';
-      a.innerHTML =
-        '<span class="scx-coupon-toggle__icon">▸</span>' +
-        '<span class="scx-coupon-toggle__label">¿Tienes cupón? Haz clic aquí para aplicarlo</span>';
-
-      var toggleTarget = insertParent;
-      function toggleCupon(e){
-        if ( e ) e.preventDefault();
-        var open = toggleTarget.classList.toggle('scx-coupon-open');
-        if ( toggleTarget !== orderSum ) {
-          if ( open ) orderSum.classList.add('scx-coupon-open');
-          else orderSum.classList.remove('scx-coupon-open');
-        }
-        var icon = a.querySelector('.scx-coupon-toggle__icon');
-        if ( icon ) icon.textContent = open ? '▾' : '▸';
-        if ( open && couponBlock ) {
-          var inp = couponBlock.querySelector('input[type="text"], input[name="coupon_code"]');
-          if ( inp ) {
-            setTimeout(function(){ try { inp.focus(); inp.click && inp.click(); } catch(e){} }, 260);
-          }
-        }
-      }
-      a.addEventListener('click', toggleCupon);
-      a.addEventListener('keydown', function(e){
-        if ( e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32 ) {
-          e.preventDefault();
-          toggleCupon(e);
-        }
-      });
-
-      // 6) ✅ INSERTAR ANTES DEL BOTÓN FINALIZAR COMPRA (no al final)
-      if ( checkoutBlock && checkoutBlock.parentNode ) {
-        checkoutBlock.parentNode.insertBefore(a, checkoutBlock);
-      } else {
-        // fallback: al final del order-summary
-        orderSum.appendChild(a);
-      }
-
+      /* ============================================================
+         CUPÓN VISIBLE SIEMPRE (SIN LINK TOGGLE / SIN COLLAPSE).
+         Ya no creamos link "¿Tienes cupón?" ni usamos clase scx-coupon-open.
+         El CSS nuevo (bloque [4] de style.css) oculta el panel button de
+         Woo y muestra el input + boton "Aplicar cupon" SIEMPRE visibles.
+         Solo dejamos todoOK=true para que los timers finalicen bien y se
+         mantenga la clase scx-coupon-wrap necesaria para estilos.
+         ============================================================ */
       todoOK = true;
     });
     return todoOK;
@@ -727,9 +693,40 @@ add_action( 'wp_footer', function(){
     actualizarValores();
     return true;
   }
+  // ============================================================
+  // FORZAR ORDEN VISUAL RESUMEN (FLEX ORDER inline !important)
+  // Orden EXACTO del screenshot del usuario (arriba -> abajo):
+  // 10=Resumen, 20=Productos, 30=Descuentos, 40=Total, 50=Cupon
+  // Funcion INDEPENDIENTE para que setInterval/setTimeout la llamen
+  // sin lanzar ReferenceError (antes solo existia inline dentro de actualizarValores).
+  // ============================================================
+  function forzarOrder(){
+    try{
+      var resOrder = document.querySelector('.wp-block-woocommerce-cart-order-summary-block');
+      if(resOrder && resOrder.children && resOrder.children.length>0){
+        for(var ior=0; ior<resOrder.children.length; ior++){
+          var cor = resOrder.children[ior];
+          if(!cor || !cor.classList) continue;
+          var order = null;
+          var clsOrder = cor.classList.toString();
+          var txtOrder = (cor.textContent||'').replace(/\s+/g,' ').trim();
+          var idOrder = cor.id || '';
+          if(order===null && (idOrder.indexOf('heading')>=0 || clsOrder.indexOf('cart-order-summary-heading-block')>=0 || clsOrder.indexOf('wc-block-cart__totals-title')>=0 || txtOrder.indexOf('Resumen del pedido')>=0)){ order='10'; }
+          if(order===null && (idOrder==='scx-rl-productos' || (clsOrder.indexOf('totals-subtotal-item')>=0 && clsOrder.indexOf('scx-resumen')>=0))){ order='20'; }
+          if(order===null && (idOrder==='scx-rl-descuentos' || (clsOrder.indexOf('totals-discount-item')>=0 && clsOrder.indexOf('scx-resumen')>=0))){ order='30'; }
+          if(order===null){ if(clsOrder.indexOf('wc-block-components-totals-wrapper')>=0 && (clsOrder.indexOf('footer')>=0 || cor.querySelector('.wc-block-components-totals-footer-item') || txtOrder.indexOf('ncluding')>=0 || txtOrder.indexOf('Total:')>=0)){ order='40'; } }
+          if(order===null && (clsOrder.indexOf('coupon-form-block')>=0 || clsOrder.indexOf('totals-coupon')>=0 || (txtOrder.toLowerCase().indexOf('coupon')>=0 && txtOrder.toLowerCase().indexOf('add')>=0))){ order='50'; }
+          if(order===null){ order='45'; }
+          cor.style.setProperty('order', order, 'important');
+        }
+      }
+    }catch(errOrder){}
+  }
   // Actualizar valores: SOLO FALLBACK DOM (copiar valores YA actualizados por Woo React en sus nodos nativos).
   // NUNCA mas wp.data.select() -> retorna datos CACHEADOS (no actualiza al cambiar cantidad hasta F5).
   function actualizarValores(){
+    // Actualizar order visual (llamada segura, ya existe forzarOrder como funcion):
+    forzarOrder();
     var pLbl = $('#scx-rl-productos .scx-rl-label');
     var pVal = $('#scx-rl-productos .scx-rl-value');
     var dEl  = $('#scx-rl-descuentos');
@@ -803,7 +800,15 @@ add_action( 'wp_footer', function(){
     if(sub===0 && total>0){ sub = total + desc; }
     // ==========================================
     // FIN: ACTUALIZAR SOLO textContent y display. NUNCA tocar order/create/remove.
+    // FIX: Si sub es 0 PERO Total Woo > 0 = React aun NO pinto los precios (BFCache/throttling).
+    // NO escribir S/ 0.00 (bug visual). Esperar proximo ciclo. Solo actualizar labels (N).
     // ==========================================
+    if(natTot && sub <= 0.01 && total > 0){
+      if(pLbl){ pLbl.textContent = 'Productos (' + (itemsCount||0) + ')'; }
+      if(dLbl){ dLbl.textContent = 'Descuentos (' + (Number(descs)||0) + ')'; }
+      if(dEl){ dEl.style.display = hayD ? 'flex' : 'none'; }
+      return;
+    }
     if(pLbl){ pLbl.textContent = 'Productos (' + (itemsCount||0) + ')'; }
     if(pVal){ pVal.textContent = fmt(sub); }
     var hayD = Number(desc) > 0.001;
@@ -915,22 +920,474 @@ add_action( 'wp_footer', function(){
     }
     var n = parseFloat(s); return (n && !isNaN(n)) ? n : 0;
   }
-  // Polling CREAR lineas (sin limites, lo intentamos hasta que existan)
+  // ============================================================
+  // ESTILOS VISUALES CONSISTENTES (EVITA FALLOS INTERMITENTES AL RECARGAR).
+  // Se ejecuta en cada ciclo polling + despues de actualizarValores.
+  // Asegura que los fixes CSS inline se apliquen AUN cuando la pagina sea lenta.
+  // ============================================================
+  function aplicarEstilosVisualesConsistentes(){
+    try{
+      // (A) Ocultar taxes "Including X in taxes" - SOLO display, nunca removeChild.
+      document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item [class*="description"], .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-item__description').forEach(function(el){
+        var tx = (el.textContent||'').toLowerCase();
+        if(tx.indexOf('tax')>=0 || tx.indexOf('impuesto')>=0 || tx.indexOf('ncluding')>=0){
+          try{ el.style.display = 'none'; }catch(err){}
+        }
+      });
+      // (B) ELIMINAR borde top NEGRO / marcado del bloque Total (wc-block-components-totals-footer-item y su wrapper).
+      var totalFt = document.querySelectorAll('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item, .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper > .wc-block-components-totals-item:last-child');
+      totalFt.forEach(function(el){
+        try{ el.style.setProperty('border-top','0 !important'); el.style.setProperty('border','0 !important'); el.style.setProperty('box-shadow','none !important'); el.style.setProperty('outline','none !important'); }catch(err){}
+      });
+      var totalWrapOuter = document.querySelector('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-wrapper');
+      if(totalWrapOuter){ try{ totalWrapOuter.style.setProperty('border-top','0 !important'); totalWrapOuter.style.setProperty('border','0 !important'); }catch(err){} }
+      // (C) CUPON: VISIBLE SIEMPRE (sin collapse, sin toggle).
+      //     Ahora NO tocamos display inline (el CSS nuevo bloque [4] de style.css se
+      //     encarga: oculta solo el boton/link panel de Woo y MUESTRA siempre input
+      //     + boton "Aplicar cupon". No mas clases inventadas scx-coupon-open ni
+      //     aria-expanded=false que forzaban ocultar por error al recargar.
+      // (D) Forzar padding/altura NORMAL de lineas scx (no se angostan por React rerender):
+      ['#scx-rl-productos','#scx-rl-descuentos'].forEach(function(sel){
+        var ln = document.querySelector(sel);
+        if(!ln) return;
+        try{ ln.style.setProperty('padding-top','6px','important'); ln.style.setProperty('padding-bottom','6px','important'); ln.style.setProperty('min-height','30px','important'); }catch(err){}
+        var lbl = ln.querySelector('.scx-rl-label'); var val = ln.querySelector('.scx-rl-value');
+        if(lbl){ try{ lbl.style.lineHeight = '1.5'; lbl.style.fontSize = '15px'; }catch(err){} }
+        if(val){ try{ val.style.lineHeight = '1.5'; val.style.fontSize = '15px'; }catch(err){} }
+      });
+    }catch(errVisual){}
+  }
+  // Polling CREAR lineas (sin limites, lo intentamos hasta que 4 cosas existan SIMULTANEAMENTE).
+  // NO mas clearInterval temprano (causaba cupon expandido/taxes visibles/border negro).
   var rl2Itv = setInterval(function(){
-    if(insertar()){
-      clearInterval(rl2Itv);
-      // Updates cada 1.3s (mas rapido que 2.5s, SIN wp.data.subscribe)
-      actualizarValores();
-      setInterval(actualizarValores, 1300);
-      window.addEventListener('load', function(){ setTimeout(actualizarValores, 400); });
-      // ============== CORRECION ERROR "Something went wrong" ==============
-      // DESACTIVADO wp.data.subscribe. Causaba error al actualizar cantidad en el carrito.
-      // try{ if(window.wp && window.wp.data && typeof window.wp.data.subscribe === 'function'){ window.wp.data.subscribe(function(){ actualizarValores(); }); } }catch(err){}
-      // ===================================================================
+    var ok1 = !!document.getElementById('scx-rl-productos');
+    var ok2 = !!document.getElementById('scx-rl-descuentos');
+    /* CUPON VISIBLE SIEMPRE: ya no se requiere que exista panel button (lo oculta CSS nuevo).
+       Basta con que exista el bloque cupon nativo de Woo + algun input/boton dentro. */
+    var cuponBlock = document.querySelector('.wp-block-woocommerce-cart-order-summary-coupon-form-block, .wc-block-components-totals-coupon, .scx-coupon-block');
+    var okCupon = !!cuponBlock && (cuponBlock.querySelector('input') || cuponBlock.querySelector('button') || cuponBlock.querySelector('.wc-block-components-totals-coupon__form'));
+    var okTax = !!document.querySelector('.wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-footer-item [class*="description"], .wp-block-woocommerce-cart-order-summary-block .wc-block-components-totals-item__description');
+    // ====== QUINTO CHECK NUEVO: PRECIOS VISIBLES (evita bug subtotal S/ 0.00 tras 2min inactivo) ======
+    var okPrecios = false;
+    var _rowsTmp = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr');
+    if(_rowsTmp && _rowsTmp.length>0){
+      _loopPrecios:
+      for(var _ir=0; _ir<_rowsTmp.length; _ir++){
+        var _pre = _rowsTmp[_ir].querySelectorAll('span.woocommerce-Price-amount, [class*="price-amount"], td:last-child, [class*="product-price"]');
+        if(_pre && _pre.length>0){
+          for(var _jp=0; _jp<_pre.length; _jp++){
+            var _pt = ((_pre[_jp].textContent||'').replace(/\s+/g,' ').trim() || '');
+            if(_pt.length >= 5 && (_pt.indexOf('S/')>=0 || _pt.indexOf('.')>=0 || _pt.indexOf(',')>=0)){
+              okPrecios = true; break _loopPrecios;
+            }
+          }
+        }
+      }
     }
-  }, 200);
-  // Primer intento rapido
-  setTimeout(function(){ insertar(); actualizarValores(); }, 200);
+    var insOk = insertar();
+    if(insOk) ok1 = !!document.getElementById('scx-rl-productos'), ok2 = !!document.getElementById('scx-rl-descuentos');
+    forzarOrder(); aplicarEstilosVisualesConsistentes();
+    // SOLO salir del polling si 5 CONDICIONES SIMULTANEAS (ultima: precios ya renderizados React, no esqueleto BFCache):
+    if(ok1 && ok2 && okCupon && okTax && okPrecios){
+      clearInterval(rl2Itv);
+      // ========== HELPER: Ejecutar TODO de un solo golpe (sin pausas). Llamada multiple por segurtat. ==========
+      function corregirYA(){
+        try{ insertar(); }catch(e){}
+        try{ forzarOrder(); }catch(e){}
+        try{ aplicarEstilosVisualesConsistentes(); }catch(e){}
+        try{ actualizarValores(); }catch(e){}
+      }
+      corregirYA(); // Primer golpe INMEDIATO. Sin esperar 1300ms.
+      corregirYA(); // Segundo golpe por si acaso (2x). React hidrata en ~300ms despues del primer clearInterval.
+      setTimeout(corregirYA, 200);  // 200ms despues del init (tercer golpe).
+      setTimeout(corregirYA, 1000); // 1s despues (cuarto golpe - React 100% hidratado).
+      setInterval(function(){ corregirYA(); }, 1300);
+      // ========== EVENTOS EXTRA (atajo el restore BFCache / recarga inmediata / pestaña vuelve visible): ==========
+      window.addEventListener('load', function(){ corregirYA(); setTimeout(corregirYA, 500); setTimeout(corregirYA, 1200); });
+      if(document.readyState === 'complete' || document.readyState === 'interactive'){ corregirYA(); } else { document.addEventListener('DOMContentLoaded', function(){ corregirYA(); setTimeout(corregirYA, 300); }); }
+      // pageshow = SE DISPARA incluso cuando la pagina se restaura desde BFCache (recarga inmediata).
+      window.addEventListener('pageshow', function(e){
+        corregirYA();
+        // Si vino de BFCache (restoredFromCache=true) -> doble correccion 500ms y 1500ms:
+        var persisted = (typeof e.persisted !== 'undefined' && e.persisted === true);
+        if(persisted){ setTimeout(corregirYA, 500); setTimeout(corregirYA, 1500); }
+      });
+      // visibilitychange = cuando el usuario TAB de vuelta (desde otra pestaña).
+      document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState === 'visible'){ corregirYA(); setTimeout(corregirYA, 500); }
+      });
+    }
+  }, 150);
+  // Primer intento rapido (3 golpes)
+  setTimeout(function(){
+    function corregirYA(){
+      try{ insertar(); }catch(e){}
+      try{ forzarOrder(); }catch(e){}
+      try{ aplicarEstilosVisualesConsistentes(); }catch(e){}
+      try{ actualizarValores(); }catch(e){}
+    }
+    corregirYA(); setTimeout(corregirYA, 400); setTimeout(corregirYA, 900);
+  }, 100);
+})();
+</script>
+
+<script>
+/* ============================================================
+   FIX: PREVIENE OCULTACIÓN ACCIDENTAL del filled-block cuando
+   el carrito ESTÁ REALMENTE LLENO. Se ejecuta DESPUÉS del script
+   anterior y NO TOCA EL DOM NUNCA. Solo lee y setea un data-attr.
+   El CSS nuevo (bloque anti-parpadeo) necesita este atributo para
+   MOSTRAR el filled-cart cuando tiene productos. Si es VACÍO →
+   el empty-cart-block se renderiza solo, y el CSS usa :has() para
+   ocultar el filled para siempre.
+   ============================================================ */
+(function(){
+  var _readyScxCart = 0;
+  function _marcarCartListo(){
+    try{
+      var htmlEl = document.documentElement;
+      var bodyEl = document.body;
+      var cartRoot = document.querySelector('.wp-block-woocommerce-cart, [data-block-name="woocommerce/cart"]');
+      var filled = document.querySelector('.wp-block-woocommerce-filled-cart-block, [data-block-name="woocommerce/filled-cart"]');
+      var empty  = document.querySelector('.wp-block-woocommerce-empty-cart-block, [data-block-name="woocommerce/empty-cart"]');
+      var rows   = document.querySelectorAll('.wc-block-cart-items__row, table.wc-block-cart-items tbody tr');
+      var itemsCount = 0;
+      // Contar filas en tabla carrito izquierdo:
+      if(rows && rows.length){
+        for(var i=0;i<rows.length;i++){
+          var q = rows[i].querySelector('input[type="number"][class*="quantity"], input[type="number"].wc-block-components-quantity-selector__input');
+          if(q){ itemsCount += Math.max(0, parseInt(q.value || '0',10) || 1); }
+          else { itemsCount += 1; }
+        }
+      }
+      // Caso 1: CARRITO VACÍO CONFIRMADO -> no tocar nada.
+      if(empty){
+        try{ if(cartRoot) cartRoot.removeAttribute('data-scx-cart-ready'); }catch(e){}
+        try{ if(filled)   filled.removeAttribute('data-scx-ready'); }catch(e){}
+        try{ if(bodyEl)   bodyEl.removeAttribute('data-scx-cart-ready'); }catch(e){}
+        try{ if(htmlEl)   htmlEl.removeAttribute('data-scx-cart-ready'); }catch(e){}
+        return true;
+      }
+      // Caso 2: CARRITO LLENO (hay filas de productos >0 o filled ya existe con items)
+      if((filled && itemsCount > 0) || (filled && rows && rows.length > 0)){
+        try{ if(cartRoot) cartRoot.setAttribute('data-scx-cart-ready','filled'); }catch(e){}
+        try{ if(filled)   filled.setAttribute('data-scx-ready','1'); }catch(e){}
+        try{ if(bodyEl)   bodyEl.setAttribute('data-scx-cart-ready','filled'); }catch(e){}
+        try{ if(htmlEl)   htmlEl.setAttribute('data-scx-cart-ready','filled'); }catch(e){}
+        _readyScxCart += 1;
+        return true;
+      }
+      return false;
+    }catch(err){ return false; }
+  }
+  // Intentos inmediatos + timer para no depender del otro script:
+  _marcarCartListo();
+  setTimeout(_marcarCartListo, 120);
+  setTimeout(_marcarCartListo, 350);
+  setTimeout(_marcarCartListo, 800);
+  setTimeout(_marcarCartListo, 1600);
+  // Y un setInterval corto (250ms x 6s = sin spam):
+  var _tScx = setInterval(function(){
+    if(_marcarCartListo()){ _readyScxCart+=1; if(_readyScxCart>3) clearInterval(_tScx); }
+  }, 250);
+  setTimeout(function(){ clearInterval(_tScx); }, 8000);
+  // También disparar cuando vuelve la pestaña visible (BFCache restore):
+  try{ window.addEventListener('pageshow', function(e){ setTimeout(_marcarCartListo, 0); setTimeout(_marcarCartListo, 400); if(e && e.persisted){ setTimeout(_marcarCartListo, 1400); } }); }catch(err){}
+  try{ document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible'){ setTimeout(_marcarCartListo, 0); setTimeout(_marcarCartListo, 300); } }); }catch(err){}
+})();
+</script>
+
+<script>
+/* ============================================================
+   FIX: TEXTOS CARRITO VACIO EN ESPAÑOL (Woo Blocks i18n bug).
+   PROBLEMA: Cuando eliminas ULTIMO producto (cart LLENO -> VACIO),
+   React re-monta el empty-block SIN cargar traducciones i18n de WP.
+   Muestra strings en ingles:
+     "Your cart is currently empty!"
+     "New in store"
+   SOLUCION: MutationObserver + polling.
+   - Cuando se monta empty-block → forzar textos ES.
+   - Si React vuelve a cambiarlo en 100ms (re-render) → re-forzar.
+   - NO TOCA NADA DE ESTILOS (solo textContent / data-attr).
+   - Mantiene formato / classList / align-center / icon intactos.
+   ============================================================ */
+(function(){
+  var TXT_VACIO_ES = 'Tu carrito est\u00e1 actualmente vac\u00edo!';
+  var TXT_NEW_ES  = 'Novedades';
+  var STRINGS_EN = [
+    'Your cart is currently empty', 'your cart is currently empty',
+    'Your cart is empty', 'your cart is empty',
+    'New in store', 'new in store',
+    'New products', 'new products'
+  ];
+  function _tieneTextoEn(txt){
+    if(!txt) return false;
+    var t = String(txt).replace(/\s+/g,' ').trim().toLowerCase();
+    for(var i=0;i<STRINGS_EN.length;i++){ if(t.indexOf(STRINGS_EN[i].toLowerCase())>=0) return true; }
+    return false;
+  }
+  function _forzarTextosVaciosES(){
+    try{
+      var emptyBlock = document.querySelector('.wp-block-woocommerce-empty-cart-block, [data-block-name="woocommerce/empty-cart"]');
+      if(!emptyBlock){ return false; }
+      var changed = 0;
+      // 1) TITULO CARRITO VACIO:
+      var titVacio = emptyBlock.querySelector('h2.wc-block-cart__empty-cart__title, h2.with-empty-cart-icon, h2.wp-block-heading.wc-block-cart__empty-cart__title');
+      if(titVacio){
+        var t1 = String(titVacio.textContent || '').replace(/\s+/g,' ').trim();
+        if(_tieneTextoEn(t1) || String(titVacio.getAttribute('data-scx-empty-es') || '') !== '1'){
+          try{
+            // Mantenemos el icono interior de Woo (si existe) y solo cambiamos el nodo TEXTO:
+            var icono = titVacio.querySelector('svg, img, span.wc-block-cart__empty-cart-icon, span[class*="icon"]');
+            var soloTextoFinal = TXT_VACIO_ES;
+            if(icono){
+              // Mantener icono: borrar hijos TEXTO adyacentes + reemplazar textContent solo el "tail"
+              // (estilo simple: poner icono antes del texto)
+              var padre = titVacio;
+              padre.textContent = '';
+              padre.appendChild(icono.cloneNode(true));
+              var nodoT = document.createTextNode(' ' + soloTextoFinal);
+              padre.appendChild(nodoT);
+            }else{
+              titVacio.textContent = soloTextoFinal;
+            }
+            titVacio.setAttribute('data-scx-empty-es','1');
+            changed += 1;
+          }catch(e){}
+        } else {
+          // Ya esta OK, marcar igual para que el CSS lo muestre
+          if(String(titVacio.getAttribute('data-scx-empty-es') || '') !== '1') titVacio.setAttribute('data-scx-empty-es','1');
+        }
+      }
+      // 2) TITULO "NEW IN STORE" / NOVEDADES (siguiente h2 alineado centro despues del hr dots):
+      var separador = emptyBlock.querySelector('hr.wp-block-separator, hr.wp-block-separator.is-style-dots, hr[class*="wp-block-separator"]');
+      var titNovedades = null;
+      if(separador){
+        // hermano siguiente hasta encontrar un h2 wp-block-heading has-text-align-center:
+        var sig = separador.nextElementSibling;
+        while(sig){
+          if(sig.tagName && sig.tagName.toLowerCase()==='h2'
+             && (sig.classList.contains('wp-block-heading') || /heading/i.test(sig.className || ''))
+             && sig.classList.contains('has-text-align-center')){
+            titNovedades = sig;
+            break;
+          }
+          sig = sig.nextElementSibling;
+        }
+      }
+      if(!titNovedades){
+        // Fallback: segundo h2 wp-block-heading has-text-align-center en el empty block:
+        var _allH2 = emptyBlock.querySelectorAll('h2.wp-block-heading.has-text-align-center');
+        if(_allH2 && _allH2.length>=2) titNovedades = _allH2[1];
+      }
+      if(titNovedades){
+        var t2 = String(titNovedades.textContent || '').replace(/\s+/g,' ').trim();
+        if(_tieneTextoEn(t2) || String(titNovedades.getAttribute('data-scx-empty-es') || '') !== '1'){
+          try{
+            titNovedades.textContent = TXT_NEW_ES;
+            titNovedades.setAttribute('data-scx-empty-es','1');
+            changed += 1;
+          }catch(e){}
+        } else {
+          if(String(titNovedades.getAttribute('data-scx-empty-es') || '') !== '1') titNovedades.setAttribute('data-scx-empty-es','1');
+        }
+      }
+      // Caso simple: Si ya estaban en espanol de por si (carga directa /cart vacio), marcar para ver:
+      if(titVacio && !_tieneTextoEn(titVacio.textContent) && String(titVacio.getAttribute('data-scx-empty-es')||'')!=='1') titVacio.setAttribute('data-scx-empty-es','1');
+      if(titNovedades && !_tieneTextoEn(titNovedades.textContent) && String(titNovedades.getAttribute('data-scx-empty-es')||'')!=='1') titNovedades.setAttribute('data-scx-empty-es','1');
+      return (changed > 0);
+    }catch(err){ return false; }
+  }
+  // 1) Polling corto por 6s (por si React re-renderiza varias veces):
+  _forzarTextosVaciosES();
+  setTimeout(_forzarTextosVaciosES, 80);
+  setTimeout(_forzarTextosVaciosES, 250);
+  setTimeout(_forzarTextosVaciosES, 600);
+  setTimeout(_forzarTextosVaciosES, 1200);
+  setTimeout(_forzarTextosVaciosES, 2500);
+  var _itvEmpty = setInterval(function(){ if(_forzarTextosVaciosES()){ /* seguir vigilando por si react re cambia */ } }, 220);
+  setTimeout(function(){ clearInterval(_itvEmpty); }, 15000);
+  // 2) MutationObserver (CAPTURA cuando se MONTA el empty-block DESPUES de eliminar ultimo producto en vivo!):
+  try{
+    var _obEmpty = new MutationObserver(function(_list){
+      for(var _i=0; _i<_list.length; _i++){
+        var _m = _list[_i];
+        if(_m && _m.addedNodes && _m.addedNodes.length>0){
+          for(var _j=0; _j<_m.addedNodes.length; _j++){
+            var _n = _m.addedNodes[_j];
+            if(_n && _n.nodeType===1){
+              var _es = (_n.classList && (_n.classList.contains('wp-block-woocommerce-empty-cart-block') || _n.classList.contains('wc-block-cart__empty-cart'))) || (_n.getAttribute && _n.getAttribute('data-block-name')==='woocommerce/empty-cart');
+              var _contiene = (_es) ? true : (_n.querySelector && (!!_n.querySelector('.wp-block-woocommerce-empty-cart-block') || !!_n.querySelector('[data-block-name="woocommerce/empty-cart"]')));
+              if(_es || _contiene){
+                // Empty block montado! Forzar textos inmediatamente (3 intentos en 0/60/250ms) por si React re-renderiza:
+                setTimeout(_forzarTextosVaciosES, 0);
+                setTimeout(_forzarTextosVaciosES, 80);
+                setTimeout(_forzarTextosVaciosES, 260);
+                setTimeout(_forzarTextosVaciosES, 1000);
+              }
+            }
+          }
+        }
+        // Si hubo cambios de texto (React tradujo/actualizo): re-forzar si volvio ingles
+        if(_m && _m.type==='characterData'){
+          setTimeout(_forzarTextosVaciosES, 40);
+        }
+      }
+    });
+    _obEmpty.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+  }catch(err){}
+  // 3) Trigger al volver visible / restore from BFCache:
+  try{ window.addEventListener('pageshow', function(e){ setTimeout(_forzarTextosVaciosES, 0); setTimeout(_forzarTextosVaciosES, 500); setTimeout(_forzarTextosVaciosES, 1800); if(e && e.persisted){ setTimeout(_forzarTextosVaciosES, 3500); } }); }catch(err){}
+  try{ document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible'){ setTimeout(_forzarTextosVaciosES, 0); setTimeout(_forzarTextosVaciosES, 400); setTimeout(_forzarTextosVaciosES, 1600); } }); }catch(err){}
+})();
+</script>
+
+<script>
+/* ============================================================
+   SPINNER MINI (SOLO AL AGREGAR PRODUCTO). NADA MAS.
+   - NO se muestra al ELIMINAR, ni CAMBIAR cantidad, ni VACIAR.
+   - SOLO se muestra en:
+       a) Click en botón "Agregar al carrito" (clases Woo nativas).
+       b) Request XHR/FETCH de tipo "?wc-ajax=add_to_cart" o "/add-item".
+   - SIN blur, SIN fondo full pantalla, SIN textos largos, timeout CORTO 4s.
+   - Spinner se inserta SOLO DENTRO del bloque ".wp-block-woocommerce-cart"
+     (absolute top) y ocupa solo ese bloque. Header/Footer interactivos.
+   ============================================================ */
+(function(){
+  var _spinnerInsertado = false;
+  var _estaMostrando = false;
+  var _hidTimer = null;
+  var _hardTimer = null;
+
+  function _obtenerOSpin(){
+    var s = document.getElementById('scx-cart-add-spinner');
+    if(s) return s;
+    var cartRoot = document.querySelector('.wp-block-woocommerce-cart, [data-block-name="woocommerce/cart"]');
+    if(!cartRoot) return null;
+    try{
+      var nuevo = document.createElement('div');
+      nuevo.id = 'scx-cart-add-spinner';
+      nuevo.setAttribute('role','status');
+      nuevo.innerHTML = ''
+      + '<div class="scx-msg">'
+      +   '<span class="scx-spinner" aria-hidden="true"></span>'
+      +   '<span class="scx-msg-txt">Agregando...</span>'
+      + '</div>';
+      try{ cartRoot.insertBefore(nuevo, cartRoot.firstChild); }
+      catch(e){ try{ cartRoot.appendChild(nuevo); }catch(e2){} }
+      _spinnerInsertado = true;
+      return document.getElementById('scx-cart-add-spinner');
+    }catch(err){ return null; }
+  }
+  function _show(){
+    if(_estaMostrando) return;
+    var el = _obtenerOSpin();
+    if(!el){ return; }
+    try{ el.classList.add('scx-show'); }catch(e){}
+    _estaMostrando = true;
+    if(_hidTimer){ clearTimeout(_hidTimer); _hidTimer=null; }
+    // HARD TIMEOUT MAXIMO 4s (no se queda pillado nunca):
+    if(_hardTimer){ clearTimeout(_hardTimer); }
+    _hardTimer = setTimeout(function(){ _hide(true); }, 4000);
+  }
+  function _hide(force){
+    if(!_estaMostrando && !force) return;
+    if(_hidTimer){ clearTimeout(_hidTimer); }
+    _hidTimer = setTimeout(function(){
+      var el = document.getElementById('scx-cart-add-spinner');
+      if(el){ try{ el.classList.remove('scx-show'); }catch(e){} }
+      _estaMostrando = false;
+      if(_hardTimer){ clearTimeout(_hardTimer); _hardTimer=null; }
+    }, 180); // buffer MUY CORTO 180ms (desaparece rapido)
+  }
+
+  // ============ SOLO DETECTA ACCIONES DE AGREGAR ============
+  function _urlEsAgregarSolo(url){
+    if(!url) return false;
+    try{
+      var u = String(url).toLowerCase();
+      return (
+        u.indexOf('wc-ajax=add_to_cart')>=0           // Woo nativo AJAX add
+        || u.indexOf('/cart/add-item')>=0
+        || u.indexOf('/wc/store/v1/cart/add-item')>=0
+      );
+    }catch(e){ return false; }
+  }
+
+  // 1) Interceptor XHR (solo requests de agregar):
+  try{
+    var _origXHROpen = window.XMLHttpRequest.prototype.open;
+    window.XMLHttpRequest.prototype.open = function(method, url, async, user, pass){
+      var esAdd = _urlEsAgregarSolo(url);
+      if(esAdd){
+        _show();
+        this.addEventListener('loadend', function(){ _hide(false); });
+        this.addEventListener('error', function(){ _hide(true); });
+        this.addEventListener('abort', function(){ _hide(true); });
+      }
+      return _origXHROpen.apply(this, arguments);
+    };
+  }catch(err){}
+
+  // 2) Interceptor FETCH (solo requests de agregar):
+  try{
+    var _origFetch = window.fetch;
+    if(_origFetch && typeof _origFetch === 'function'){
+      window.fetch = function(input, init){
+        var url = (typeof input === 'string') ? input : (input && input.url ? input.url : '');
+        var esAdd = _urlEsAgregarSolo(url);
+        if(esAdd) _show();
+        var prom = _origFetch.apply(this, arguments);
+        if(esAdd){ prom.then(function(){ _hide(false); }, function(){ _hide(true); }); }
+        return prom;
+      };
+    }
+  }catch(err){}
+
+  // 3) Interceptor CLICK (solo en botones de "Agregar al carrito"):
+  try{
+    function _esBotonAdd(target){
+      if(!target) return false;
+      var el = (target.nodeType===1)? target : target.parentElement;
+      for(var i=0;i<5 && el; i++){
+        if(el && el.tagName){
+          var tag = el.tagName.toLowerCase();
+          var cls = (el.className||'').toString().toLowerCase();
+          var nameAtr = el.getAttribute ? String(el.getAttribute('name')||'').toLowerCase() : '';
+          var dataPid = el.getAttribute ? String(el.getAttribute('data-product_id')||'') : '';
+          if(tag==='button' || tag==='a' || (tag==='input' && (el.getAttribute&&el.getAttribute('type')==='submit'))){
+            // SOLO detectar ACCION DE AGREGAR:
+            if(
+              cls.indexOf('ajax_add_to_cart')>=0 ||
+              (cls.indexOf('add_to_cart_button')>=0 && cls.indexOf('remove')===-1) ||
+              cls.indexOf('single_add_to_cart_button')>=0 ||
+              nameAtr === 'add-to-cart' ||
+              (dataPid && dataPid!=='' && cls.indexOf('add_to_cart')>=0)
+            ){
+              // NUNCA mostrar si es remove_from_cart:
+              if(cls.indexOf('remove_from_cart')>=0 || cls.indexOf('remove-item')>=0 || cls.indexOf('delete')>=0){ return false; }
+              return true;
+            }
+          }
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+    var _clkT = null;
+    document.addEventListener('click', function(e){
+      if(e.defaultPrevented) return;
+      if(_esBotonAdd(e.target)){
+        if(_clkT) clearTimeout(_clkT);
+        _clkT = setTimeout(function(){ _show(); }, 0);
+        // Seguridad por si el fetch falla y no se detecta:
+        setTimeout(function(){ if(_estaMostrando){ _hide(true); } }, 3800);
+      }
+    }, true);
+  }catch(err){}
+
+  // 4) Al navegar (beforeunload) borrar por siaca:
+  try{ window.addEventListener('beforeunload', function(){ try{ var el=document.getElementById('scx-cart-add-spinner'); if(el) el.classList.remove('scx-show'); _estaMostrando=false; }catch(e){} }); }catch(e){}
 })();
 </script>
 <?php
