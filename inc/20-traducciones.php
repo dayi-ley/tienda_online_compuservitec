@@ -59,7 +59,10 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 		}
 
 		// Sólo aplicamos a textos de WooCommerce, el tema StoreX o textos default (WP Core)
-		$dominios_permitidos = array( 'woocommerce', 'storex', 'default', 'burger-companion' );
+		// + woocommerce-blocks: Woo 8+ usa DOMINIO SEPARADO para bloques Gutenberg React
+		//   (result count, ordenar por, shop page title de los bloques, etc.). Sin este dominio
+		//   no se traduce Showing 1-16 of 39 ni Shop title del h1.page-title del archive.
+		$dominios_permitidos = array( 'woocommerce', 'woocommerce-blocks', 'storex', 'storex-child', 'default', 'burger-companion' );
 		if ( ! in_array( $domain, $dominios_permitidos, true ) ) {
 			return $translated;
 		}
@@ -380,12 +383,18 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 			}
 		}
 
-		$dominios_permitidos = array( 'woocommerce', 'storex', 'default', 'burger-companion' );
+		$dominios_permitidos = array( 'woocommerce', 'woocommerce-blocks', 'storex', 'storex-child', 'default', 'burger-companion' );
 		if ( ! in_array( $domain, $dominios_permitidos, true ) ) {
 			return $translated;
 		}
 
-		// Showing X-Y of Z results, singular/plural
+		// Showing X-Y of Z results, singular/plural (incluye variantes con HTML span exactas usadas por Woo Blocks)
+		if ( $single === 'Showing 1 result' || $single === 'Showing all %d results' || $plural === 'Showing %1$d&ndash;%2$d of %3$d results' || $plural === 'Showing %1$d–%2$d of %3$d results' ) {
+			if ( (int)$number <= 1 ) {
+				return 'Mostrando 1 resultado';
+			}
+			return 'Mostrando %1$d&ndash;%2$d de %3$d resultados';
+		}
 		if ( $single === 'Showing 1 result' || $plural === 'Showing %1$d&ndash;%2$d of %3$d results' ) {
 			if ( (int)$number <= 1 ) {
 				return 'Mostrando 1 resultado';
@@ -409,6 +418,38 @@ endif;
 add_filter( 'ngettext', 'storex_child_traducciones_numericas_personalizadas', 999999, 5 );
 
 endif; // ! is_admin() — fin de bloque traducciones gettext solo front-end.
+
+/* =============================================================================
+   TRADUCCIÓN ESPECÍFICA: TÍTULO PRINCIPAL <h1 class="page-title">
+   El título de la página de la Tienda (Shop) NO pasa por gettext, WordPress lo
+   lee DIRECTAMENTE de la DB (título del page ID asignado en Woo Settings).
+   Por eso 'Shop' => 'Tienda' de la tabla gettext no lo alcanzaba nunca.
+   Solución: filtro the_archive_title (is_shop / product_cat / product_tag).
+   Funciona TAMBIÉN si el usuario cambia el título en Pages → Editar Tienda.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_titulo_tienda_espanol' ) ) :
+function storex_child_titulo_tienda_espanol( $title ) {
+    if ( ! is_admin() && ( function_exists( 'is_shop' ) || is_tax( 'product_cat' ) || is_tax( 'product_tag' ) ) ) {
+        $t = trim( (string)$title );
+        // Caso 1: Woo normal: <h1>Shop</h1> o Shop:
+        if ( $t === 'Shop' || $t === ':Shop' || stripos( $t, 'Shop:' ) === 0 ) {
+            return str_ireplace( 'Shop', 'Tienda', $t );
+        }
+        // Caso 2: Woo con sufijo
+        if ( $t === 'The Shop' ) return 'La Tienda';
+    }
+    return $title;
+}
+endif;
+add_filter( 'the_archive_title', 'storex_child_titulo_tienda_espanol', 999999, 1 );
+add_filter( 'woocommerce_page_title',   'storex_child_titulo_tienda_espanol', 999999, 1 );
+add_filter( 'wp_title', function( $t ) {
+    if ( is_admin() ) return $t;
+    if ( function_exists('is_shop') && ( is_shop() || is_product_category() || is_product_tag() ) ) {
+        return str_ireplace( array('Shop -', 'Shop |', ' — Shop'), array('Tienda -', 'Tienda |', ' — Tienda'), $t );
+    }
+    return $t;
+}, 999999, 1 );
 
 /* =============================================================================
    TRADUCCIONES ESPECÍFICAS PARA ÍTEMS DEL MENÚ DE NAVEGACIÓN

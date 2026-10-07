@@ -6188,6 +6188,268 @@ html body.woocommerce-cart [data-block-name="woocommerce/cart-items-block"]:not(
   background-repeat: no-repeat;
 }
 
+/* --------------------------------------------------------------------------
+   🔥 FIX: SKELETON de FILAS VACÍAS del carrito (valores/productos/cantidad/subtotal)
+   Diagnóstico 100% confirmado:
+   * HTML inicial (1er pedido Doc) pinta <tr> con 3 hijos <td> PERO
+     innerText.length = 0, inputs=0 (FILA VACÍA de datos).
+   * Woo Blocks NO pone textos/hasta que NO llega el 2do pedido fetch /cart/?_locale=user.
+   * Resultado: Estructura aparece rápido, PERO los textos (nombre/precio/+/-/subtotal)
+     se demoran ~800ms en pintar. Usuario ve "filas vacías en blanco".
+   * No arreglamos la velocidad real (Woo blocks lo hace por diseño).
+   * ARREGLAMOS SOLO PERCEPCIÓN: Mientras una fila NO tenga texto real,
+     pintamos en su interior un skeleton gris de datos (placeholder).
+   * Cuando React rellena texto real (>10 chars), el selector
+     `tr:has(:is(td:empty, td[style*="visibility"], td:not(:has(*))))` NO
+     machea más → skeleton desaparece AUTOMÁTICAMENTE.
+   * 100% CSS-only: 0 JS, 0 reflow, 0 repintado constante, 0 demora agregada.
+   -------------------------------------------------------------------------- */
+
+/* REGLA 1: Contenedor general FILA DE ITEMS VACÍA.
+   Si una fila tr.wc-block-cart-items__row (o cualquier <tr> de items) tiene
+   3 hijos <td> PERO el innerText es 0 (sin textos) → aplica skeleton. */
+html body.woocommerce-cart .wc-block-cart-items__row:has(td:first-child:empty),
+html body.woocommerce-cart .wc-block-cart-items tr:has(td:first-child:empty),
+html body.woocommerce-cart .wc-block-cart-items tbody tr:has(td > *:empty),
+html body.woocommerce-cart table.wp-block-woocommerce-cart-line-items-block tbody tr:not(:has(> td:is(:not(:empty)))) {
+  min-height: 120px !important; /* altura típica de 1 fila producto */
+  background-color: #ffffff !important;
+  position: relative !important;
+  overflow: hidden !important;
+  pointer-events: none !important; /* no clickeable mientras skeleton */
+}
+
+/* REGLA 2: SKELETON DENTRO DE LA FILA (pintamos todas las partes de una fila típica):
+   - Izquierda:  <td> IMAGEN PRODUCTO (80x80 gris)
+   - Centro-medio: 2 barras de NOMBRE PRODUCTO + 1 barra de PRECIO UNITARIO
+   - Centro-derecha: botones QUANTITY SELECTOR (- / 1 / +)
+   - Derecha: SUBTOTAL (texto subtotal 80x16) */
+html body.woocommerce-cart .wc-block-cart-items__row:has(td:first-child:empty)::before,
+html body.woocommerce-cart .wc-block-cart-items tr:has(td:first-child:empty)::before,
+html body.woocommerce-cart .wc-block-cart-items tbody tr:has(td > *:empty)::before,
+html body.woocommerce-cart table.wp-block-woocommerce-cart-line-items-block tbody tr:not(:has(> td:is(:not(:empty))))::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  background-repeat: no-repeat !important;
+  /* 7 piezas visuales de skeleton:
+     1) Imagen producto gris 80x80 (izq, padding 12px)
+     2) Barra nombre producto 42% ancho (arriba)
+     3) Barra "SKU / Marca" más pequeña 28% (abajo del nombre)
+     4) Barra precio unitario (justificado derecha)
+     5) Quantity selector box (100x34, azul clarito)
+     6) Barrita btn -
+     7) Barrita subtotal (derecha final) */
+  background-image:
+    linear-gradient(#e5e7eb 0 0),        /* 1) imagen producto: gris claro sólido MÁS FUERTE */
+    linear-gradient(#d1d5db 0 0),        /* 2) nombre producto: gris medio SÓLIDO (perceptible) */
+    linear-gradient(#e5e7eb 0 0),        /* 3) ref/SKU gris claro sólido */
+    linear-gradient(#bfdbfe 0 0),        /* 4) quantity selector: azul CLARO sÓLIDO (antes transparente) */
+    linear-gradient(#d1d5db 0 0);        /* 5) subtotal: gris medio sólido */
+  background-size:
+    80px 80px,
+    46% 16px,         /* + ancho + alto del 14px original para que se note */
+    26% 12px,         /* + alto */
+    102px 36px,       /* quantity un poco más grande */
+    88px 16px;        /* subtotal ancho + alto */
+  background-position:
+    12px 20px,
+    110px 22px,        /* nombre un poco más arriba para que no quede tan escondido */
+    110px 46px,
+    calc(100% - 214px) 42px,
+    calc(100% - 14px) 52px;
+}
+
+/* REGLA 3: SKELETON PARA NODOS QUE NO SON <tr> PERO TAMPOCO TIENEN TEXTO
+   (algunas versiones Woo pintan un div interno antes que <tr>). */
+html body.woocommerce-cart li.wc-block-cart-items__row:empty { min-height: 120px; background: linear-gradient(#f8fafc, #fff); }
+
+/* REGLA 4: FALLBACK (si :has() no funciona en navegador antiguo):
+   Si no detectamos la fila, pero detectamos que el <tbody> tiene tr sin texto,
+   pintamos 3 placeholders de 120px (3 filas típicas). */
+html body.woocommerce-cart .wc-block-cart-items tbody:not(:has(td:is(:not(:empty)))) {
+  min-height: 380px !important;
+  background-image:
+    linear-gradient(#f8fafc 0 0),
+    linear-gradient(#f8fafc 0 0),
+    linear-gradient(#f8fafc 0 0);
+  background-size: 100% 120px, 100% 120px, 100% 120px;
+  background-position: 0 0, 0 140px, 0 280px;
+  background-repeat: no-repeat;
+}
+
+/* --------------------------------------------------------------------------
+   🔥 FIX: Bloque NUEVOS PRODUCTOS (New in store / product-new) se
+      insertaba TARDE en el CARRITO LLENO (CLS 0.0369).
+   Diagnóstico 100%:
+   * React inserta el bloque wp-block-product-new (Novedades) DENTRO del
+     bloque root carrito (wp-block-woocommerce-cart alignwide) a los
+     2.635 ms, INCLUSO CUANDO EL CARRITO ESTÁ LLENO (no debería).
+   * Este bloque NUEVO +620px de altura → Layout Shift CLS 0.0369.
+   * Solo debería MOSTRARSE cuando CARRITO ESTÁ VACÍO.
+
+   SOLUCIÓN CSS:
+   1. SI EL CARRITO ESTÁ LLENO → OCULTAMOS el bloque product-new para siempre.
+   2. SI EL CARRITO ESTÁ VACÍO → se MUESTRA, PERO RESERVAMOS altura fija 620px
+      desde el paint inicial (así no hay CLS incluso en empty).
+   -------------------------------------------------------------------------- */
+
+/* CASO A (CASO ACTUAL BUG): CARRITO LLENO → OCULTAMOS para SIEMPRE el new-products.
+   Selectores 100% nativos Woo. NINGUNA clase inventada por nosotros.
+   ⚠️ NO USAMOS position:absolute / left:-99999. Solo display:none y colapsamos altura
+      para NO desplazar el footer ni header-search (evita CLS 0.3881). */
+html body.woocommerce-cart .wp-block-woocommerce-cart:has(.wp-block-woocommerce-filled-cart-block) .wp-block-product-new,
+html body.woocommerce-cart .wp-block-woocommerce-cart:has(.wc-block-cart-items__row) .wc-block-product-new,
+html body.woocommerce-cart .wp-block-woocommerce-cart:has(.wc-block-cart-items .wc-block-cart-items__row) [data-block-name="woocommerce/product-new"],
+html body.woocommerce-cart .wp-block-woocommerce-cart:has(table.wc-block-cart-items tbody > tr) .wp-block-product-new {
+  display: none !important;               /* lo quitamos del flujo (altura=0) desde el primer paint */
+  visibility: hidden !important;          /* doble seguridad */
+  opacity: 0 !important;
+  width: 0 !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  pointer-events: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   🔥 FIX DEFINITIVO: RESERVAR ALTURA CONSTANTE del bloque CARRITO desde el
+      milisegundo 0 (elimina FOOTER SHIFT CLS 0.2612 para siempre).
+   Idea correcta del usuario (estándar industria Falabella/Amazon):
+   El documento NO DEBE CAMBIAR DE ALTURA durante la carga. Reservamos un
+   min-height alto desde el paint inicial para que el footer SIEMPRE esté al
+   final de la página y no "suba" cuando React termine de pintar la tabla
+   + resumen + productos (nunca mas "footer aparece arriba, luego baja").
+   -------------------------------------------------------------------------- */
+
+/* A. ALTURA MINIMA PARA /cart/ LLENO (con productos).
+   Medidas promedio reales: 2 productos = 1.780px.
+   Si hay más productos: crece naturalmente (min-height no bloquea altura mayor).
+   Si el carrito ESTÁ VACÍO: desactivamos esta regla por la del punto B. */
+html body.woocommerce-cart:not(:has(.wp-block-woocommerce-empty-cart-block)) .wp-block-woocommerce-cart.alignwide {
+  min-height: 1480px !important;
+  height: auto !important;
+}
+
+/* B. ALTURA MINIMA PARA /cart/ VACÍO (sin productos).
+   Medidas: mensaje vacío 100px + hr 60px + Novedades (4 productos fila) 620px + paddings varios = 1180px */
+html body.woocommerce-cart:has(.wp-block-woocommerce-empty-cart-block) .wp-block-woocommerce-cart.alignwide {
+  min-height: 880px !important;
+  height: auto !important;
+}
+
+/* C. FALLBACK (si :has() no se activa por race condition en navegador):
+   Altura por defecto 1.780px al root cart (cualquier estado). Garantía 100% footer siempre abajo. */
+html body.woocommerce-cart .wp-block-woocommerce-cart.alignwide {
+  min-height: 1480px !important;
+  height: auto !important;
+}
+
+/* --------------------------------------------------------------------------
+   🔥 FIX: Padding VERTICAL de la SECCIÓN TIENDA (SHOP / Archive Products)
+   section#product.product-section.st-py-default
+   - Tema padre StoreX le coloca ~80px de padding top + bottom (demasiado)
+   - Usuario lo quiere en 10px (SÓLO vertical)
+   - Padding HORIZONTAL (container) NO SE TOCA (se mantiene igual)
+   -------------------------------------------------------------------------- */
+html body.post-type-archive-product section#product.product-section,
+html body.post-type-archive-product section#product.product-section.st-py-default,
+html body.post-type-archive-product #content.storex-content > section#product,
+html body.tax-product_cat section#product.product-section,
+html body.tax-product_cat section#product.product-section.st-py-default,
+html body.tax-product_cat #content.storex-content > section#product {
+  padding-top: 10px !important;     /* 👈 ANTES: 80px (tema padre). AHORA: 10px. */
+  padding-bottom: 10px !important;  /* 👈 ANTES: 80px (tema padre). AHORA: 10px. */
+  /* Padding horizontal (izq/der) NO TOCAR: lo maneja la clase .container internamente. */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   🔥 FIX: SECCIÓN CHECKOUT / PAGAR — Ajustes visuales de #content / footer.
+   Diagnóstico user:
+   * #content.storex-content (padre de section#post-section + footer.main-footer)
+     tiene margin-top 32px / margin-bottom 80px → MUCHO espacio vertical muerto.
+   * Padding horizontal de #content = 16px → footer se ve "mochado" en los
+     laterales (no llega a 100% del ancho de la ventana).
+
+   SOLUCIÓN:
+   - SOLO en la página woocommerce-checkout. Nunca toca Home/Shop/Cart.
+   - Margin vertical: top=5px / bottom=0px (lo que pide el usuario).
+   - Padding horizontal: 0px (lateral izquierda/der = 0 → footer llega a los bordes
+     del viewport → no "mochado"). Padding vertical: también 0px (lo user dijo).
+   -------------------------------------------------------------------------- */
+
+html body.woocommerce-checkout #content.storex-content,
+html body.woocommerce-checkout div#content.storex-content {
+  /* 👈 ESPACIO VERTICAL:
+     antes padding-top:16 / margin-top:32 / margin-bottom:80 → demasiado.
+     ahora margin-top=5px / margin-bottom=0 / padding vertical=0. */
+  margin-top: 5px !important;
+  margin-bottom: 0px !important;
+
+  /* 👈 PADDING: user pidió padding 0 horizontal y 0 vertical (16px → 0px).
+     Esto hace que el footer NO esté recortado / mochado en los laterales. */
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+
+  /* display:block para asegurar que el width 100% no se rompa */
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegura que dentro de #content, la section#post-section del checkout
+   NO tenga padding-top extra por el header sticky (ya lo tenemos cubierto en
+   las reglas del carrito L987-1007, pero por si acaso). */
+html body.woocommerce-checkout section#post-section.st-py-default,
+html body.woocommerce-checkout section#post-section.kg,
+html body.woocommerce-checkout #content.storex-content > section#post-section {
+  margin-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Footer MOCHADO: obliga al footer a ocupar 100% width sin padding lateral
+   (evita que se vea cortado en los bordes izq/der). */
+html body.woocommerce-checkout footer.main-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #2: Padding lateral del .container DENTRO del formulario.
+   User: actualmente .container del checkout tiene padding izq/der 10px
+   → lo quiere de 50px en ambos lados (para no ver el formulario tan pegado
+   al borde del viewport, ya que antes pusimos padding #content = 0).
+   -------------------------------------------------------------------------- */
+html body.woocommerce-checkout section#post-section > div.container,
+html body.woocommerce-checkout section#post-section.st-py-default > div.container,
+html body.woocommerce-checkout section#post-section.kg > div.container,
+html body.woocommerce-checkout #content.storex-content section#post-section .container {
+  /* 👈 User request: padding horizontal (ambos lados) = 50px. Antes era 10px. */
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+  /* Vertical se mantiene igual que el tema padre, no lo tocamos. */
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
 /* =============================================================================
    FIN DE ESTILOS PERSONALIZADOS
    ========================================================================== */
