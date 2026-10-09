@@ -45,6 +45,7 @@ $scx_modulos = array(
 	'inc' . DIRECTORY_SEPARATOR . '50-tema.php',
 	'inc' . DIRECTORY_SEPARATOR . '56-carrito-titulo.php',
 	'inc' . DIRECTORY_SEPARATOR . '60-metricas.php',
+	'inc' . DIRECTORY_SEPARATOR . '70-checkout-solo-peru.php',
 	'inc' . DIRECTORY_SEPARATOR . '99-woo-cache.php',
 );
 foreach ( $scx_modulos as $scx_mod ) {

@@ -6450,6 +6450,1488 @@ html body.woocommerce-checkout #content.storex-content section#post-section .con
   width: 100% !important;
 }
 
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #3 (PARTE 1/6 — SÓLO BLOQUE "Contact Information"):
+   REQUISITOS USUARIO (nodo: fieldset#contact-fields / .wc-block-checkout__contact-fields):
+   1) Padding VERTICAL: antes 20px sup / 22px inf → AHORA = 3px AMBOS lados.
+      (Padding horizontal se mantiene 22px = no tocar, lo pide user.)
+   2) Fondo gris PÁLIDO (para distinguir/separar este bloque del resto).
+   3) SVG checkbox "Create an account?" o "Remember me" (marca check) EXAGERADAMENTE
+      grande → reducir tamaño y altura del input (checkbox) de 24px → 16px como max.
+   NADA más: no movemos nodos, no borramos, no tocamos shipping/billing/payment (otros).
+   -------------------------------------------------------------------------- */
+
+/* 1) + 2) Padding vertical 3px + fondo gris pálido SOLO para fieldset#contact-fields.
+      Sobrescribe L5427-5438 (regla checkout del style.css). */
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields,
+html body.woocommerce-checkout form.wc-block-checkout__form fieldset#contact-fields.wc-block-components-checkout-step {
+  /* ⭐ Padding VERTICAL que pidió usuario: TOP=3px / BOTTOM=3px. */
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  /* Padding HORIZONTAL (izq/der) = igual que antes (22px, no lo toca user). */
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+
+  /* ⭐ Fondo GRIS PÁLIDO de separación (muy claro, no tapa nada ni molesta).
+     #f6f7f9 ≈ gris claro 4% de negro, 100% legible labels inputs. */
+  background-color: #f6f7f9 !important;
+  /* Borde suave: lo mantenemos igual, solo cambiamos color a gris más tierno */
+  border: 1px solid #e3e6eb !important;
+  border-radius: 12px !important;
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+/* 3) ⭐ SVG Checkbox MUY GRANDE → achicamos la marca del tick (svg.viewBox 24)
+      Y el checkbox contenedor (altura/anchura) a max 16x16.
+      Aplica SÓLO si existe el checkbox DENTRO de #contact-fields
+      (ej: "Create an account" o "Save my info" — depende de Woo). */
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields .wc-block-components-checkbox,
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields .wc-block-components-checkbox__label {
+  min-height: 18px !important;
+  line-height: 18px !important;
+}
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields .wc-block-components-checkbox__input,
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields input[type="checkbox"].wc-block-components-checkbox__input {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  margin: 0 10px 0 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  top: 1px !important;
+}
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields svg.wc-block-components-checkbox__mark {
+  /* El SVG viewBox="0 0 24 20" → lo reducimos a 16px de ancho/alto visual. */
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #4 — Layout Grid 2 columnas en PADRE del formulario.
+   REQUISITO EXACTO USUARIO:
+   * DESKTOP (>= 993px):
+     Columna IZQUIERDA (62%)  → contact-fields (fila 1)
+                              → billing-fields / payment-method / order-notes /
+                                terms / actions (todo lo demás, debajo)
+     Columna DERECHA   (34%)  → shipping-method (fila 1, MISMA FILA que contact-fields,
+                                          MISMO ANCHO que el shipping-method actual!)
+                              → pickup-options (fila 2, DEBAJO de shipping-method,
+                                          MISMO ANCHO 34% — NUNCA 100%!)
+   * MÓVIL / TABLET (<= 992px):
+     Columna 50% IZQ → shipping-method
+     Columna 50% DER → pickup-options
+     (El user confirmó: en móvil ambos al lado.)
+     Todo lo demás = 100% de ancho (flujo normal).
+
+   TECNICA:
+   * form.wc-block-checkout__form = display:grid con 2 columnas (desktop) / 1 columna (mobile).
+   * shipping-method y pickup-options → grid-column: 2 (COLUMNA DERECHA, desktop) /
+                                        grid-column: auto (mobile 50/50 via grid-template-columns).
+   * billing/payment/order-note/terms/actions → grid-column: 1 (IZQUIERDA, solo desktop).
+   * NADA se mueve del DOM, nada se borra, no hay re-order: solo CSS Grid.
+   -------------------------------------------------------------------------- */
+
+/* =============================================================
+   A) PADRE: form.wc-block-checkout__form → display:block default.
+      LUEGO: APLICAMOS HORIZONTAL (shipping + pickup AL LADO)
+      COMO REGLA GENERAL (sin media query).
+      Esto EVITA el "hueco" 991.2px ~ 992.9px donde ninguna media
+      query aplicaba y los bloques se veían verticales.
+      Técnica SIN TOCAR HTML: float:left / float:right + clear:both
+      en el hermano siguiente (billing-fields). Garantiza que el
+      pickup NUNCA baje por espacios en blanco o anchos exactos.
+   ============================================================= */
+
+html body.woocommerce-checkout form.wc-block-components-form.wc-block-checkout__form,
+html body.woocommerce-checkout #content.storex-content form.wc-block-checkout__form {
+  display: block !important; /* flujo normal, 1 columna base */
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------- LAYOUT GENERAL (default mobile + tablet + <992px):
+   shipping-method ← IZQUIERDA float, 50% - gap
+   pickup-options  ← DERECHA  float, 50% - gap
+   SIEMPRE al lado, NUNCA verticales (incluso en 991.2px o 992.x).
+   Gap entre ambos: 28px (igual que el column-gap de desktop L5379).
+   ------------------------------------------------------------- */
+html body.woocommerce-checkout fieldset#shipping-method.wc-block-checkout__shipping-method {
+  display: block !important;
+  float: left !important;
+  clear: none !important;
+  /* 50% menos la mitad del gap (28 / 2 = 14) → la suma de ambos = 100% - 28px gap exacto */
+  width: calc(50% - 14px) !important;
+  max-width: calc(50% - 14px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 28px 16px 0 !important; /* 28px gap derecho entre ambos */
+  padding-top: 3px !important;       /* mimico padding top 3px contact-fields */
+  padding-bottom: 3px !important;    /* mimico padding bottom 3px */
+}
+html body.woocommerce-checkout fieldset#pickup-options.wc-block-checkout__pickup-options {
+  display: block !important;
+  float: right !important;
+  clear: none !important;
+  width: calc(50% - 14px) !important;
+  max-width: calc(50% - 14px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin: 0 0 16px 0 !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+}
+
+/* El hermano SIGUIENTE (#billing-fields) DEBE limpiar los floats
+   y aparecer 100% width DEBAJO de ambos bloques, sin subirse. */
+html body.woocommerce-checkout fieldset#billing-fields.wc-block-checkout__billing-fields,
+html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#billing-fields {
+  clear: both !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* =========== EN CASO sea MUY PEQUEÑO el móvil (<= 480px):
+   Si los 2 bloques de 50% son demasiado angostos y se rompen los
+   textos radios, puedes comentar esta regla. Mantenemos 50/50 user request. */
+@media (max-width: 480px) {
+  html body.woocommerce-checkout fieldset#shipping-method.wc-block-checkout__shipping-method {
+    width: calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+    margin-right: 16px !important;
+  }
+  html body.woocommerce-checkout fieldset#pickup-options.wc-block-checkout__pickup-options {
+    width: calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+  }
+}
+
+/* =============================================================
+   B) DESKTOP (>= 993px): FINAL - ESTRUCTURA EXACTA USER:
+   ┌────────────────────────────────┬──────────────────────────┐
+   │ 62% - contact-fields          │ 34% - shipping-method│
+   │                 (mismo alto q │ ├──────────────────────────┤
+   │                 col der)      │ 34% - pickup-options │
+   ├────────────────────────────────┴──────────────────────────┤
+   │ 100% - billing-fields (todo el ancho, sin columnas)      │
+   │ 100% - payment-method (todo el ancho)                    │
+   │ 100% - order-note / terms / actions (todo el ancho)      │
+   └───────────────────────────────────────────────────────────┘
+   Técnica: floats + clearfix en form padre.
+            SOLO 3 BLOQUES tienen columna (contact / ship / pick).
+            Todo lo demás = clear: both y width 100%.
+   ============================================================= */
+@media (min-width: 993px) {
+  html body.woocommerce-checkout form.wc-block-components-form.wc-block-checkout__form,
+  html body.woocommerce-checkout #content.storex-content form.wc-block-checkout__form {
+    display: block !important;
+    overflow: hidden !important;   /* clearfix: contiene floats */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Limpiamos cualquier cosa del primer div vacío que Woo agrega */
+  html body.woocommerce-checkout form.wc-block-checkout__form > div:first-child,
+  html body.woocommerce-checkout form.wc-block-checkout__form > div:nth-child(1) {
+    display: none !important; /* no hace nada, lo ocultamos */
+    float: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    clear: both !important;
+  }
+
+  /* =========================================================
+     IZQUIERDA (62%) = SOLO contact-fields.
+     Flotamos a la izquierda, 62% de ancho, MISMA FILA que
+     shipping-method (der 34%).
+     ========================================================= */
+  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#contact-fields.wc-block-checkout__contact-fields {
+    float: left !important;
+    clear: none !important;
+    /* ancho columna izq = 62% - mitad del gap 28px (14px) */
+    width: calc(62% - 14px) !important;
+    max-width: calc(62% - 14px) !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 28px !important;   /* gap 28px ENTRE col izq y col der */
+    margin-top: 0 !important;
+    margin-bottom: 28px !important;  /* espacio ENTRE esta fila 2 col y la
+                                        fila 100% de billing de ABAJO */
+    /* Si el contacto es más alto que la col der (shipping+pickup), lo
+       mantenemos igual, el gap 28px abajo separa bien. */
+  }
+
+  /* =========================================================
+     DERECHA (34%) = shipping-method + pickup-options
+     Ambos float:right. shipping en clear:none (misma fila que
+     contacto), y pickup en clear:right (debajo de shipping en
+     la MISMA COLUMNA DERECHA 34%).
+     ========================================================= */
+  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#shipping-method.wc-block-checkout__shipping-method {
+    float: right !important;
+    clear: right !important;         /* 🔥 MISMA FILA que contact-fields (arriba der) */
+    /* ancho columna der = 34% - mitad del gap 28px (14px) */
+    width: calc(34% - 14px) !important;
+    max-width: calc(34% - 14px) !important;
+    min-width: 300px !important;
+    box-sizing: border-box !important;
+    /* 🔥 Sobrescribimos la regla general MÓVIL (float:left 50%) */
+    float: right !important;
+    margin: 0 0 16px 0 !important;   /* 16px gap vertical ENTRE shipping y
+                                        pickup-options (ambos en col der). */
+  }
+  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#pickup-options.wc-block-checkout__pickup-options {
+    float: right !important;
+    clear: right !important;         /* DEBAJO de shipping-method (fila 2 der) */
+    width: calc(34% - 14px) !important;   /* MISMO ANCHO que shipping = 34% */
+    max-width: calc(34% - 14px) !important;
+    min-width: 300px !important;
+    box-sizing: border-box !important;
+    /* 🔥 Sobrescribimos la regla general MÓVIL */
+    float: right !important;
+    margin: 0 0 28px 0 !important;   /* 28px gap ABAJO pickup = fin fila 2 columnas
+                                        y empieza billing 100% abajo. */
+  }
+
+  /* =========================================================
+     FILA 100% ABAJO = billing/payment/order-note/terms/actions
+     TODOS estos son clear: both = empiezan en NUEVA FILA 100%
+     width (sin columnas, sin col der).
+     ========================================================= */
+  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#billing-fields.wc-block-checkout__billing-fields,
+  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#payment-method.wc-block-checkout__payment-method,
+  html body.woocommerce-checkout form.wc-block-checkout__form > div#order-notes,
+  html body.woocommerce-checkout form.wc-block-checkout__form > div.wc-block-checkout__terms,
+  html body.woocommerce-checkout form.wc-block-checkout__form > div.wc-block-checkout__actions {
+    float: none !important;
+    clear: both !important;        /* 🔥 NUEVA FILA 100%, debajo de TODO lo anterior */
+    display: block !important;
+    width: 100% !important;        /* 🔥 100% ANCHO, no 62%! */
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #5 — Feedback VISUAL de opción SELECCIONADA en bloques
+     #shipping-method (Delivery / Recojo en Tienda) y
+     #pickup-options (sucursales múltiples si hay).
+   Usuario NO sabía que eran CLICKEABLES (radios). Falta:
+   1) Pointer manita EN TODA LA OPCIÓN (cursor: pointer).
+   2) HOVER: sombra suave + borde más oscuro (se ve que es botón).
+   3) CHECK MARK (✓) + BORDE VERDE AZULADO + FONDO SOMBREADO GRIS CLARO
+      cuando la opción ESTÁ SELECCIONADA (input:checked).
+   Nada nuevo en HTML, solo CSS en clases nativas Woo:
+     - .wc-block-components-radio-control (padre de los radios)
+     - .wc-block-components-radio-control__option (cada opción clickeable)
+     - .wc-block-components-radio-control__input (radio nativo)
+   -------------------------------------------------------------------------- */
+
+/* ======= 1) CURSOR MANITA en TODA LA OPCIÓN (no solo el radio chiquito).
+   Así el usuario INSTANTANEAMENTE entiende que es clicleable (como Falabella). */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option,
+html body.woocommerce-checkout fieldset#shipping-method label.wc-block-components-radio-control-accordion-option,
+html body.woocommerce-checkout fieldset#pickup-options label.wc-block-components-radio-control-accordion-option,
+html body.woocommerce-checkout #payment .wc_payment_method,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option,
+html body.woocommerce-checkout form.wc-block-checkout__form .wc-block-components-radio-control__option {
+  cursor: pointer !important; /* 🖱️ MANITA de clickeable */
+  user-select: none !important; /* evita seleccion de texto doble click */
+}
+
+/* ======= 2) BORDE + FONDO de cada opción radio. Por defecto Woo lo trae
+   sin borde o muy sutil. Le damos BORDE GRIS + FONDO BLANCO, padding interno
+   para que parezca TARJETA (como Falabella/Ripley). */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option {
+  position: relative !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d5d9df !important;  /* borde GRIS suave por defecto */
+  border-radius: 12px !important;
+  padding: 12px 16px 12px 48px !important;   /* 48px = espacio para radio + check */
+  margin: 0 0 10px 0 !important;
+  box-sizing: border-box !important;
+  transition: all 0.18s ease-in-out !important; /* animación suave cuando haces click / hover */
+}
+
+/* ======= 3) HOVER (pasas mouse por encima → feedback):
+        BORDE más oscuro + sombra suave (el usuario lo nota = "se puede click"). */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option:hover,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option:hover,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option:hover {
+  border-color: #64748b !important;  /* gris oscuro / azul slate */
+  background: #f8fafc !important;      /* fondo gris más claro muy suave */
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+}
+/* Focus (accesibilidad: tabulador teclado → mismo feedback hover) */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option:focus-within,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option:focus-within,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option:focus-within {
+  border-color: #0d9488 !important;  /* verde azulado teal (como botón comprar) */
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important; /* halo suave */
+  background: #f8fafc !important;
+}
+
+/* ======= 4) SELECCIONADO (input:checked = la opción ACTIVA):
+        BORDE VERDE TEAL + FONDO GRIS CLARO (sombreado) + ICONO CHECK (✓)
+        en la esquina superior derecha. 100% igual que Falabella. */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option:has(input[type="radio"]:checked),
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option:has(input[type="radio"]:checked),
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option:has(input[type="radio"]:checked) {
+  border-color: #0d9488 !important;        /* BORDE VERDE TEAL MARCADO */
+  border-width: 2px !important;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 100%) !important;
+  /* Fondo SOMBREADO verde-azulado muy claro (se nota la selección) */
+  box-shadow: 0 3px 14px rgba(13, 148, 136, 0.13) !important; /* sombra mas fuerte */
+}
+
+/* ======= 5) CHECK MARK (✓) ESQUINA SUPERIOR DERECHA cuando está seleccionado.
+   No agregamos HTML (user lo prohibió): usamos pseudo-elemento ::after. */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option:has(input[type="radio"]:checked)::after,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option:has(input[type="radio"]:checked)::after,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option:has(input[type="radio"]:checked)::after {
+  content: '' !important;           /* contenido via SVG inline (✓) */
+  position: absolute !important;
+  top: 10px !important;
+  right: 12px !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-block !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  /* SVG del check (✓ VERDE) inline (sin archivos externos) */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20' fill='%230d9488'><path d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/></svg>") !important;
+  z-index: 5 !important;
+  pointer-events: none !important; /* no bloquea clicks */
+}
+
+/* ======= 6) Input RADIO interno (círculo): le ponemos color verde al marcar
+   para que también coincida con el borde y el check mark visual. */
+html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__input,
+html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__input,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__input,
+html body.woocommerce-checkout form.wc-block-checkout__form input[type="radio"].wc-block-components-radio-control__input {
+  accent-color: #0d9488 !important; /* color del radio al marcar = teal */
+  cursor: pointer !important;       /* manita también en el radio */
+}
+
+/* MÓVIL (<=992px): mantenemos los mismo estilos, solo padding más pequeño
+   para no apretar el contenido en 50/50 de ancho. */
+@media (max-width: 992px) {
+  html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option,
+  html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option {
+    padding: 10px 12px 10px 40px !important;
+  }
+  html body.woocommerce-checkout fieldset#shipping-method .wc-block-components-radio-control__option:has(input:checked)::after,
+  html body.woocommerce-checkout fieldset#pickup-options .wc-block-components-radio-control__option:has(input:checked)::after {
+    top: 8px !important;
+    right: 8px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #5 BIS — Feedback VISUAL SÓLO para las OPCIONES DE ENVIO
+   (Delivery vs Recojo en Tienda) dentro de:
+   fieldset#shipping-method
+      → div#shipping-method.wc-block-checkout__shipping-method-container
+         → div.wc-block-checkout__shipping-method-option
+         → div.wc-block-checkout__shipping-method-option--selected
+   Selectores exactos del HTML que envio el user (div con role="radio", NO son inputs radio nativos —
+   son botones/divs custom de Woo Blocks).
+   Usuario no sabía que eran clickeables. Añadimos:
+   1) Cursor manita en TODO el div.
+   2) BORDE + padding por defecto (tarjeta Falabella style).
+   3) HOVER: sombra + borde oscuro.
+   4) SELECCIONADO (--selected): BORDE VERDE TEAL + FONDO CLARO + CHECK (✓)
+      en la esquina superior derecha.
+   Nada de HTML nuevo, solo CSS en clases Woo nativas.
+   -------------------------------------------------------------------------- */
+
+/* 1) PADRE button-group: le quitamos display flex sin gap (por si acaso),
+     definimos ancho 100% y separación vertical de 10px entre opciones. */
+html body.woocommerce-checkout fieldset#shipping-method div#shipping-method.wc-block-checkout__shipping-method-container,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 10px 0 !important;   /* 10px de gap VERTICAL entre las 2 opciones */
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  box-sizing: border-box !important;
+}
+
+/* 2) CADA OPCIÓN (div.wc-block-checkout__shipping-method-option):
+     POR DEFECTO → borde gris suave, fondo blanco, padding, cursor pointer.
+     NO depende de input radio (no hay input, son divs role=radio de Woo Blocks React). */
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d5d9df !important; /* gris suave por defecto */
+  border-radius: 12px !important;
+  padding: 14px 48px 14px 18px !important; /* 48px derecha = espacio para CHECK */
+  margin: 0 !important;                    /* el gap lo lleva el padre */
+  cursor: pointer !important;              /* 🖱️ MANITA en TODO el div */
+  user-select: none !important;            /* no seleccion de texto doble click */
+  transition: all 0.18s ease-in-out !important; /* animación suave */
+  text-align: left !important;
+  overflow: hidden !important;
+}
+
+/* 3) HOVER = feedback de "se puede clickear" */
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option:hover,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option:hover {
+  border-color: #64748b !important;
+  background: #f8fafc !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* 4) FOCUS (accesibilidad teclado Tab): halo verde + borde verde. */
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option:focus,
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option:focus-visible,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option:focus,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option:focus-visible {
+  outline: none !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+  background: #f8fafc !important;
+}
+
+/* 5) OPCIÓN SELECCIONADA (--selected + aria-checked="true"):
+      BORDE verde TEAL 2px + FONDO degradado claro + SOMBRA mas fuerte. */
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option--selected,
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option[aria-checked="true"],
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option--selected,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option[aria-checked="true"] {
+  border-color: #0d9488 !important;
+  border-width: 2px !important;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 100%) !important;
+  box-shadow: 0 3px 14px rgba(13, 148, 136, 0.13) !important;
+}
+
+/* 6) CHECK MARK (✓ VERDE TEAL) en ESQUINA SUPERIOR DERECHA de la opción
+     SELECCIONADA. Pseudo-elemento ::after, sin HTML nuevo. */
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option--selected::after,
+html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option[aria-checked="true"]::after,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option--selected::after,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option[aria-checked="true"]::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 12px !important;
+  right: 14px !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-block !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20' fill='%230d9488'><path d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/></svg>") !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+}
+
+/* MÓVIL (<= 992px): padding más pequeño para que quepa en la columna 50% sin
+   romper los textos largos ("Recojo en Tienda (Gratis)"). */
+@media (max-width: 992px) {
+  html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option,
+  html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option {
+    padding: 12px 42px 12px 14px !important;
+  }
+  html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option--selected::after,
+  html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__shipping-method-option[aria-checked="true"]::after {
+    top: 10px !important;
+    right: 10px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #6 — BILLING FIELDS (Dirección facturación):
+   1) BOTÓN "Edit billing address" (span.wc-block-components-address-card__edit)
+      → NO OCUPAR LÍNEA NUEVA, ponerlo AL COSTADO (extremo superior derecho)
+      del div.wc-block-components-address-card. Ahorra mucho espacio vertical.
+   2) div.wc-block-components-address-address-wrapper.is-editing
+      → FONDO GRIS AZULADO PÁLIDO para diferenciar el área de edición.
+   3) Aparte: padding vertical 3px + fondo gris pálido al fieldset#billing-fields
+      (igual que contact-fields, consistencia visual).
+   -------------------------------------------------------------------------- */
+
+/* === PADRE fieldset#billing-fields: padding vertical 3 + gris pálido (igual que contact) === */
+html body.woocommerce-checkout fieldset#billing-fields.wc-block-checkout__billing-fields {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  background-color: #f6f7f9 !important;
+  border-color: #e3e6eb !important;
+}
+
+/* === 1) PADRE .wc-block-components-address-card = HACERLO FLEX ROW (alinea título + botón edit) === */
+html body.woocommerce-checkout .wc-block-components-address-card,
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-address-card,
+html body.woocommerce-checkout form.wc-block-checkout__form .wc-block-components-address-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;  /* contenido a la izq, botón edit a la der */
+  gap: 16px 12px !important;
+  padding: 2px 2px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* === 1 BIS) Botón EDIT span.wc-block-components-address-card__edit
+   NO MÁS LÍNEA NUEVA. Se ubica a la derecha del título, misma fila.
+   Quedaba abajo solo porque Woo por defecto lo pone display:block / flex-shrink 0. */
+html body.woocommerce-checkout span.wc-block-components-address-card__edit,
+html body.woocommerce-checkout button.wc-block-components-address-card__edit,
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-address-card__edit,
+html body.woocommerce-checkout form.wc-block-checkout__form .wc-block-components-address-card__edit {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;        /* NO ocupa todo el ancho → MISMA FILA */
+  align-self: flex-start !important;
+  padding: 5px 10px !important;
+  margin: 0 !important;
+  order: 2 !important;               /* se ubica al lado derecho (2do hijo) */
+  min-height: 0 !important;
+  line-height: 1.2 !important;
+  font-size: 12.5px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;    /* "Edit billing address" en 1 sola línea */
+  transition: all 0.18s ease-in-out !important;
+}
+html body.woocommerce-checkout span.wc-block-components-address-card__edit:hover,
+html body.woocommerce-checkout button.wc-block-components-address-card__edit:hover {
+  border-color: #0d9488 !important;
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+  box-shadow: 0 1px 6px rgba(13, 148, 136, 0.12) !important;
+}
+
+/* === CONTENIDO IZQUIERDO del address-card (título / dirección mostrada).
+   Ocupa el 100% del espacio RESTANTE, sin superponer el botón edit. */
+html body.woocommerce-checkout .wc-block-components-address-card__address,
+html body.woocommerce-checkout .wc-block-components-address-card > *:first-child:not(.wc-block-components-address-card__edit) {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  order: 1 !important;
+  padding: 2px 0 !important;
+}
+
+/* === 2) ÁREA DE EDICIÓN (is-editing) = FONDO AZULADO PÁLIDO para diferenciarla === */
+html body.woocommerce-checkout div.wc-block-components-address-address-wrapper.is-editing,
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-address-address-wrapper.is-editing,
+html body.woocommerce-checkout fieldset#billing-fields > div.wc-block-components-checkout-step__content > div.wc-block-components-address-address-wrapper.is-editing {
+  background-color: #eff6ff !important;   /* Azul claro muy pálido (blue-50 Tailwind) */
+  border: 1px solid #bfdbfe !important;   /* Borde azul suave */
+  border-radius: 12px !important;
+  /*
+    REQUERIMIENTO EXACTO USUARIO (DOM path enviado):
+    * PADDING VERTICAL (top/bottom) : 14px -> 1px (apenas 1 de espacio)
+    * PADDING HORIZONTAL (left/right): MANTENER 16px (campos NO se pegan al borde azul) */
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  margin: 2px 0 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* === 2 TER) Etiqueta <address> del address-card (SIN class/id, por tag +  SIN class/id).
+   Tiene margin-top/bottom 16px por defecto (user agent stylesheet).".
+   Reducirlo a 0 verticalmente y compactar line-height. Solo en checkout billing/shipping. */
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-address-card address,
+html body.woocommerce-checkout form.wc-block-checkout__form .wc-block-components-address-card address {
+  /* Margen vertical de 0 (apenas espacio) */
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 1.35 !important; /* más compacto */
+  font-style: normal !important; /* por defecto <address> trae italic (cursiva), lo quitamos.*/
+}
+
+/* === 2 BIS) SVG checkbox del billing también = 16x16 (igual que contact) === */
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-checkbox__mark {
+  height: 16px !important;
+  width: 16px !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields .wc-block-components-checkbox__input {
+  height: 16px !important;
+  width: 16px !important;
+  min-height: 16px !important;
+  min-width: 16px !important;
+  margin-right: 10px !important;
+  margin-top: 1px !important;
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #7 — FIRST NAME + LAST NAME (Billing Form)
+   User requests:
+   1) Label visible TITULO: "Nombre completo" / "Apellido completo"
+   2) Orden VISUAL LABEL (arriba) + INPUT (abajo). Woo en HTML pone
+      INPUT primero, LABEL segundo (para float label compat).
+      Solución NO-DOM: flex-direction: column-reverse (orden visual, DOM igual).
+   3) Padding / Margin vertical reducido (muy poco espacio muerto).
+   Nada nuevo en HTML, solo CSS.
+   -------------------------------------------------------------------------- */
+
+/* === WRAPPERS: Padding / Margin vertical 0 reducido === */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* === PADRE TEXT-INPUT: flex column-reverse = LABEL VISUALMENTE ARRIBA.
+   Woo en DOM: <input> 1ro, <label> 2do.
+   Visualmente : <label> 1ro (arriba), <input> 2do (abajo). === */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-text-input.wc-block-components-address-form__first_name,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-text-input.wc-block-components-address-form__last_name {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;
+  padding: 0 !important;
+  margin: 0 0 4px 0 !important;
+}
+
+/* ================================================================
+   LABEL: SIEMPRE VISIBLE (arriba, FUERA DEL INPUT) + TITULO EXACTO.
+   User lo dejó CLARO: "no es placeholder. label aparte, FUERA del input"
+   => position:static + forzamos content.
+   ================================================================ */
+
+/* 1) FIRST NAME = "Nombre completo"
+   ⚠️ GARANTÍA ANTI-DUPLICADOS (3 capas):
+     CAPA 1: label entero = font-size: 0 (TEXTO NATIVO "Nombres" INVISIBLE)
+     CAPA 2: letter-spacing / white-space / word-spacing = 0 (no ocupa ancho)
+     CAPA 3: SOLO ::before tiene font-size 13px (1 título, 1 solo) */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name label,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name label[for="billing-first_name"] {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  /* CAPA 1: label entero = FONT-SIZE 0 (nunca más texto nativo visible) */
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  white-space: normal !important;
+  font-weight: normal !important;
+  color: transparent !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  clip-path: none !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name label[for="billing-first_name"]::before {
+  /* CAPA 2: SOLO este ::before tiene tamaño visible = 1 título, NUNCA duplicado */
+  content: 'Nombre completo' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* 2) LAST NAME = "Apellido completo"
+   ⚠️ MISMAS 3 CAPAS ANTI-DUPLICADOS */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name label,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name label[for="billing-last_name"] {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  /* CAPA 1: label entero = FONT-SIZE 0 */
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  white-space: normal !important;
+  font-weight: normal !important;
+  color: transparent !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  clip-path: none !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name label[for="billing-last_name"]::before {
+  /* CAPA 2: SOLO ::before título visible */
+  content: 'Apellido completo' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ==========================================================================
+   HOTFIX #7 BIS — 2 bugs visibles en imagen user:
+   🐛 BUG 2: Dirección preview "prueba prueba, Cajamarca, Peru" + botón Edit
+             APARECEN al COSTADO del formulario editable
+      Causa: MODO VISTA (address-card preview) y MODO EDICIÓN (is-editing)
+             se mostraban AL MISMO TIEMPO (Woo no lo ocultaba por nuestro flex).
+      Fix: si el padre TIENE .is-editing => OCULTAMOS COMPLETO el address-card
+             (solo se ve el formulario editable, sin solapes)
+   ========================================================================== */
+
+/* === BUG 2 — SI ESTAMOS EN EDICIÓN (.is-editing) OCULTAMOS LA TARJETA PREVIEW
+   (el address-card con la dirección vieja + Cajamarca + botón Edit) */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-address-wrapper.is-editing > div.wc-block-components-address-card-wrapper,
+html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-components-address-address-wrapper.is-editing > div.wc-block-components-address-card-wrapper {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+/* =============== FIN HOTFIX 2 BUGS =============== */
+
+/* ==========================================================================
+   🔥 TRADUCCIONES / TITULOS ESPAÑOL CAMPOS BILLING (8 CAMPOS RESTANTES)
+   MISMO PATRÓN FIRST/LAST NAME:
+     1) label span: font-size: 0 (oculta texto nativo INGLES).
+     2) label::before con content en español (solo 1 título, SIN DUPLICADOS).
+   Campos: Country (Pais) / Address1 (Dirección) / Address2 (Depto/Piso)
+           City (Ciudad) / State (Departamento) / Postcode (Código Postal)
+           Phone (Teléfono Celular)
+   ========================================================================== */
+
+/* ─── 1) PAIS (COUNTRY) ──────────────────────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing span.wc-blocks-components-select__label[for="billing-country"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 16px !important;
+  height: auto !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing span.wc-blocks-components-select__label[for="billing-country"]::before {
+  content: 'Pais' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 2) DIRECCION (ADDRESS 1) ────────────────────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_1 label,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_1 label[for="billing-address_1"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_1 label[for="billing-address_1"]::before {
+  content: 'Dirección' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 3) DEPARTAMENTO / PISO (ADDRESS 2) ─────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_2 label,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_2 label[for="billing-address_2"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__address_2 label[for="billing-address_2"]::before {
+  content: 'Departamento/Piso (opcional)' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 4) CIUDAD (CITY / TOWN) ────────────────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__city label,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__city label[for="billing-city"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__city label[for="billing-city"]::before {
+  content: 'Ciudad' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 5) DEPARTAMENTO (STATE / COUNTY) ────────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing div.wc-block-components-state-input span.wc-blocks-components-select__label[for="billing-state"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 16px !important;
+  height: auto !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing div.wc-block-components-state-input span.wc-blocks-components-select__label[for="billing-state"]::before {
+  content: 'Departamento' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 6) CÓDIGO POSTAL (POSTCODE / ZIP) ──────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__postcode label,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__postcode label[for="billing-postcode"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__postcode label[for="billing-postcode"]::before {
+  content: 'Código Postal' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* ─── 7) TELÉFONO CELULAR (PHONE) ────────────────────────────────────── */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__phone label,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__phone label[for="billing-phone"] {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-address-form__phone label[for="billing-phone"]::before {
+  content: 'Teléfono Celular' !important;
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+}
+
+/* === INPUT: padding compacto, FUERA DEL LABEL === */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name input,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__first_name input#billing-first_name,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name input,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__last_name input#billing-last_name {
+  padding: 9px 12px !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  font-size: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  top: auto !important;
+}
+
+/* MÓVIL (<= 640px): en pantallas muy pequeñas el botón edit puede bajar de fila
+   si el título es muy largo, pero no molesta. Reduce padding 10px. */
+@media (max-width: 640px) {
+  html body.woocommerce-checkout .wc-block-components-address-card {
+    flex-wrap: wrap !important;
+  }
+  html body.woocommerce-checkout span.wc-block-components-address-card__edit {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+  }
+  html body.woocommerce-checkout div.wc-block-components-address-address-wrapper.is-editing {
+    /* MÓVIL <=640px: mismo criterio vertical 1px, horizontal 16px */
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #8 — COUNTRY / REGION (billing)
+   User requests:
+   1) Label: "Country / Region"  →  "Pais" (SIN TILDE, VERBATIM user)
+   2) SÓLO PERÚ (PHP filtros oficiales Woo, ya aplicados en inc/70-*.php)
+      SOLO 1 opción en el combo, imposible elegir otro país.
+   3) Hijo SVG flecha (wc-blocks-components-select__expand) = de 24px a 16px.
+   4) Padding / margin vertical reducido (mismo criterio first/last).
+   5) Cursor "not-allowed" / visual bloqueado para indicar que no se cambia.
+   -------------------------------------------------------------------------- */
+
+/* WRAPPER Country: padding vertical 0, margin minimo */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__country,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-country-input {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* PADRE __container (flex row interna del combo) */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container {
+  display: flex !important;
+  flex-direction: column !important;   /* Label ARRIBA, combo ABAJO (orden natural) */
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;                /* 2px entre label y combo (sin espacio muerto) */
+  padding: 0 !important;
+  margin: 0 !important;
+  position: relative !important;
+}
+
+/* =============== LABEL = "Pais" (SIN TILDE, user request)
+   Igual técnica que first/last:
+   label font-size:0 (oculta texto nativo "Country / Region")
+   label::before font-size:13 (solo "Pais" visible) */
+html body.woocommerce-checkout fieldset#billing-fields label.wc-blocks-components-select__label,
+html body.woocommerce-checkout fieldset#billing-fields label[for="billing-country"].wc-blocks-components-select__label {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+  transform: none !important;
+  font-size: 0 !important;              /* 👻 Texto nativo INVISIBLE */
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 2px 0 !important;
+  pointer-events: auto !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields label[for="billing-country"].wc-blocks-components-select__label::before {
+  content: 'Pais' !important;           /* ✅ TÍTULO EXACTO user (SIN TILDE) */
+  display: inline-block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+}
+
+/* SELECT COMBO (nativo dentro del wrapper): padding interno */
+html body.woocommerce-checkout fieldset#billing-fields select.wc-blocks-components-select__select,
+html body.woocommerce-checkout fieldset#billing-fields select#billing-country.wc-blocks-components-select__select {
+  padding: 9px 38px 9px 12px !important;  /* 38px derecha = espacio para SVG flecha 16 + gap */
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  font-size: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  cursor: not-allowed !important;         /* 🛡️ Cursor NO EDITABLE (bloqueado a Perú) */
+  background-color: #f8fafc !important;  /* fondo gris suave (se nota que es bloqueado/read-only) */
+  appearance: none !important;           /* quitamos la flecha NATIVA del OS para que solo se vea el SVG de Woo */
+}
+
+/* 🔥 HIJO 3 = SVG FLECHA DESPLEGABLE (expand):
+   24x24 → 16x16 px (igual que el checkmark anterior, menos espacio) */
+html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-select__expand {
+  position: absolute !important;
+  top: 50% !important;       /* centrado VERTICALMENTE en el combo, NO en el label */
+  right: 14px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  transform: translateY(calc(-50% + 9px)) !important;  /* ajuste para centrar en el SELECT, no en todo el container */
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0.85 !important;
+  pointer-events: none !important;
+}
+
+/* ==========================================================================
+   BLOQUEO UI COMBO PAÍS (user request: NO elimino opciones, PERO SI bloqueo
+   UI para que NO se pueda elegir otro país. Solo vende en Perú. Futuro se desactiva.)
+   NIVEL 1 = CSS (impide click / apertura del combo):
+   ========================================================================== */
+
+/* 1) SELECT + SUS EVENTOS DE CLICK / FOCUS = BLOQUEADOS */
+html body.woocommerce-checkout fieldset#billing-fields select.wc-blocks-components-select__select,
+html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
+  pointer-events: none !important;       /* 🚫 NO abre el desplegable, NO hay clicks */
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;         /* en móvil, no abre al tocar */
+  -webkit-touch-callout: none !important;
+  cursor: not-allowed !important;        /* cursor rojo circulo tachado */
+  opacity: 0.85 !important;              /* se nota que es read-only */
+  background-color: #eef2f7 !important;  /* gris aún más claro (bloqueado) */
+}
+
+/* 2) Container padre: deshabilitamos focus / tabulación visualmente */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* 3) SVG flecha: lo OCULTAMOS (no sirve de nada al estar bloqueado el combo.
+   En el futuro si vuelven a permitir países = lo muestran de nuevo. */
+html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-select__expand {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* 4) Padding derecho del select = reducido de 38px a 12px (no hay flecha SVG). */
+html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
+  padding-right: 12px !important;
+}
+
+/* ==========================================================================
+   RESTAURACIÓN DISEÑO WOO ORIGINAL — Address 1 / Address 2 / ADDRESS_2_TOGGLE
+   Motivo: FIX CHECKOUT #9 anterior con column-reverse en wrappers INDIVIDUALES
+           rompió la posición del span botón address_2-toggle
+           (".wc-block-components-address-form__address_2-toggle").
+   Solución:
+     a) ELIMINAMOS column-reverse de wrappers individuales.
+     b) FORZAMOS restore al span botón address_2-toggle (posición original).
+     c) Padre address-form = display block (no grid/flex raro).
+     d) Wrappers address_1/2 = display block (diseño Woo default).
+   ========================================================================== */
+
+/* 🔧 RESTAURACIÓN 1 de 3: SPAN BOTÓN address_2-toggle al diseño original Woo.
+   Es el botón "+ Add depto., piso, interior, etc. (opcional)".
+   Vive ENTRE div.address_1 y input#billing-address_2-hidden. */
+html body.woocommerce-checkout fieldset#billing-fields span.wc-block-components-address-form__address_2-toggle,
+html body.woocommerce-checkout form.wc-block-checkout__form span.wc-block-components-address-form__address_2-toggle {
+  display: inline-block !important;
+  float: none !important;
+  clear: both !important;
+  flex: 0 0 100% !important;        /* siempre su PROPIA FILA, 100% ancho */
+  order: initial !important;        /* NUNCA reordenar por flex siblings */
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 6px 0 8px 2px !important;
+  margin: 4px 0 6px 0 !important;    /* margin original Woo: 4 arriba, 6 abajo */
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  z-index: auto !important;
+}
+
+/* 🔧 RESTAURACIÓN 2 de 3: PADRE del formulario billing (div#billing.wc-block-components-address-form)
+   = display BLOCK. NUNCA column-reverse ni flex raro que reordene hijos.
+
+   ⚠️ AGREGADO: SELECTOR UNIVERSAL (*) a TODOS LOS HIJOS DIRECTOS del padre.
+   Esto RESETEA ORDER / FLEX a todos los campos (first/last/country/address_1
+   / TOGGLE / address_2_hidden / city / state / postcode / phone) a SU VALOR
+   NATURAL. Garantía: el span address_2-toggle no se mueve de su posición
+   original ENTRE address_1 y el input hidden address_2. */
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form {
+  display: block !important;
+  flex-direction: initial !important;
+  flex-wrap: initial !important;
+  align-items: initial !important;
+  justify-content: initial !important;
+  order: initial !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  clear: both !important;
+}
+/* Selector UNIVERSAL (*): todos los hijos directos del padre vuelven a su estado WOO original. */
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > * {
+  order: initial !important;
+  flex: initial !important;
+  flex-grow: initial !important;
+  flex-shrink: initial !important;
+  flex-basis: initial !important;
+  align-self: initial !important;
+  justify-self: initial !important;
+  display: revert-layer !important;
+  float: none !important;
+  clear: none !important;
+  position: revert-layer !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: revert-layer !important;
+  padding: revert-layer !important;
+  width: revert-layer !important;
+  max-width: revert-layer !important;
+  min-width: revert-layer !important;
+  height: revert-layer !important;
+  min-height: revert-layer !important;
+  box-sizing: revert-layer !important;
+  gap: revert-layer !important;
+  line-height: revert-layer !important;
+}
+
+/* ==========================================================================
+   🔥 LABELS ENCIMA DE INPUTS (TODOS LOS CAMPOS BILLING) — SIN ROMPER TOGGLE
+   Motivo: Bloque "RESTAURACIÓN 3 de 3" anterior mantenía display: block
+           en wrappers individuales → column-reverse NO le ganaba.
+   Solución:
+     a) ELIMINAR la antigua regla display:block que bloqueaba.
+     b) APLICAR column-reverse a TODOS los wrappers que tienen <input> o
+        <select> + <label> (first/last/address_1/2/city/postcode/phone).
+     c) LOS CAMPOS QUE NO SON TEXT-INPUT (country / state = select combo)
+        usan __container interno flex → invertimos solo el container.
+     d) span.address_2-toggle NO le aplicamos nada (celda grid natural).
+   ========================================================================== */
+
+/* ─── 1) TODOS LOS TEXT-INPUT (first / last / address_1 / address_2 /
+        city / postcode / phone): flex column-reverse → LABEL ARRIBA.
+        Usamos ESPECIFICIDAD MÁXIMA para ganar a cualquier regla anterior. */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-checkout-step__content
+  div.wc-block-components-address-address-wrapper
+  div.wc-block-components-address-form-wrapper
+  div#billing.wc-block-components-address-form
+  div.wc-block-components-text-input,
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-text-input {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;
+  order: initial !important;
+  position: static !important;
+  margin: 0 0 6px 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+  float: none !important;
+}
+
+/* ─── 2) SELECT COUNTRY (Pais) y STATE (Departamento):
+        usan estructura .wc-blocks-components-select__container flex.
+        invertimos ESE container (no el wrapper) para label ARRIBA.
+   ⚠️ ESPECIFICIDAD MÁXIMA (6 NIVELES DE PADRE): para ganar a las reglas Woo Core
+   que aplican flex-direction: column (label ABAJO). Antes no funcionaba por
+   baja especificidad (3 niveles). Ahora: 6 niveles → SIEMPRE gana. */
+html body.woocommerce-checkout
+  fieldset#billing-fields
+  div.wc-block-components-checkout-step__content
+  div.wc-block-components-address-address-wrapper.is-editing
+  div.wc-block-components-address-form-wrapper
+  div#billing.wc-block-components-address-form
+  div.wc-block-components-country-input
+  div.wc-blocks-components-select
+  div.wc-blocks-components-select__container,
+html body.woocommerce-checkout
+  fieldset#billing-fields
+  div.wc-block-components-checkout-step__content
+  div.wc-block-components-address-address-wrapper.is-editing
+  div.wc-block-components-address-form-wrapper
+  div#billing.wc-block-components-address-form
+  div.wc-block-components-state-input
+  div.wc-blocks-components-select
+  div.wc-blocks-components-select__container {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;
+  padding: 0 !important;
+  margin: 0 0 6px 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  position: relative !important;   /* ⚠️ ABSOLUTE para la SVG flecha que está dentro */
+  min-height: 0 !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+  order: initial !important;
+}
+
+/* Alinear SVG flecha del select country al costado derecho del combo
+   (column-reverse invirtió label + combo, pero la SVG FLECHA pertenece
+   al "combo" y debe estar a la derecha. Conservamos su posición): */
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing svg.wc-blocks-components-select__expand,
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing .wc-block-components-state-input svg.wc-blocks-components-select__expand {
+  position: absolute !important;
+  top: calc(50% + 8px) !important;       /* +8px compensa el label arriba */
+  right: 14px !important;
+  transform: translateY(-50%) !important;
+}
+
+/* ─── 3) LABELS: GARANTÍA ANTI-DUPLICADOS DE 4 CAPAS.
+        🚨 PROHIBIDO font-size:13px o color:#1e293b al label ENTERO aquí
+        (era lo que causaba el 99% de los labels duplicados:
+        texto nativo Woo ENGLISH 13px + ::before español 13px = 2 títulos).
+        CAPA 1: label entero = font-size: 0 / color: transparent = INVISIBLE.
+        CAPA 2: letter/word/white spacing 0 = no ocupa ancho.
+        CAPA 3: solo ::before tiene font-size:13px (1 SOLO título visible).
+        CAPA 4: selectors separados (label vs span select__label) para no
+                afectar a los ::before de títulos personalizados.
+   ========================================================================== */
+
+/* CAPA 1 + 2: label entero (text-inputs standard billing) = invisible */
+html body.woocommerce-checkout fieldset#billing-fields div#billing label,
+html body.woocommerce-checkout fieldset#billing-fields div#billing label[for] {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  clip-path: none !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  /* 🔒 ANTI-DUPLICADO CAPA 1: texto nativo INVISIBLE */
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  white-space: normal !important;
+  font-weight: normal !important;
+  color: transparent !important;
+}
+
+/* CAPA 1 + 2: span select__label (combos Country / State) = invisible entero */
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing span.wc-blocks-components-select__label {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  clip-path: none !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  /* 🔒 ANTI-DUPLICADO CAPA 1: texto nativo Country/State INVISIBLE */
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  white-space: normal !important;
+  font-weight: normal !important;
+  color: transparent !important;
+}
+
+/* 🔓 CAPA 3: SOLO los ::before (títulos en español) son VISIBLES,
+              con 13px / 600 / #1e293b. 1 SOLO título por campo. NUNCA + */
+html body.woocommerce-checkout fieldset#billing-fields div#billing label::before,
+html body.woocommerce-checkout fieldset#billing-fields div#billing span.wc-blocks-components-select__label::before {
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+  white-space: normal !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  min-height: 16px !important;
+}
+
+/* ─── 4) INPUTS / SELECTS: padding compacto, posición estática, ancho 100% */
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing input,
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing select,
+html body.woocommerce-checkout fieldset#billing-fields
+  div#billing select.wc-blocks-components-select__select {
+  padding: 9px 12px !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  font-size: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  top: auto !important;
+}
+
 /* =============================================================================
    FIN DE ESTILOS PERSONALIZADOS
    ========================================================================== */
