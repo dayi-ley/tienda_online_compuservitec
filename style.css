@@ -7337,7 +7337,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 }
 html body.woocommerce-checkout fieldset#billing-fields
   div.wc-block-components-address-form__address_2 label[for="billing-address_2"]::before {
-  content: 'Departamento/Piso (opcional)' !important;
+  content: 'Piso, interior, etc. (opcional)' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -7359,7 +7359,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 }
 html body.woocommerce-checkout fieldset#billing-fields
   div.wc-block-components-address-form__city label[for="billing-city"]::before {
-  content: 'Ciudad' !important;
+  content: 'Provincia & distrito' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -7372,7 +7372,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 
 /* ─── 5) DEPARTAMENTO (STATE / COUNTY) ────────────────────────────────── */
 html body.woocommerce-checkout fieldset#billing-fields
-  div#billing div.wc-block-components-state-input span.wc-blocks-components-select__label[for="billing-state"] {
+  div#billing div.wc-block-components-state-input label.wc-blocks-components-select__label[for="billing-state"] {
   font-size: 0 !important;
   line-height: 0 !important;
   letter-spacing: 0 !important;
@@ -7382,8 +7382,8 @@ html body.woocommerce-checkout fieldset#billing-fields
   height: auto !important;
 }
 html body.woocommerce-checkout fieldset#billing-fields
-  div#billing div.wc-block-components-state-input span.wc-blocks-components-select__label[for="billing-state"]::before {
-  content: 'Departamento' !important;
+  div#billing div.wc-block-components-state-input label.wc-blocks-components-select__label[for="billing-state"]::before {
+  content: 'Departamento/Region' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -7496,17 +7496,33 @@ html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-c
   box-sizing: border-box !important;
 }
 
-/* PADRE __container (flex row interna del combo) */
+/* PADRE __container (flex row interna del combo)
+   🚨 ANTES: column-reverse (ponía label ABAJO del select).
+   AHORA: flex-direction: column + order explícito en hijos =
+          label SIEMPRE ARRIBA, select SIEMPRE ABAJO, sin importar orden DOM. */
 html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container {
   display: flex !important;
-  flex-direction: column !important;   /* Label ARRIBA, combo ABAJO (orden natural) */
+  flex-direction: column !important;   /* flujo natural: 1ro arriba, 2do abajo */
   flex-wrap: nowrap !important;
   align-items: stretch !important;
   justify-content: flex-start !important;
-  gap: 2px 0 !important;                /* 2px entre label y combo (sin espacio muerto) */
+  gap: 2px 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   position: relative !important;
+}
+
+/* 🔒 ORDEN FORZADO de los hijos del combo (independiente del DOM real):
+   label = 1 (arriba) / select = 2 (abajo) / svg = 3 (o absolute) */
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container > label,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container > span.wc-blocks-components-select__label {
+  order: 1 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container > select {
+  order: 2 !important;
+}
+html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container > svg {
+  order: 3 !important;
 }
 
 /* =============== LABEL = "Pais" (SIN TILDE, user request)
@@ -7545,9 +7561,11 @@ html body.woocommerce-checkout fieldset#billing-fields label[for="billing-countr
   letter-spacing: normal !important;
 }
 
-/* SELECT COMBO (nativo dentro del wrapper): padding interno */
+/* SELECT COMBO (nativo dentro del wrapper): padding interno.
+   Aplica a AMBOS selects (country y state) — solo estilos visuales. */
 html body.woocommerce-checkout fieldset#billing-fields select.wc-blocks-components-select__select,
-html body.woocommerce-checkout fieldset#billing-fields select#billing-country.wc-blocks-components-select__select {
+html body.woocommerce-checkout fieldset#billing-fields select#billing-country.wc-blocks-components-select__select,
+html body.woocommerce-checkout fieldset#billing-fields select#billing-state.wc-blocks-components-select__select {
   padding: 9px 38px 9px 12px !important;  /* 38px derecha = espacio para SVG flecha 16 + gap */
   margin: 0 !important;
   line-height: 1.3 !important;
@@ -7557,13 +7575,25 @@ html body.woocommerce-checkout fieldset#billing-fields select#billing-country.wc
   width: 100% !important;
   box-sizing: border-box !important;
   position: static !important;
-  cursor: not-allowed !important;         /* 🛡️ Cursor NO EDITABLE (bloqueado a Perú) */
-  background-color: #f8fafc !important;  /* fondo gris suave (se nota que es bloqueado/read-only) */
   appearance: none !important;           /* quitamos la flecha NATIVA del OS para que solo se vea el SVG de Woo */
 }
 
+/* 🛡️ SOLO el select PAÍS: cursor bloqueado + fondo gris (estado read-only) */
+html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
+  cursor: not-allowed !important;
+  background-color: #f8fafc !important;
+}
+
+/* 🛡️ SOLO el select DEPARTAMENTO (state): cursor bloqueado + fondo gris
+   (El negocio solo opera en Cajamarca, NO se puede cambiar de departamento) */
+html body.woocommerce-checkout fieldset#billing-fields select#billing-state {
+  cursor: not-allowed !important;
+  background-color: #eef2f7 !important;
+}
+
 /* 🔥 HIJO 3 = SVG FLECHA DESPLEGABLE (expand):
-   24x24 → 16x16 px (igual que el checkmark anterior, menos espacio) */
+   24x24 → 16x16 px. Aplica a AMBOS selects (country y state).
+   (En el país ya lo ocultamos con la regla específica de country-input.) */
 html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-select__expand {
   position: absolute !important;
   top: 50% !important;       /* centrado VERTICALMENTE en el combo, NO en el label */
@@ -7583,10 +7613,11 @@ html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-
    BLOQUEO UI COMBO PAÍS (user request: NO elimino opciones, PERO SI bloqueo
    UI para que NO se pueda elegir otro país. Solo vende en Perú. Futuro se desactiva.)
    NIVEL 1 = CSS (impide click / apertura del combo):
+   🚨 SOLO APLICA A #billing-country (NO a #billing-state / Departamento).
    ========================================================================== */
 
-/* 1) SELECT + SUS EVENTOS DE CLICK / FOCUS = BLOQUEADOS */
-html body.woocommerce-checkout fieldset#billing-fields select.wc-blocks-components-select__select,
+/* 1) SELECT PAÍS + SUS EVENTOS DE CLICK / FOCUS = BLOQUEADOS
+   (SOLO #billing-country, NO el select de Departamento) */
 html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
   pointer-events: none !important;       /* 🚫 NO abre el desplegable, NO hay clicks */
   user-select: none !important;
@@ -7598,16 +7629,20 @@ html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
   background-color: #eef2f7 !important;  /* gris aún más claro (bloqueado) */
 }
 
-/* 2) Container padre: deshabilitamos focus / tabulación visualmente */
-html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select,
-html body.woocommerce-checkout fieldset#billing-fields div.wc-blocks-components-select__container {
+/* 2) Container padre del PAÍS: deshabilitamos focus / tabulación visualmente.
+   (SOLO el container dentro de .country-input, NO el de state) */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-country-input div.wc-blocks-components-select,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-country-input div.wc-blocks-components-select__container {
   pointer-events: none !important;
   user-select: none !important;
 }
 
-/* 3) SVG flecha: lo OCULTAMOS (no sirve de nada al estar bloqueado el combo.
-   En el futuro si vuelven a permitir países = lo muestran de nuevo. */
-html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-select__expand {
+/* 3) SVG flecha del PAÍS: lo OCULTAMOS (no sirve de nada al estar bloqueado).
+   (SOLO el SVG dentro de .country-input, NO el de Departamento) */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-country-input svg.wc-blocks-components-select__expand {
   visibility: hidden !important;
   opacity: 0 !important;
   width: 0 !important;
@@ -7616,8 +7651,46 @@ html body.woocommerce-checkout fieldset#billing-fields svg.wc-blocks-components-
   min-height: 0 !important;
 }
 
-/* 4) Padding derecho del select = reducido de 38px a 12px (no hay flecha SVG). */
+/* 4) Padding derecho del select país = reducido de 38px a 12px (no hay flecha SVG). */
 html body.woocommerce-checkout fieldset#billing-fields select#billing-country {
+  padding-right: 12px !important;
+}
+
+/* 🔒 BLOQUEAR el select DEPARTAMENTO (state) — solo Cajamarca:
+   (igual que el país: no se puede abrir el desplegable) */
+html body.woocommerce-checkout fieldset#billing-fields select#billing-state {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.85 !important;
+  background-color: #eef2f7 !important;
+}
+
+/* Container padre del DEPARTAMENTO: deshabilitamos focus / tabulación */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-state-input div.wc-blocks-components-select,
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-state-input div.wc-blocks-components-select__container {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* 🔒 SVG flecha del DEPARTAMENTO (state): OCULTO (no sirve al estar bloqueado) */
+html body.woocommerce-checkout fieldset#billing-fields
+  div.wc-block-components-state-input svg.wc-blocks-components-select__expand {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* Padding derecho del select departamento = reducido (no hay flecha SVG). */
+html body.woocommerce-checkout fieldset#billing-fields select#billing-state {
   padding-right: 12px !important;
 }
 
@@ -7642,7 +7715,7 @@ html body.woocommerce-checkout form.wc-block-checkout__form span.wc-block-compon
   float: none !important;
   clear: both !important;
   flex: 0 0 100% !important;        /* siempre su PROPIA FILA, 100% ancho */
-  order: initial !important;        /* NUNCA reordenar por flex siblings */
+  order: 7 !important;             /* 🔢 orden 7 = después de Dirección (order 6) */
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
@@ -7667,21 +7740,16 @@ html body.woocommerce-checkout form.wc-block-checkout__form span.wc-block-compon
   z-index: auto !important;
 }
 
-/* 🔧 RESTAURACIÓN 2 de 3: PADRE del formulario billing (div#billing.wc-block-components-address-form)
-   = display BLOCK. NUNCA column-reverse ni flex raro que reordene hijos.
-
-   ⚠️ AGREGADO: SELECTOR UNIVERSAL (*) a TODOS LOS HIJOS DIRECTOS del padre.
-   Esto RESETEA ORDER / FLEX a todos los campos (first/last/country/address_1
-   / TOGGLE / address_2_hidden / city / state / postcode / phone) a SU VALOR
-   NATURAL. Garantía: el span address_2-toggle no se mueve de su posición
-   original ENTRE address_1 y el input hidden address_2. */
+/* 🔧 PADRE del formulario billing (div#billing.wc-block-components-address-form)
+   = flex-direction: column para poder REORDENAR visualmente los hijos con `order`.
+   🚨 NO se toca el DOM, solo el ORDEN VISUAL (CSS). Woo sigue intacto. */
 html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form,
 html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form {
-  display: block !important;
-  flex-direction: initial !important;
-  flex-wrap: initial !important;
-  align-items: initial !important;
-  justify-content: initial !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
   order: initial !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -7690,7 +7758,7 @@ html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-a
 }
 /* Selector UNIVERSAL (*): todos los hijos directos del padre vuelven a su estado WOO original. */
 html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > * {
-  order: initial !important;
+  order: 0 !important;   /* default = 0, luego los específicos lo sobreescriben */
   flex: initial !important;
   flex-grow: initial !important;
   flex-shrink: initial !important;
@@ -7717,6 +7785,60 @@ html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-comp
   gap: revert-layer !important;
   line-height: revert-layer !important;
 }
+
+/* 🔧 EXCEPCIÓN: el input oculto address_2 debe MANTENERSE fuera de pantalla
+   (Woo lo posiciona en left:-20000px / position:absolute).
+   La regla universal de arriba lo revertió a visible → causaba warning de
+   accesibilidad (aria-hidden en elemento con foco). Restauramos el ocultamiento: */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > input.wc-block-components-address-form__address_2-hidden-input {
+  position: absolute !important;
+  left: -20000px !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  flex: 0 0 auto !important;
+  max-width: 1px !important;
+  min-width: 0 !important;
+}
+
+/* 🔢 ORDEN VISUAL de los campos billing (sin tocar el DOM, solo CSS `order`):
+   1. Nombre completo
+   2. Apellido completo
+   3. Pais
+   4. Departamento/Region  ← antes estaba después de Provincia, ahora justo después de Pais
+   5. Provincia & distrito
+   6. Dirección
+   7. + Add depto/piso (toggle)
+   8. Departamento/Piso (address_2)
+   9. Código Postal
+  10. Teléfono Celular
+*/
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__first_name    { order: 1  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__last_name     { order: 2  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__country         { order: 3  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__state           { order: 4  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__city            { order: 5  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__address_1       { order: 6  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > span.wc-block-components-address-form__address_2-toggle{ order: 7  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__address_2  { order: 8  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > input.wc-block-components-address-form__address_2-hidden-input { order: 8 !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__postcode        { order: 9  !important; }
+html body.woocommerce-checkout fieldset#billing-fields div#billing.wc-block-components-address-form > div.wc-block-components-address-form__phone           { order: 10 !important; }
 
 /* ==========================================================================
    🔥 LABELS ENCIMA DE INPUTS (TODOS LOS CAMPOS BILLING) — SIN ROMPER TOGGLE
@@ -7747,7 +7869,7 @@ html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-
   align-items: stretch !important;
   justify-content: flex-start !important;
   gap: 2px 0 !important;
-  order: initial !important;
+  /* order: REMOVIDO — permite que las reglas order:1..10 específicas se apliquen */
   position: static !important;
   margin: 0 0 6px 0 !important;
   padding: 0 !important;
@@ -7763,10 +7885,10 @@ html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-
 
 /* ─── 2) SELECT COUNTRY (Pais) y STATE (Departamento):
         usan estructura .wc-blocks-components-select__container flex.
-        invertimos ESE container (no el wrapper) para label ARRIBA.
-   ⚠️ ESPECIFICIDAD MÁXIMA (6 NIVELES DE PADRE): para ganar a las reglas Woo Core
-   que aplican flex-direction: column (label ABAJO). Antes no funcionaba por
-   baja especificidad (3 niveles). Ahora: 6 niveles → SIEMPRE gana. */
+   🚨 ANTES: flex-direction: column-reverse → ponía LABEL ABAJO del select (bug).
+   AHORA: flex-direction: column (flujo natural) + la regla de orden (order)
+          de la línea 7515-7526 fuerza: label=1 (arriba), select=2 (abajo).
+          Funciona SIN IMPORTAR el orden real del DOM de Woo. */
 html body.woocommerce-checkout
   fieldset#billing-fields
   div.wc-block-components-checkout-step__content
@@ -7786,7 +7908,7 @@ html body.woocommerce-checkout
   div.wc-blocks-components-select
   div.wc-blocks-components-select__container {
   display: flex !important;
-  flex-direction: column-reverse !important;
+  flex-direction: column !important;          /* ✅ COLUMN (NO reverse) */
   flex-wrap: nowrap !important;
   align-items: stretch !important;
   justify-content: flex-start !important;
@@ -7795,7 +7917,7 @@ html body.woocommerce-checkout
   margin: 0 0 6px 0 !important;
   width: 100% !important;
   max-width: 100% !important;
-  position: relative !important;   /* ⚠️ ABSOLUTE para la SVG flecha que está dentro */
+  position: relative !important;
   min-height: 0 !important;
   height: auto !important;
   box-sizing: border-box !important;
@@ -7930,6 +8052,133 @@ html body.woocommerce-checkout fieldset#billing-fields
   box-sizing: border-box !important;
   position: static !important;
   top: auto !important;
+}
+
+/* =============================================================================
+   🔥 FORZAR DISPLAY:FLEX + REORDENAR CAMPOS BILLING (ESPECIFICIDAD MÁXIMA)
+   Problema: Woo Blocks usa display:grid + grid-area en los hijos → ignora `order`.
+   Solución:
+     1) Forzar display:flex + flex-direction:column en div#billing.
+     2) Eliminar TODAS las propiedades grid de los hijos (grid-area/column/row).
+     3) Cada hijo = flex:0 0 100% (1 sola columna).
+     4) order:1..10 en cada campo (sobrescribe el order:0 del universal).
+   ============================================================================= */
+
+/* 1) PADRE: flex column (GANARÁ a cualquier display:grid de Woo) */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div.wc-block-components-checkout-step__content
+  div.wc-block-components-address-address-wrapper
+  div.wc-block-components-address-form-wrapper
+  div#billing.wc-block-components-address-form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  grid-template-columns: none !important;
+  grid-template-areas: none !important;
+  grid-auto-flow: row !important;
+}
+
+/* 2) TODOS los hijos: sin grid, flex 100% ancho */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form > * {
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  grid-column-start: auto !important;
+  grid-column-end: auto !important;
+  grid-row-start: auto !important;
+  grid-row-end: auto !important;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 3) ORDEN VISUAL (1..10) — especificidad máxima para ganar a Woo */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__first_name      { order: 1  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__last_name       { order: 2  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__country         { order: 3  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__state           { order: 4  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__city            { order: 5  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__address_1       { order: 6  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > span.wc-block-components-address-form__address_2-toggle { order: 7 !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__address_2      { order: 8  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > input.wc-block-components-address-form__address_2-hidden-input { order: 8 !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__postcode        { order: 9  !important; }
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#billing-fields
+  div#billing.wc-block-components-address-form
+  > div.wc-block-components-address-form__phone           { order: 10 !important; }
+
+/* =============================================================================
+   🔥 ZONA DE PAGO FINAL — Fondo naranja para diferenciar del resto del formulario
+   Aplica a: fieldset#payment-method + div#order-notes + div.wc-block-checkout__terms
+   ============================================================================= */
+html body.woocommerce-checkout fieldset#payment-method,
+html body.woocommerce-checkout div#order-notes,
+html body.woocommerce-checkout div.wc-block-checkout__terms {
+  background-color: #fff7ed !important;   /* naranja pastel muy claro */
+  border: 1px solid #fed7aa !important;   /* borde naranja claro */
+  border-radius: 14px !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* =============================================================================
+   🔥 CHECKBOX — Reducir tamaño a 16px (order-notes + terms)
+   Por defecto Woo los trae más grandes. Igualamos a 16x16 como contact/billing.
+   ============================================================================= */
+html body.woocommerce-checkout div#order-notes .wc-block-components-checkbox__input,
+html body.woocommerce-checkout div#order-notes input[type="checkbox"].wc-block-components-checkbox__input,
+html body.woocommerce-checkout div.wc-block-checkout__terms .wc-block-components-checkbox__input,
+html body.woocommerce-checkout div.wc-block-checkout__terms input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  margin-right: 10px !important;
+  margin-top: 1px !important;
+}
+html body.woocommerce-checkout div#order-notes .wc-block-components-checkbox__mark,
+html body.woocommerce-checkout div.wc-block-checkout__terms .wc-block-components-checkbox__mark {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 /* =============================================================================
