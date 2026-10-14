@@ -628,6 +628,13 @@ add_action('wp_footer', function () {
             traducido = true;
         }
 
+        // 3) Botón "Place Order" → "Realizar pedido"
+        var placeOrderBtn = document.querySelector('.wc-block-components-checkout-place-order-button__text');
+        if ( placeOrderBtn && placeOrderBtn.textContent.trim() === 'Place Order' ) {
+            placeOrderBtn.textContent = 'Realizar pedido';
+            traducido = true;
+        }
+
         return traducido;
     }
 

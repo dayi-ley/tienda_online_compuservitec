@@ -2332,6 +2332,19 @@ body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__lbl{
    ========================================================================== */
 
 /* ---------- Fix 1: Selector "Seleccionar categoría" del buscador → TEXTO BLANCO ---------- */
+/* Evitar CLS: select nativo position:absolute (no afecta layout) + category-inner ancho fijo */
+.header-upper .search-area .category-inner{
+  width: 210px;
+  flex-shrink: 0;
+}
+.header-upper .search-area .category-inner select.header-search-select{
+  position: absolute;
+  display: none !important;
+}
+/* Mover flecha desplegable más a la derecha para que no se mont sobre el texto */
+.header-upper .search-area .category-inner .nice-select:before{
+  right: 0px !important;
+}
 .header-search-select.nice-select,
 .search-area .nice-select,
 .category-inner .nice-select,
@@ -5419,6 +5432,46 @@ form.woocommerce-checkout .col2-set,
   box-shadow: 0 4px 16px rgba(14, 44, 74, 0.06) !important;
   box-sizing: border-box !important;
 }
+/* Quitar paddings/margins verticales de los bloques hijos del resumen */
+.wc-block-components-checkout-order-summary__content > *,
+.wc-block-components-order-summary,
+.wc-block-components-order-summary__content,
+.wc-block-components-order-summary__content > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+/* Cupón: margin y paddings verticales reducidos */
+body.woocommerce-checkout .wc-block-components-totals-coupon.wc-block-components-panel {
+  margin-top: 0 !important;
+  margin-bottom: 2px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+body.woocommerce-checkout .wc-block-components-totals-coupon .wc-block-components-panel__button {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  min-height: 20px !important;
+}
+/* TEMPORAL: mostrar títulos en bloques vacíos de totales para visualizarlos */
+body.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-totals-block > *:empty::before {
+  content: attr(class);
+  display: block;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #888;
+  background: #f0f0f0;
+  border: 1px dashed #ccc;
+  word-break: break-all;
+}
+/* Bloques de totales (subtotal, discount, fee, shipping): padding vertical 2px */
+body.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-totals-block > .wc-block-components-totals-wrapper {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
 
 /* Tarjetas / Secciones individuales: bordes suaves, padding ordenado */
 .woocommerce-billing-fields,
@@ -5662,10 +5715,10 @@ th.product-total {
 .wc-block-components-checkout-place-order-button button,
 button.wc-block-components-checkout-place-order-button,
 .woocommerce-checkout-place-order-button {
-  display: block !important;
-  width: 100% !important;
+  display: inline-block !important;
+  width: auto !important;
   max-width: 100% !important;
-  min-width: 100% !important;
+  min-width: 260px !important;
   min-height: 52px !important;
   padding: 14px 18px !important;
   margin: 24px 0 6px 0 !important;
@@ -6176,10 +6229,10 @@ html body.woocommerce-cart [data-block-name="woocommerce/cart-items-block"]:not(
 }
 
 /* ---------- C) CUPÓN: placeholders input + botón si no están aún ---------- */
-.wp-block-woocommerce-cart-order-summary-coupon-form-block:not(:has(input)):not(:has(button)),
-.wc-block-components-totals-coupon:not(:has(.wc-block-components-totals-coupon__form)),
-.wc-block-components-totals-coupon__content:empty,
-.wp-block-woocommerce-cart-order-summary-coupon-form-block .scx-coupon-block:empty {
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block:not(:has(input)):not(:has(button)),
+html body.woocommerce-cart .wc-block-components-totals-coupon:not(:has(.wc-block-components-totals-coupon__form)),
+html body.woocommerce-cart .wc-block-components-totals-coupon__content:empty,
+html body.woocommerce-cart .wp-block-woocommerce-cart-order-summary-coupon-form-block .scx-coupon-block:empty {
   min-height: 62px !important;
   padding: 14px 0 !important;
   background: #f8fafc !important;
