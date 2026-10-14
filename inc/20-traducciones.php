@@ -305,6 +305,7 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Direct bank transfer'                       => 'Transferencia bancaria',
 			'Cash on delivery'                           => 'Pago contra entrega',
 			'Add a note to your order'                   => 'Añadir nota a tu pedido',
+			'Notes about your order, e.g. special notes for delivery.' => 'Notas sobre tu pedido, p. ej. notas especiales para la entrega.',
 			'Order notes'                                => 'Notas del pedido',
 			'Order notes (optional)'                     => 'Notas del pedido (opcional)',
 			'Note'                                       => 'Nota',
@@ -577,3 +578,73 @@ function storex_child_forzar_12_productos_novedades( $query_args, $atts, $loop_n
 	}
 	return $query_args;
 }
+
+/* =============================================================================
+   TRADUCCIONES JS PARA WOOCOMMERCE BLOCKS (React / cliente)
+   Los textos de los bloques de checkout se renderizan en el navegador con React,
+   por lo que el filtro gettext de PHP NO los alcanza. La forma nativa de
+   WordPress es wp_set_script_translations() con un archivo JSON (formato Jed).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_cargar_traducciones_blocks_js' ) ) :
+function storex_child_cargar_traducciones_blocks_js() {
+	$json_path = get_stylesheet_directory() . '/languages/woocommerce-es_PE-blocks.json';
+	if ( ! file_exists( $json_path ) ) return;
+	// Registrar el JSON para los handles de scripts que usan los bloques de checkout
+	wp_set_script_translations( 'wc-blocks-checkout',        'woocommerce', $json_path );
+	wp_set_script_translations( 'wc-blocks-checkout-events', 'woocommerce', $json_path );
+	wp_set_script_translations( 'wc-cart-checkout-base',     'woocommerce', $json_path );
+	wp_set_script_translations( 'wc-cart-checkout-vendors',  'woocommerce', $json_path );
+}
+endif;
+add_action( 'wp_enqueue_scripts', 'storex_child_cargar_traducciones_blocks_js', 999 );
+
+/* =============================================================================
+   TRADUCCION JS (React) — Textos de WooCommerce Blocks
+   gettext NO alcanza los textos renderizados por React en el cliente.
+   Solución: script inline que reemplaza los textos exactos UNA SOLA VEZ.
+   ========================================================================== */
+add_action('wp_footer', function () {
+    if ( ! is_checkout() ) return;
+    ?>
+<script type="text/javascript">
+(function() {
+    function traducirTextosCheckout() {
+        var orderNotes = document.getElementById('order-notes');
+        if ( ! orderNotes ) return false;
+
+        var traducido = false;
+
+        // 1) Etiqueta del checkbox "Add a note to your order"
+        var label = orderNotes.querySelector('.wc-block-components-checkbox__label');
+        if ( label && label.textContent.trim() === 'Add a note to your order' ) {
+            label.textContent = 'Añadir nota a tu pedido';
+            traducido = true;
+        }
+
+        // 2) Placeholder del textarea
+        var textarea = orderNotes.querySelector('textarea');
+        if ( textarea && textarea.placeholder === 'Notes about your order, e.g. special notes for delivery.' ) {
+            textarea.placeholder = 'Notas sobre tu pedido, p. ej. notas especiales para la entrega.';
+            traducido = true;
+        }
+
+        return traducido;
+    }
+
+    // Intentar inmediatamente por si el DOM ya está listo
+    if ( traducirTextosCheckout() ) return;
+
+    // Si no, observar el DOM hasta que aparezca el texto, luego desconectar
+    var observer = new MutationObserver(function() {
+        if ( traducirTextosCheckout() ) {
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Seguridad: desconectar después de 10s por si algo falla
+    setTimeout(function() { observer.disconnect(); }, 10000);
+})();
+</script>
+    <?php
+}, 999 );

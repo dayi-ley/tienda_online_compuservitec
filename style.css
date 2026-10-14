@@ -1226,6 +1226,10 @@ html body.woocommerce-checkout .wc-block-checkout{
   padding: 0 clamp(8px, 1vw, 18px) !important;
   box-sizing: border-box !important;
 }
+/* Reservar espacio mientras React carga el checkout → evita CLS del footer */
+html body.woocommerce-checkout .wc-block-checkout.is-loading{
+  min-height: 2800px;
+}
 
 /* =========================================================
    4.c CARRITO: LAYOUT 2 COLUMNAS SOLO SI VENTANA >= 1100px (desktop ancho).
@@ -8179,6 +8183,11 @@ html body.woocommerce-checkout div#order-notes .wc-block-components-checkbox__ma
 html body.woocommerce-checkout div.wc-block-checkout__terms .wc-block-components-checkbox__mark {
   width: 16px !important;
   height: 16px !important;
+}
+/* Quitar padding-top y margin-top del checkbox de order-notes */
+html body.woocommerce-checkout div#order-notes .wc-block-components-checkbox {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 /* =============================================================================
