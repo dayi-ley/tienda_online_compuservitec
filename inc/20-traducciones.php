@@ -601,56 +601,140 @@ add_action( 'wp_enqueue_scripts', 'storex_child_cargar_traducciones_blocks_js', 
 /* =============================================================================
    TRADUCCION JS (React) — Textos de WooCommerce Blocks
    gettext NO alcanza los textos renderizados por React en el cliente.
-   Solución: script inline que reemplaza los textos exactos UNA SOLA VEZ.
+   Solución: script inline que reemplaza los textos exactos usando un mapa.
+   Recorre todos los nodos de texto dentro del checkout y reemplaza coincidencias
+   exactas. Usa MutationObserver para textos que renderizan tarde, y se desconecta
+   tras 10s para no consumir recursos.
    ========================================================================== */
 add_action('wp_footer', function () {
     if ( ! is_checkout() ) return;
     ?>
 <script type="text/javascript">
 (function() {
-    function traducirTextosCheckout() {
-        var orderNotes = document.getElementById('order-notes');
-        if ( ! orderNotes ) return false;
+    // Map ORIGINAL (inglés) => TRADUCCIÓN (español PE)
+    var T = {
+        // Contacto
+        'Contact information': 'Información de contacto',
+        'Log in': 'Iniciar sesión',
+        'You are currently checking out as a guest.': 'Estás pagando como invitado.',
+        'Create an account with Compuservitec': 'Crear una cuenta con Compuservitec',
+        // Entrega
+        'Delivery': 'Entrega',
+        'Ship': 'Envío a domicilio',
+        'Pickup': 'Recojo en tienda',
+        'Pickup locations': 'Puntos de recojo',
+        'Pickup location': 'Punto de recojo',
+        // Direcciones
+        'Billing address': 'Dirección de facturación',
+        'Shipping address': 'Dirección de envío',
+        // Pago
+        'Payment options': 'Métodos de pago',
+        'Payment method': 'Método de pago',
+        'Payment methods': 'Métodos de pago',
+        // Notas / Términos / Resumen
+        'Add a note to your order': 'Añadir nota a tu pedido',
+        'Notes about your order, e.g. special notes for delivery.': 'Notas sobre tu pedido, p. ej. notas especiales para la entrega.',
+        'Order notes': 'Notas del pedido',
+        'Order notes (optional)': 'Notas del pedido (opcional)',
+        'Terms and Conditions': 'Términos y Condiciones',
+        'Privacy Policy': 'Política de Privacidad',
+        'Order summary': 'Resumen del pedido',
+        'Add coupons': 'Añadir cupones',
+        'Subtotal': 'Subtotal',
+        'Discount': 'Descuento',
+        'Taxes': 'Impuestos',
+        'Grand total': 'Total final',
+        'Estimated total': 'Total estimado',
+        'Place Order': 'Realizar pedido',
+        'Place order': 'Realizar pedido'
+    };
 
-        var traducido = false;
-
-        // 1) Etiqueta del checkbox "Add a note to your order"
-        var label = orderNotes.querySelector('.wc-block-components-checkbox__label');
-        if ( label && label.textContent.trim() === 'Add a note to your order' ) {
-            label.textContent = 'Añadir nota a tu pedido';
-            traducido = true;
+    // Reemplazar texto exacto en un nodo (text node)
+    function reemplazarEnNodo(node) {
+        if (node.nodeType !== 3) return; // solo text nodes
+        var txt = node.nodeValue;
+        if (txt === null) return;
+        var trimmed = txt.trim();
+        if (trimmed === '') return;
+        if (T.hasOwnProperty(trimmed)) {
+            node.nodeValue = T[trimmed];
         }
-
-        // 2) Placeholder del textarea
-        var textarea = orderNotes.querySelector('textarea');
-        if ( textarea && textarea.placeholder === 'Notes about your order, e.g. special notes for delivery.' ) {
-            textarea.placeholder = 'Notas sobre tu pedido, p. ej. notas especiales para la entrega.';
-            traducido = true;
-        }
-
-        // 3) Botón "Place Order" → "Realizar pedido"
-        var placeOrderBtn = document.querySelector('.wc-block-components-checkout-place-order-button__text');
-        if ( placeOrderBtn && placeOrderBtn.textContent.trim() === 'Place Order' ) {
-            placeOrderBtn.textContent = 'Realizar pedido';
-            traducido = true;
-        }
-
-        return traducido;
     }
 
-    // Intentar inmediatamente por si el DOM ya está listo
-    if ( traducirTextosCheckout() ) return;
-
-    // Si no, observar el DOM hasta que aparezca el texto, luego desconectar
-    var observer = new MutationObserver(function() {
-        if ( traducirTextosCheckout() ) {
-            observer.disconnect();
+    // Reemplazar placeholders en inputs/textarea
+    function reemplazarPlaceholders(root) {
+        if (!root) return;
+        var inputs = root.querySelectorAll('input, textarea');
+        for (var i = 0; i < inputs.length; i++) {
+            var ph = inputs[i].placeholder;
+            if (ph && T.hasOwnProperty(ph)) {
+                inputs[i].placeholder = T[ph];
+            }
         }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }
 
-    // Seguridad: desconectar después de 10s por si algo falla
-    setTimeout(function() { observer.disconnect(); }, 10000);
+    // Frase de términos: "By proceeding... agree to our [link] and [link]."
+    // Tiene links en medio, NO es un solo text node → se maneja con innerHTML.
+    function traducirFraseTerminos() {
+        var termsBlock = document.querySelector('.wc-block-checkout__terms');
+        if (!termsBlock) return;
+        termsBlock.innerHTML = termsBlock.innerHTML.replace(
+            /By proceeding with your purchase you agree to our\s*(.+?)\s*and\s*(.+?)\./,
+            'Al continuar tu compra aceptas nuestros $1 y $2.'
+        );
+    }
+
+    // Recorrer todos los text nodes de un subárbol
+    function recorrerTexto(root) {
+        if (!root) return;
+        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode: function(n) {
+                // Saltar nodos dentro de script/style
+                var parent = n.parentNode;
+                if (parent && (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE')) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+        var node;
+        while (node = walker.nextNode()) {
+            reemplazarEnNodo(node);
+        }
+    }
+
+    function traducirCheckout() {
+        var checkout = document.querySelector('.wp-block-woocommerce-checkout') || document.body;
+        recorrerTexto(checkout);
+        reemplazarPlaceholders(checkout);
+        traducirFraseTerminos();
+    }
+
+    // Intentar inmediatamente
+    traducirCheckout();
+
+    // Observar cambios del DOM con debounce para manejar múltiples renders
+    // de React SIN bucle infinito. Se desconecta al traducir y se reconecta
+    // después de 300ms.
+    var observer, debounceTimer;
+    function startObserver() {
+        observer = new MutationObserver(function() {
+            observer.disconnect();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                traducirCheckout();
+                startObserver(); // reconectar para futuros renders
+            }, 300);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+    startObserver();
+
+    // Seguridad: desconectar después de 10s
+    setTimeout(function() {
+        if (observer) observer.disconnect();
+        clearTimeout(debounceTimer);
+    }, 10000);
 })();
 </script>
     <?php

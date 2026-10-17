@@ -25,7 +25,10 @@ function scx_carrito_titulo_conteo(){
 /** Devuelve el HTML completo del H2. Si carrito vacío = string vacío. */
 function scx_carrito_titulo_html(){
     if ( ! function_exists( 'WC' ) || empty( WC()->cart ) ) return '';
-    if ( WC()->cart->is_empty() ) return '';  // Condición del usuario
+    // En checkout blocks, el carrito se renderiza cliente-side y PHP a veces
+    // cree que está vacío. Siempre mostrar el título en checkout (JS lo actualiza).
+    $es_checkout = function_exists('is_checkout') && is_checkout();
+    if ( ! $es_checkout && WC()->cart->is_empty() ) return '';
     $n = scx_carrito_titulo_conteo();
     return sprintf(
         '<%1$s class="scx-carrito-titulo" id="scx-carrito-titulo" data-scx-count="%2$d">' .
@@ -129,7 +132,9 @@ add_filter( 'storex_child_final_html_output', function( $html ){
    ============================================================ */
 add_action( 'wp_footer', function(){
     if ( ! function_exists( 'WC' ) || empty( WC()->cart ) ) return;
-    if ( WC()->cart->is_empty() ) return;   // Condición del usuario: vacío = no pintar
+    // En checkout blocks siempre mostrar el título (JS actualiza el conteo)
+    $es_checkout = function_exists('is_checkout') && is_checkout();
+    if ( ! $es_checkout && WC()->cart->is_empty() ) return;
     $n = scx_carrito_titulo_conteo();
     $lbl = $n === 1 ? 'producto' : 'productos';
     ?>

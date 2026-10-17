@@ -2272,6 +2272,13 @@ body.woocommerce-cart h2#scx-carrito-titulo .scx-carrito-titulo__lbl{
     padding-bottom: clamp(3px, 0.6vw, 7px) !important;
   }
 }
+
+/* CHECKOUT: el título del carrito se OCULTA. Woo Blocks (React) hidrata
+   el bloque y borra el contenido de los spans, dejándolo vacío/inútil. */
+body.woocommerce-checkout h2#scx-carrito-titulo,
+body.woocommerce-checkout h2.scx-carrito-titulo{
+  display: none !important;
+}
 @media (max-width: 767px){
   body.woocommerce-cart h2.scx-carrito-titulo,
   body.woocommerce-cart h2#scx-carrito-titulo{
@@ -5399,21 +5406,44 @@ form.woocommerce-checkout .col2-set,
 body.woocommerce-checkout .wc-block-checkout__main,
 body.woocommerce-checkout .wc-block-checkout__form {
   flex-direction: column !important;
+  gap: 3px !important;
+}
+/* Todos los bloques hijos del form ocupan el 100% del ancho (sin estirarse en altura) */
+body.woocommerce-checkout .wc-block-checkout__form > fieldset,
+body.woocommerce-checkout .wc-block-checkout__form > div {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
 }
 /* sidebar-layout PADRE: main (62%) + sidebar (34%) en fila horizontal */
 body.woocommerce-checkout .wc-block-components-sidebar-layout {
   flex-direction: row !important;
+  flex-wrap: nowrap !important;
 }
 /* Anchos de columna: formulario (main) 62% + sidebar (resumen) 34% */
 body.woocommerce-checkout .wc-block-components-sidebar-layout > .wc-block-checkout__main {
-  flex: 1 1 62% !important;
+  flex: 0 0 62% !important;
+  width: 62% !important;
   min-width: 0 !important;
   max-width: 62% !important;
+  box-sizing: border-box !important;
+}
+/* Anular el max-width:980px que Woo aplica al fields-block.
+   Solo en DESKTOP (>=981px); en móvil/tablet el main ocupa 100%. */
+@media (min-width: 981px) {
+  html body.woocommerce-checkout .wc-block-checkout__main.wp-block-woocommerce-checkout-fields-block {
+    max-width: 62% !important;
+  }
 }
 body.woocommerce-checkout .wc-block-components-sidebar-layout > .wc-block-checkout__sidebar {
-  flex: 1 1 34% !important;
-  min-width: 300px !important;
-  max-width: 38% !important;
+  flex: 0 0 34% !important;
+  width: 34% !important;
+  min-width: 0 !important;
+  max-width: 34% !important;
+  padding: 5px !important;
+  box-sizing: border-box !important;
 }
 /* OCULTAR el resumen duplicado "fill-wrapper" dentro del formulario
    (no tiene los diseños del sidebar, siempre se esconde en todos los tamaños) */
@@ -5865,6 +5895,7 @@ form.checkout_coupon button.button,
   body.woocommerce-checkout .wc-block-components-sidebar-layout > .wc-block-checkout__main,
   body.woocommerce-checkout .wc-block-components-sidebar-layout > .wc-block-checkout__sidebar {
     flex: 1 1 100% !important;
+    width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
   }
@@ -6609,215 +6640,13 @@ html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contac
 }
 
 /* --------------------------------------------------------------------------
-   FIX CHECKOUT #4 — Layout Grid 2 columnas en PADRE del formulario.
-   REQUISITO EXACTO USUARIO:
-   * DESKTOP (>= 993px):
-     Columna IZQUIERDA (62%)  → contact-fields (fila 1)
-                              → billing-fields / payment-method / order-notes /
-                                terms / actions (todo lo demás, debajo)
-     Columna DERECHA   (34%)  → shipping-method (fila 1, MISMA FILA que contact-fields,
-                                          MISMO ANCHO que el shipping-method actual!)
-                              → pickup-options (fila 2, DEBAJO de shipping-method,
-                                          MISMO ANCHO 34% — NUNCA 100%!)
-   * MÓVIL / TABLET (<= 992px):
-     Columna 50% IZQ → shipping-method
-     Columna 50% DER → pickup-options
-     (El user confirmó: en móvil ambos al lado.)
-     Todo lo demás = 100% de ancho (flujo normal).
-
-   TECNICA:
-   * form.wc-block-checkout__form = display:grid con 2 columnas (desktop) / 1 columna (mobile).
-   * shipping-method y pickup-options → grid-column: 2 (COLUMNA DERECHA, desktop) /
-                                        grid-column: auto (mobile 50/50 via grid-template-columns).
-   * billing/payment/order-note/terms/actions → grid-column: 1 (IZQUIERDA, solo desktop).
-   * NADA se mueve del DOM, nada se borra, no hay re-order: solo CSS Grid.
+   FIX CHECKOUT #4 — ELIMINADO: sistema FLOAT reemplazado por FLEX (ver ~5398).
+   El form usa flex-direction: column → todos los bloques se apilan verticalmente.
    -------------------------------------------------------------------------- */
 
-/* =============================================================
-   A) PADRE: form.wc-block-checkout__form → display:block default.
-      LUEGO: APLICAMOS HORIZONTAL (shipping + pickup AL LADO)
-      COMO REGLA GENERAL (sin media query).
-      Esto EVITA el "hueco" 991.2px ~ 992.9px donde ninguna media
-      query aplicaba y los bloques se veían verticales.
-      Técnica SIN TOCAR HTML: float:left / float:right + clear:both
-      en el hermano siguiente (billing-fields). Garantiza que el
-      pickup NUNCA baje por espacios en blanco o anchos exactos.
-   ============================================================= */
-
-html body.woocommerce-checkout form.wc-block-components-form.wc-block-checkout__form,
-html body.woocommerce-checkout #content.storex-content form.wc-block-checkout__form {
-  display: block !important; /* flujo normal, 1 columna base */
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* ---------- LAYOUT GENERAL (default mobile + tablet + <992px):
-   shipping-method ← IZQUIERDA float, 50% - gap
-   pickup-options  ← DERECHA  float, 50% - gap
-   SIEMPRE al lado, NUNCA verticales (incluso en 991.2px o 992.x).
-   Gap entre ambos: 28px (igual que el column-gap de desktop L5379).
-   ------------------------------------------------------------- */
-html body.woocommerce-checkout fieldset#shipping-method.wc-block-checkout__shipping-method {
-  display: block !important;
-  float: left !important;
-  clear: none !important;
-  /* 50% menos la mitad del gap (28 / 2 = 14) → la suma de ambos = 100% - 28px gap exacto */
-  width: calc(50% - 14px) !important;
-  max-width: calc(50% - 14px) !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  margin: 0 28px 16px 0 !important; /* 28px gap derecho entre ambos */
-  padding-top: 3px !important;       /* mimico padding top 3px contact-fields */
-  padding-bottom: 3px !important;    /* mimico padding bottom 3px */
-}
-html body.woocommerce-checkout fieldset#pickup-options.wc-block-checkout__pickup-options {
-  display: block !important;
-  float: right !important;
-  clear: none !important;
-  width: calc(50% - 14px) !important;
-  max-width: calc(50% - 14px) !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  margin: 0 0 16px 0 !important;
-  padding-top: 3px !important;
-  padding-bottom: 3px !important;
-}
-
-/* El hermano SIGUIENTE (#billing-fields) DEBE limpiar los floats
-   y aparecer 100% width DEBAJO de ambos bloques, sin subirse. */
-html body.woocommerce-checkout fieldset#billing-fields.wc-block-checkout__billing-fields,
-html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#billing-fields {
-  clear: both !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* =========== EN CASO sea MUY PEQUEÑO el móvil (<= 480px):
-   Si los 2 bloques de 50% son demasiado angostos y se rompen los
-   textos radios, puedes comentar esta regla. Mantenemos 50/50 user request. */
-@media (max-width: 480px) {
-  html body.woocommerce-checkout fieldset#shipping-method.wc-block-checkout__shipping-method {
-    width: calc(50% - 8px) !important;
-    max-width: calc(50% - 8px) !important;
-    margin-right: 16px !important;
-  }
-  html body.woocommerce-checkout fieldset#pickup-options.wc-block-checkout__pickup-options {
-    width: calc(50% - 8px) !important;
-    max-width: calc(50% - 8px) !important;
-  }
-}
-
-/* =============================================================
-   B) DESKTOP (>= 993px): FINAL - ESTRUCTURA EXACTA USER:
-   ┌────────────────────────────────┬──────────────────────────┐
-   │ 62% - contact-fields          │ 34% - shipping-method│
-   │                 (mismo alto q │ ├──────────────────────────┤
-   │                 col der)      │ 34% - pickup-options │
-   ├────────────────────────────────┴──────────────────────────┤
-   │ 100% - billing-fields (todo el ancho, sin columnas)      │
-   │ 100% - payment-method (todo el ancho)                    │
-   │ 100% - order-note / terms / actions (todo el ancho)      │
-   └───────────────────────────────────────────────────────────┘
-   Técnica: floats + clearfix en form padre.
-            SOLO 3 BLOQUES tienen columna (contact / ship / pick).
-            Todo lo demás = clear: both y width 100%.
-   ============================================================= */
-@media (min-width: 993px) {
-  html body.woocommerce-checkout form.wc-block-components-form.wc-block-checkout__form,
-  html body.woocommerce-checkout #content.storex-content form.wc-block-checkout__form {
-    display: block !important;
-    overflow: hidden !important;   /* clearfix: contiene floats */
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Limpiamos cualquier cosa del primer div vacío que Woo agrega */
-  html body.woocommerce-checkout form.wc-block-checkout__form > div:first-child,
-  html body.woocommerce-checkout form.wc-block-checkout__form > div:nth-child(1) {
-    display: none !important; /* no hace nada, lo ocultamos */
-    float: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    clear: both !important;
-  }
-
-  /* =========================================================
-     IZQUIERDA (62%) = SOLO contact-fields.
-     Flotamos a la izquierda, 62% de ancho, MISMA FILA que
-     shipping-method (der 34%).
-     ========================================================= */
-  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#contact-fields.wc-block-checkout__contact-fields {
-    float: left !important;
-    clear: none !important;
-    /* ancho columna izq = 62% - mitad del gap 28px (14px) */
-    width: calc(62% - 14px) !important;
-    max-width: calc(62% - 14px) !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 28px !important;   /* gap 28px ENTRE col izq y col der */
-    margin-top: 0 !important;
-    margin-bottom: 28px !important;  /* espacio ENTRE esta fila 2 col y la
-                                        fila 100% de billing de ABAJO */
-    /* Si el contacto es más alto que la col der (shipping+pickup), lo
-       mantenemos igual, el gap 28px abajo separa bien. */
-  }
-
-  /* =========================================================
-     DERECHA (34%) = shipping-method + pickup-options
-     Ambos float:right. shipping en clear:none (misma fila que
-     contacto), y pickup en clear:right (debajo de shipping en
-     la MISMA COLUMNA DERECHA 34%).
-     ========================================================= */
-  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#shipping-method.wc-block-checkout__shipping-method {
-    float: right !important;
-    clear: right !important;         /* 🔥 MISMA FILA que contact-fields (arriba der) */
-    /* ancho columna der = 34% - mitad del gap 28px (14px) */
-    width: calc(34% - 14px) !important;
-    max-width: calc(34% - 14px) !important;
-    min-width: 300px !important;
-    box-sizing: border-box !important;
-    /* 🔥 Sobrescribimos la regla general MÓVIL (float:left 50%) */
-    float: right !important;
-    margin: 0 0 16px 0 !important;   /* 16px gap vertical ENTRE shipping y
-                                        pickup-options (ambos en col der). */
-  }
-  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#pickup-options.wc-block-checkout__pickup-options {
-    float: right !important;
-    clear: right !important;         /* DEBAJO de shipping-method (fila 2 der) */
-    width: calc(34% - 14px) !important;   /* MISMO ANCHO que shipping = 34% */
-    max-width: calc(34% - 14px) !important;
-    min-width: 300px !important;
-    box-sizing: border-box !important;
-    /* 🔥 Sobrescribimos la regla general MÓVIL */
-    float: right !important;
-    margin: 0 0 28px 0 !important;   /* 28px gap ABAJO pickup = fin fila 2 columnas
-                                        y empieza billing 100% abajo. */
-  }
-
-  /* =========================================================
-     FILA 100% ABAJO = billing/payment/order-note/terms/actions
-     TODOS estos son clear: both = empiezan en NUEVA FILA 100%
-     width (sin columnas, sin col der).
-     ========================================================= */
-  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#billing-fields.wc-block-checkout__billing-fields,
-  html body.woocommerce-checkout form.wc-block-checkout__form > fieldset#payment-method.wc-block-checkout__payment-method,
-  html body.woocommerce-checkout form.wc-block-checkout__form > div#order-notes,
-  html body.woocommerce-checkout form.wc-block-checkout__form > div.wc-block-checkout__terms,
-  html body.woocommerce-checkout form.wc-block-checkout__form > div.wc-block-checkout__actions {
-    float: none !important;
-    clear: both !important;        /* 🔥 NUEVA FILA 100%, debajo de TODO lo anterior */
-    display: block !important;
-    width: 100% !important;        /* 🔥 100% ANCHO, no 62%! */
-    max-width: 100% !important;
-    min-width: 0 !important;
-    box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-}
+/* --------------------------------------------------------------------------
+   FIX CHECKOUT #4 (LEGACY) — ELIMINADO. Reemplazado por sistema FLEX.
+   -------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------
    FIX CHECKOUT #5 — Feedback VISUAL de opción SELECCIONADA en bloques
@@ -6966,9 +6795,9 @@ html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkou
   width: 100% !important;
   max-width: 100% !important;
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   flex-wrap: nowrap !important;
-  gap: 10px 0 !important;   /* 10px de gap VERTICAL entre las 2 opciones */
+  gap: 0 12px !important;   /* 12px de gap HORIZONTAL entre las 2 opciones */
   align-items: stretch !important;
   justify-content: flex-start !important;
   box-sizing: border-box !important;
@@ -6981,8 +6810,8 @@ html body.woocommerce-checkout fieldset#shipping-method div.wc-block-checkout__s
 html body.woocommerce-checkout form.wc-block-checkout__form div.wc-block-checkout__shipping-method-option {
   position: relative !important;
   display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
+  width: calc(50% - 6px) !important;  /* 2 opciones lado a lado con 12px gap */
+  max-width: calc(50% - 6px) !important;
   box-sizing: border-box !important;
   background: #ffffff !important;
   border: 1.5px solid #d5d9df !important; /* gris suave por defecto */
