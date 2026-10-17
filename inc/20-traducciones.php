@@ -624,9 +624,17 @@ add_action('wp_footer', function () {
         'Pickup': 'Recojo en tienda',
         'Pickup locations': 'Puntos de recojo',
         'Pickup location': 'Punto de recojo',
+        'Free': '(Gratis)',
+        'free': '(Gratis)',
+        '(Free)': '(Gratis)',
         // Direcciones
         'Billing address': 'Dirección de facturación',
         'Shipping address': 'Dirección de envío',
+        'Use the same address for billing': 'Usar la misma dirección para facturación',
+        'Use same address for billing': 'Usar la misma dirección para facturación',
+        'Use the shipping address as billing address': 'Usar la dirección de envío como dirección de facturación',
+        'Billing and shipping address': 'Dirección de facturación y envío',
+        'Separate billing address': 'Dirección de facturación distinta',
         // Pago
         'Payment options': 'Métodos de pago',
         'Payment method': 'Método de pago',
@@ -729,6 +737,17 @@ add_action('wp_footer', function () {
         observer.observe(document.body, { childList: true, subtree: true });
     }
     startObserver();
+
+    // 🔄 Re-traducir tras interacción del usuario: React monta textos NUEVOS
+    // al cambiar el método de envío (ej. "Pickup locations", "Billing address").
+    // El observer se apaga a los 10s, así que estos listeners cubren esos casos.
+    function retraducirConDelay() {
+        setTimeout(traducirCheckout, 50);
+        setTimeout(traducirCheckout, 250);
+        setTimeout(traducirCheckout, 600);
+    }
+    document.addEventListener('click', retraducirConDelay, true);
+    document.addEventListener('change', retraducirConDelay, true);
 
     // Seguridad: desconectar después de 10s
     setTimeout(function() {

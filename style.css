@@ -8068,6 +8068,357 @@ html body.woocommerce-checkout form.wc-block-checkout__form
   > div.wc-block-components-address-form__phone           { order: 10 !important; }
 
 /* =============================================================================
+   FIX CHECKOUT #10 — SHIPPING FIELDS (Dirección de ENVÍO) — Estrategia A
+   Replica AISLADA de los estilos de billing, bajo:
+     fieldset#shipping-fields  +  div#shipping
+   Billing NO se toca (bloque independiente).
+   Orden visual: Nombre / Apellido / País / Departamento / Provincia&Distrito /
+                 Dirección / Piso / C.Postal / Teléfono
+   ========================================================================== */
+
+/* A) fieldset#shipping-fields: fondo gris pálido + padding vertical */
+html body.woocommerce-checkout fieldset#shipping-fields {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  background-color: #f6f7f9 !important;
+  border-color: #e3e6eb !important;
+}
+
+/* B) Área de edición (.is-editing): fondo azul pálido (igual que billing) */
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-address-wrapper.is-editing {
+  background-color: #fff7ed !important;   /* naranja pálido para diferenciar */
+  border: 1px solid #fed7aa !important;    /* borde naranja claro */
+  border-radius: 12px !important;
+  padding: 1px 16px !important;
+  margin: 2px 0 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* C) En edición: ocultar la tarjeta preview (evita solape con el formulario) */
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-address-wrapper.is-editing > div.wc-block-components-address-card-wrapper {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* D) PADRE div#shipping: flex column + sin grid (gana a Woo) */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#shipping-fields
+  div.wc-block-components-checkout-step__content
+  div.wc-block-components-address-address-wrapper
+  div.wc-block-components-address-form-wrapper
+  div#shipping.wc-block-components-address-form,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  grid-template-columns: none !important;
+  grid-template-areas: none !important;
+  grid-auto-flow: row !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  clear: both !important;
+}
+
+/* E) Hijos directos de div#shipping: sin grid + 100% ancho */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > * {
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  grid-column-start: auto !important;
+  grid-column-end: auto !important;
+  grid-row-start: auto !important;
+  grid-row-end: auto !important;
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  float: none !important;
+  clear: none !important;
+}
+
+/* F) ORDEN VISUAL (1..10) de los campos shipping */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__first_name       { order: 1  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__last_name        { order: 2  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__country          { order: 3  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__state            { order: 4  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__city             { order: 5  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__address_1        { order: 6  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > span.wc-block-components-address-form__address_2-toggle { order: 7  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__address_2        { order: 8  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > input.wc-block-components-address-form__address_2-hidden-input { order: 8 !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__postcode         { order: 9  !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping.wc-block-components-address-form > div.wc-block-components-address-form__phone            { order: 10 !important; }
+
+/* G) Input oculto address_2 FUERA de pantalla (accesibilidad) */
+html body.woocommerce-checkout form.wc-block-checkout__form
+  fieldset#shipping-fields div#shipping.wc-block-components-address-form
+  > input.wc-block-components-address-form__address_2-hidden-input {
+  position: absolute !important;
+  left: -20000px !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+  max-width: 1px !important;
+  min-width: 0 !important;
+}
+
+/* H) Toggle span "+ Añadir piso/interior": su propia fila (como billing) */
+html body.woocommerce-checkout fieldset#shipping-fields span.wc-block-components-address-form__address_2-toggle {
+  display: inline-block !important;
+  float: none !important;
+  clear: both !important;
+  flex: 0 0 100% !important;
+  order: 7 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 6px 0 8px 2px !important;
+  margin: 4px 0 6px 0 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  z-index: auto !important;
+}
+
+/* I) TEXT-INPUT shipping: flex column-reverse => LABEL ARRIBA */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-text-input {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;
+  position: static !important;
+  margin: 0 0 6px 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+  float: none !important;
+}
+
+/* J) LABELS shipping: texto nativo INVISIBLE, en flujo (arriba) */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping label,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping span.wc-blocks-components-select__label {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 16px !important;
+  height: auto !important;
+  background: none !important;
+  clip: auto !important;
+  clip-path: none !important;
+  text-indent: 0 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  white-space: normal !important;
+  font-weight: normal !important;
+  color: transparent !important;
+  text-align: left !important;
+}
+
+/* K) ::before base (título español visible, 13px) */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping label::before,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping span.wc-blocks-components-select__label::before {
+  display: block !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  padding: 0 0 2px 0 !important;
+  margin: 0 !important;
+  white-space: normal !important;
+}
+
+/* L) CONTENIDO de cada título (mismos textos que billing) */
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__first_name label::before { content: 'Nombre completo' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__last_name label::before  { content: 'Apellido completo' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__address_1 label::before { content: 'Dirección' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__address_2 label::before { content: 'Piso, interior, etc. (opcional)' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__city label::before      { content: 'Provincia & distrito' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__postcode label::before  { content: 'Código Postal' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__phone label::before     { content: 'Teléfono Celular' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input .wc-blocks-components-select__label::before { content: 'Pais' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input .wc-blocks-components-select__label::before   { content: 'Departamento/Region' !important; }
+
+/* M) SELECT COUNTRY / STATE: container flex column + order (label arriba, combo abajo) */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-blocks-components-select__container {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 2px 0 !important;
+  padding: 0 !important;
+  margin: 0 0 6px 0 !important;
+  position: relative !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-blocks-components-select__container > label,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-blocks-components-select__container > span.wc-blocks-components-select__label { order: 1 !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-blocks-components-select__container > select { order: 2 !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-blocks-components-select__container > svg   { order: 3 !important; }
+
+/* N) Wrappers Country / State: márgenes compactos */
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__country,
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input,
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__state,
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* O) INPUTS + SELECTS shipping: padding compacto + flecha nativa off */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping input,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping select {
+  padding: 9px 12px !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  font-size: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  top: auto !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping select {
+  appearance: none !important;
+}
+
+/* P) PAÍS bloqueado (solo Perú, PHP): pointer-events none + gris */
+html body.woocommerce-checkout fieldset#shipping-fields select#shipping-country {
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.85 !important;
+  background-color: #eef2f7 !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input div.wc-blocks-components-select,
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input div.wc-blocks-components-select__container {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input svg.wc-blocks-components-select__expand {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* Q) DEPARTAMENTO bloqueado (solo Cajamarca, PHP) */
+html body.woocommerce-checkout fieldset#shipping-fields select#shipping-state {
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.85 !important;
+  background-color: #eef2f7 !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input div.wc-blocks-components-select,
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input div.wc-blocks-components-select__container {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input svg.wc-blocks-components-select__expand {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* R) CHECKBOX "Usar la misma dirección para facturación" (Envío a domicilio):
+      reducir tamaño de 16x16 (igual que contact/billing). */
+html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-address-for-billing .wc-block-components-checkbox,
+html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-address-for-billing .wc-block-components-checkbox__label {
+  min-height: 18px !important;
+  line-height: 18px !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-address-for-billing .wc-block-components-checkbox__input,
+html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-address-for-billing input[type="checkbox"].wc-block-components-checkbox__input {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  margin: 0 10px 0 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  top: 1px !important;
+}
+html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-address-for-billing svg.wc-block-components-checkbox__mark {
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* =============================================================================
    🔥 ZONA DE PAGO FINAL — Fondo naranja para diferenciar del resto del formulario
    Aplica a: fieldset#payment-method + div#order-notes + div.wc-block-checkout__terms
    ============================================================================= */
