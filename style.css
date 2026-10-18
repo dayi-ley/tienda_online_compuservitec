@@ -5828,6 +5828,57 @@ button.wc-block-components-checkout-place-order-button:hover {
   box-shadow: 0 14px 28px rgba(30, 111, 170, 0.4) !important;
   color: #ffffff !important;
 }
+
+/* Checkout: feedback visual mientras Woo procesa el pedido */
+html body.woocommerce-checkout .wc-block-components-checkout-place-order-button button.scx-checkout-processing,
+html body.woocommerce-checkout button.wc-block-components-checkout-place-order-button.scx-checkout-processing {
+  cursor: wait !important;
+  pointer-events: none !important;
+  opacity: 0.92 !important;
+  color: transparent !important;
+  text-shadow: none !important;
+  transform: none !important;
+  box-shadow: 0 8px 18px rgba(30, 111, 170, 0.22) !important;
+}
+
+html body.woocommerce-checkout .wc-block-components-checkout-place-order-button button.scx-checkout-processing::before,
+html body.woocommerce-checkout button.wc-block-components-checkout-place-order-button.scx-checkout-processing::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: -9px !important;
+  border: 2px solid rgba(255, 255, 255, 0.35) !important;
+  border-top-color: #ffffff !important;
+  border-radius: 50% !important;
+  animation: scxCheckoutSpin 0.75s linear infinite !important;
+}
+
+html body.woocommerce-checkout .wc-block-components-checkout-place-order-button button.scx-checkout-processing::after,
+html body.woocommerce-checkout button.wc-block-components-checkout-place-order-button.scx-checkout-processing::after {
+  content: attr(data-scx-processing-label) !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 18px 0 42px !important;
+  color: #ffffff !important;
+  font-size: 1.02rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+@keyframes scxCheckoutSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Texto términos y condiciones bajo botón */
 .woocommerce-terms-and-conditions-wrapper,
 .form-row.terms,
@@ -6567,6 +6618,51 @@ html body.woocommerce-checkout footer.main-footer {
 }
 
 /* --------------------------------------------------------------------------
+   FIX ORDER-RECEIVED: mantener footer al final del viewport.
+   Diagnóstico:
+   - En thank-you / order-received, el contenido puede ser corto.
+   - #content.storex-content seguía como block normal, así que el footer subía
+     y quedaba a media página.
+   Solución:
+   - Solo en woocommerce-order-received, convertir #content en columna flex.
+   - Hacer que section#post-section ocupe el espacio restante.
+   -------------------------------------------------------------------------- */
+html body.woocommerce-order-received #content.storex-content,
+html body.woocommerce-order-received div#content.storex-content {
+  margin-top: 5px !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  box-sizing: border-box !important;
+}
+
+html body.woocommerce-order-received section#post-section.st-py-default,
+html body.woocommerce-order-received section#post-section.kg,
+html body.woocommerce-order-received #content.storex-content > section#post-section {
+  margin-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  flex: 1 0 auto !important;
+}
+
+html body.woocommerce-order-received footer.main-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* --------------------------------------------------------------------------
    FIX CHECKOUT #2: Padding lateral del .container DENTRO del formulario.
    User: actualmente .container del checkout tiene padding izq/der 10px
    → lo quiere de 50px en ambos lados (para no ver el formulario tan pegado
@@ -7248,7 +7344,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 }
 html body.woocommerce-checkout fieldset#billing-fields
   div.wc-block-components-address-form__address_1 label[for="billing-address_1"]::before {
-  content: 'Dirección' !important;
+  content: 'Direccion' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -7338,7 +7434,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 }
 html body.woocommerce-checkout fieldset#billing-fields
   div.wc-block-components-address-form__postcode label[for="billing-postcode"]::before {
-  content: 'Código Postal' !important;
+  content: 'Codigo Postal (*San Ignacio: 06846 )' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -7360,7 +7456,7 @@ html body.woocommerce-checkout fieldset#billing-fields
 }
 html body.woocommerce-checkout fieldset#billing-fields
   div.wc-block-components-address-form__phone label[for="billing-phone"]::before {
-  content: 'Teléfono Celular' !important;
+  content: 'Telefono Celular' !important;
   display: block !important;
   font-size: 13px !important;
   line-height: 1.25 !important;
@@ -8300,11 +8396,11 @@ html body.woocommerce-checkout fieldset#shipping-fields div#shipping span.wc-blo
 /* L) CONTENIDO de cada título (mismos textos que billing) */
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__first_name label::before { content: 'Nombre completo' !important; }
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__last_name label::before  { content: 'Apellido completo' !important; }
-html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__address_1 label::before { content: 'Dirección' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__address_1 label::before { content: 'Direccion' !important; }
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__address_2 label::before { content: 'Piso, interior, etc. (opcional)' !important; }
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__city label::before      { content: 'Provincia & distrito' !important; }
-html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__postcode label::before  { content: 'Código Postal' !important; }
-html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__phone label::before     { content: 'Teléfono Celular' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__postcode label::before  { content: 'Codigo Postal' !important; }
+html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-address-form__phone label::before     { content: 'Telefono Celular' !important; }
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-country-input .wc-blocks-components-select__label::before { content: 'Pais' !important; }
 html body.woocommerce-checkout fieldset#shipping-fields div.wc-block-components-state-input .wc-blocks-components-select__label::before   { content: 'Departamento/Region' !important; }
 
@@ -8440,27 +8536,33 @@ html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-
 
 /* S1) Contenedor postcode = ancla del tooltip (posición relativa) */
 html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode,
 html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode {
   position: relative !important;
+  overflow: visible !important;
+  z-index: 65 !important;
 }
 
-/* S2) Título postcode = inline-block (para que el ícono quede en la MISMA línea) */
+/* S2) Titulo postcode = inline-block (deja espacio para el icono absoluto) */
 html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode label::before,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode label::before,
 html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode label::before {
   display: inline-block !important;
   vertical-align: middle !important;
+  padding-right: 22px !important;
 }
 
-/* S3) Ícono "( ! )" al lado del título */
-html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode label::after,
-html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode label::after {
+/* S3) Icono "!" pegado al wrapper real del postcode */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode::before,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode::before,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode::before {
   content: '!' !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
+  position: absolute !important;
+  top: 2px !important;
+  left: 112px !important;
   width: 14px !important;
   height: 14px !important;
   line-height: 12px !important;
-  margin-left: 6px !important;
   font-size: 10px !important;
   font-weight: 700 !important;
   text-align: center !important;
@@ -8469,17 +8571,20 @@ html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-bloc
   border-radius: 50% !important;
   box-sizing: border-box !important;
   cursor: help !important;
+  z-index: 61 !important;
 }
 
 /* S4) Mini-ventana (tooltip) — oculta por defecto */
 html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode::after,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode::after,
 html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode::after {
-  content: 'Códigos postales cubiertos:\A 06846 — San Ignacio' !important;
+  content: 'Codigos postales cubiertos:\A 06846 - San Ignacio' !important;
   white-space: pre-line !important;
   position: absolute !important;
-  bottom: 100% !important;
-  left: 0 !important;
-  margin-bottom: 6px !important;
+  top: -2px !important;
+  left: calc(100% + 10px) !important;
+  bottom: auto !important;
+  margin-bottom: 0 !important;
   padding: 8px 12px !important;
   min-width: 190px !important;
   max-width: 260px !important;
@@ -8497,11 +8602,29 @@ html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-bloc
   pointer-events: none !important;
 }
 
-/* S5) Mostrar al pasar el mouse por el título/ícono (y al tocar en móvil) */
-html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode:has(label:hover)::after,
-html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode:has(label:hover)::after {
+/* S4B) SHIPPING / ENVIO: el tooltip se ancla junto al icono, no al ancho total del campo */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode::after {
+  top: -2px !important;
+  left: 132px !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* S5) SHIPPING / ENVIO: activar tooltip sin inyectar nodos en React */
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode.scx-postcode-icon-hover::after {
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* S6) BILLING / RECOJO: texto fijo, sin icono ni tooltip */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode::before,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode::before,
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode::after,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode::after,
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode label[for="billing-postcode"]::after,
+html body.woocommerce-checkout fieldset#billing-fields div.wc-block-components-address-form__postcode label[for="billing-postcode"]::after {
+  content: none !important;
+  display: none !important;
 }
 
 /* =============================================================================

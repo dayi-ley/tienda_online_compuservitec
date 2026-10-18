@@ -769,8 +769,125 @@ add_action('wp_footer', function () {
         traducirFraseTerminos();
     }
 
+    var scxProcessingLabel = 'Procesando pedido...';
+    var scxResetTimer = null;
+    var scxPlaceOrderWasClicked = false;
+
+    function getPlaceOrderButton() {
+        return document.querySelector('button.wc-block-components-checkout-place-order-button, .wc-block-components-checkout-place-order-button button');
+    }
+
+    function hasCheckoutErrors() {
+        return !!document.querySelector(
+            '.wc-block-components-validation-error, ' +
+            '.wc-block-components-notice-banner.is-error, ' +
+            '.woocommerce-error'
+        );
+    }
+
+    function isPlaceOrderProcessing(button) {
+        if (!button) return false;
+        return !!(
+            button.disabled ||
+            button.getAttribute('aria-busy') === 'true' ||
+            button.classList.contains('is-busy') ||
+            button.classList.contains('loading')
+        );
+    }
+
+    function enablePlaceOrderFeedback() {
+        var button = getPlaceOrderButton();
+        if (!button) return;
+
+        if (!button.hasAttribute('data-scx-original-aria-label') && button.hasAttribute('aria-label')) {
+            button.setAttribute('data-scx-original-aria-label', button.getAttribute('aria-label'));
+        }
+
+        button.classList.add('scx-checkout-processing', 'scx-click-guard');
+        button.setAttribute('data-scx-processing-label', scxProcessingLabel);
+        button.setAttribute('aria-label', scxProcessingLabel);
+    }
+
+    function disablePlaceOrderFeedback() {
+        var button = getPlaceOrderButton();
+        if (!button) return;
+
+        button.classList.remove('scx-checkout-processing', 'scx-click-guard');
+        button.removeAttribute('data-scx-processing-label');
+        scxPlaceOrderWasClicked = false;
+
+        if (button.hasAttribute('data-scx-original-aria-label')) {
+            button.setAttribute('aria-label', button.getAttribute('data-scx-original-aria-label'));
+            button.removeAttribute('data-scx-original-aria-label');
+        } else {
+            button.removeAttribute('aria-label');
+        }
+    }
+
+    function syncPlaceOrderFeedback() {
+        var button = getPlaceOrderButton();
+
+        if (!button) {
+            return;
+        }
+
+        if (!scxPlaceOrderWasClicked && !button.classList.contains('scx-click-guard')) {
+            disablePlaceOrderFeedback();
+            return;
+        }
+
+        if (isPlaceOrderProcessing(button)) {
+            enablePlaceOrderFeedback();
+            return;
+        }
+
+        if (hasCheckoutErrors()) {
+            disablePlaceOrderFeedback();
+            return;
+        }
+
+        if (button.classList.contains('scx-click-guard')) {
+            clearTimeout(scxResetTimer);
+            scxResetTimer = setTimeout(function() {
+                var currentButton = getPlaceOrderButton();
+                if (currentButton && !isPlaceOrderProcessing(currentButton) && !hasCheckoutErrors()) {
+                    disablePlaceOrderFeedback();
+                }
+            }, 1600);
+        }
+    }
+
+    function bindPostcodeTooltipHover() {
+        var wrappers = document.querySelectorAll('fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode');
+        for (var i = 0; i < wrappers.length; i++) {
+            var wrapper = wrappers[i];
+            if (wrapper.dataset.scxTooltipBound === '1') continue;
+            wrapper.dataset.scxTooltipBound = '1';
+
+            var shippingLabel = wrapper.querySelector('label[for="shipping-postcode"]');
+            if (!shippingLabel) continue;
+
+            shippingLabel.addEventListener('mouseenter', function() {
+                if (this.parentNode) {
+                    this.parentNode.classList.add('scx-postcode-icon-hover');
+                }
+            });
+            shippingLabel.addEventListener('mouseleave', function() {
+                if (this.parentNode) {
+                    this.parentNode.classList.remove('scx-postcode-icon-hover');
+                }
+            });
+
+            wrapper.addEventListener('mouseleave', function() {
+                this.classList.remove('scx-postcode-icon-hover');
+            });
+        }
+    }
+
     // Intentar inmediatamente
     traducirCheckout();
+    syncPlaceOrderFeedback();
+    bindPostcodeTooltipHover();
 
     // Observar cambios del DOM con debounce para manejar múltiples renders
     // de React SIN bucle infinito. Se desconecta al traducir y se reconecta
@@ -782,6 +899,8 @@ add_action('wp_footer', function () {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function() {
                 traducirCheckout();
+                syncPlaceOrderFeedback();
+                bindPostcodeTooltipHover();
                 startObserver(); // reconectar para futuros renders
             }, 300);
         });
@@ -796,14 +915,52 @@ add_action('wp_footer', function () {
         setTimeout(traducirCheckout, 50);
         setTimeout(traducirCheckout, 250);
         setTimeout(traducirCheckout, 600);
+        setTimeout(syncPlaceOrderFeedback, 50);
+        setTimeout(syncPlaceOrderFeedback, 250);
+        setTimeout(syncPlaceOrderFeedback, 600);
+        setTimeout(bindPostcodeTooltipHover, 50);
+        setTimeout(bindPostcodeTooltipHover, 250);
+        setTimeout(bindPostcodeTooltipHover, 600);
     }
     document.addEventListener('click', retraducirConDelay, true);
     document.addEventListener('change', retraducirConDelay, true);
+
+    document.addEventListener('click', function(event) {
+        var target = event.target;
+        if (!target || !target.closest) return;
+
+        var button = target.closest('button.wc-block-components-checkout-place-order-button, .wc-block-components-checkout-place-order-button button');
+        if (!button) return;
+
+        if (button.classList.contains('scx-click-guard') || button.classList.contains('scx-checkout-processing')) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        scxPlaceOrderWasClicked = true;
+        enablePlaceOrderFeedback();
+
+        clearTimeout(scxResetTimer);
+        scxResetTimer = setTimeout(function() {
+            syncPlaceOrderFeedback();
+        }, 150);
+
+        setTimeout(syncPlaceOrderFeedback, 500);
+        setTimeout(syncPlaceOrderFeedback, 1200);
+        setTimeout(function() {
+            var currentButton = getPlaceOrderButton();
+            if (currentButton && !isPlaceOrderProcessing(currentButton) && !hasCheckoutErrors()) {
+                disablePlaceOrderFeedback();
+            }
+        }, 8000);
+    }, true);
 
     // Seguridad: desconectar después de 10s
     setTimeout(function() {
         if (observer) observer.disconnect();
         clearTimeout(debounceTimer);
+        clearTimeout(scxResetTimer);
     }, 10000);
 })();
 </script>
