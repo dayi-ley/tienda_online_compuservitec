@@ -972,6 +972,9 @@ html body.woocommerce-cart #content.storex-content > section#post-section,
 html body.woocommerce-checkout section#post-section,
 html body.woocommerce-checkout section#post-section.st-py-default,
 html body.woocommerce-checkout #content.storex-content > section#post-section,
+html body.woocommerce-order-received section#post-section,
+html body.woocommerce-order-received section#post-section.st-py-default,
+html body.woocommerce-order-received #content.storex-content > section#post-section,
 html body.post-type-archive-product section#post-section,
 html body.tax-product_cat section#post-section,
 html body.woocommerce-account section#post-section{
@@ -986,29 +989,35 @@ html body.woocommerce-account section#post-section{
 /* Padding top SEGÚN DISPOSITIVO (móvil más alto) */
 @media (min-width: 1200px){
   html body.woocommerce-cart section#post-section,
-  html body.woocommerce-checkout section#post-section{ padding-top: 120px !important; }
+  html body.woocommerce-checkout section#post-section,
+  html body.woocommerce-order-received section#post-section{ padding-top: 120px !important; }
 }
 @media (min-width: 768px) and (max-width: 1199px){
   html body.woocommerce-cart section#post-section,
-  html body.woocommerce-checkout section#post-section{ padding-top: 150px !important; }
+  html body.woocommerce-checkout section#post-section,
+  html body.woocommerce-order-received section#post-section{ padding-top: 150px !important; }
 }
 @media (max-width: 767px){
   html body.woocommerce-cart section#post-section,
-  html body.woocommerce-checkout section#post-section{ padding-top: 175px !important; }
+  html body.woocommerce-checkout section#post-section,
+  html body.woocommerce-order-received section#post-section{ padding-top: 175px !important; }
 }
 /* StoreX specific break: ≤992px menú hamburguesa crece más alto → +10px extra aire */
 @media (max-width: 991px){
   html body.woocommerce-cart section#post-section,
-  html body.woocommerce-checkout section#post-section{ padding-top: 170px !important; }
+  html body.woocommerce-checkout section#post-section,
+  html body.woocommerce-order-received section#post-section{ padding-top: 170px !important; }
 }
 @media (max-width: 767px){
   html body.woocommerce-cart section#post-section,
-  html body.woocommerce-checkout section#post-section{ padding-top: 190px !important; }
+  html body.woocommerce-checkout section#post-section,
+  html body.woocommerce-order-received section#post-section{ padding-top: 190px !important; }
 }
 
 /* 2. ROW (antes gy-5 = gap 48px vertical): espacio muerto → margin:5px uniforme. PADDING ABSOLUTO 0. */
 html body.woocommerce-cart section#post-section > .container > .row,
 html body.woocommerce-checkout section#post-section > .container > .row,
+html body.woocommerce-order-received section#post-section > .container > .row,
 html body.post-type-archive-product section#post-section > .container > .row,
 html body.tax-product_cat section#post-section > .container > .row,
 html body.woocommerce-account section#post-section > .container > .row{
@@ -1028,6 +1037,7 @@ html body.woocommerce-account section#post-section > .container > .row{
 html body.woocommerce-cart section#post-section > .container > div.row.gy-5,
 html body.woocommerce-cart section#post-section > .container > div.row.gy-lg-0.gy-5.wow.fadeInUp,
 html body.woocommerce-checkout section#post-section > .container > div.row.gy-5,
+html body.woocommerce-order-received section#post-section > .container > div.row.gy-5,
 html body.post-type-archive-product section#post-section > .container > div.row.gy-5,
 html body.tax-product_cat section#post-section > .container > div.row.gy-5,
 html body.woocommerce-account section#post-section > .container > div.row.gy-5{
@@ -1050,6 +1060,7 @@ html body.woocommerce-cart section#post-section > .container > .row.wow,
 html body.woocommerce-cart section#post-section > .container > .row.fadeInUp,
 html body.woocommerce-cart section#post-section > .container > .row.wow.fadeInUp,
 html body.woocommerce-checkout section#post-section > .container > .row.wow.fadeInUp,
+html body.woocommerce-order-received section#post-section > .container > .row.wow.fadeInUp,
 html body.post-type-archive-product section#post-section > .container > .row.wow.fadeInUp,
 html body.tax-product_cat section#post-section > .container > .row.wow.fadeInUp,
 html body.woocommerce-account section#post-section > .container > .row.wow.fadeInUp{
@@ -1071,6 +1082,7 @@ html body.woocommerce-account section#post-section > .container > .row.wow.fadeI
      NUNCA más sidebar blog vacío de 25% a la derecha. */
 html body.woocommerce-cart section#post-section > .container > .row > .col-lg-9,
 html body.woocommerce-checkout section#post-section > .container > .row > .col-lg-9,
+html body.woocommerce-order-received section#post-section > .container > .row > .col-lg-9,
 html body.post-type-archive-product section#post-section > .container > .row > .col-lg-9,
 html body.tax-product_cat section#post-section > .container > .row > .col-lg-9,
 html body.woocommerce-account section#post-section > .container > .row > .col-lg-9{
@@ -8416,6 +8428,102 @@ html body.woocommerce-checkout fieldset#shipping-fields .wc-block-checkout__use-
   max-height: 16px !important;
   display: inline-block !important;
   vertical-align: middle !important;
+}
+
+/* =============================================================================
+   S) TOOLTIP DE CÓDIGO POSTAL (billing + shipping)
+   Ícono "( ! )" al lado del título. Al pasar el mouse (o tocar en móvil)
+   aparece una mini-ventana con los códigos postales cubiertos.
+   Solo CSS: NO se toca el DOM de React. Para agregar más códigos, edita
+   el content de la regla S4 (cada línea separada por \A).
+   ========================================================================== */
+
+/* S1) Contenedor postcode = ancla del tooltip (posición relativa) */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode {
+  position: relative !important;
+}
+
+/* S2) Título postcode = inline-block (para que el ícono quede en la MISMA línea) */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode label::before,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode label::before {
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* S3) Ícono "( ! )" al lado del título */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode label::after,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode label::after {
+  content: '!' !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 12px !important;
+  margin-left: 6px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  color: #0d9488 !important;
+  border: 1px solid #0d9488 !important;
+  border-radius: 50% !important;
+  box-sizing: border-box !important;
+  cursor: help !important;
+}
+
+/* S4) Mini-ventana (tooltip) — oculta por defecto */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode::after,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode::after {
+  content: 'Códigos postales cubiertos:\A 06846 — San Ignacio' !important;
+  white-space: pre-line !important;
+  position: absolute !important;
+  bottom: 100% !important;
+  left: 0 !important;
+  margin-bottom: 6px !important;
+  padding: 8px 12px !important;
+  min-width: 190px !important;
+  max-width: 260px !important;
+  background: #1e293b !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.22) !important;
+  z-index: 60 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.15s ease !important;
+  pointer-events: none !important;
+}
+
+/* S5) Mostrar al pasar el mouse por el título/ícono (y al tocar en móvil) */
+html body.woocommerce-checkout fieldset#billing-fields div#billing div.wc-block-components-address-form__postcode:has(label:hover)::after,
+html body.woocommerce-checkout fieldset#shipping-fields div#shipping div.wc-block-components-address-form__postcode:has(label:hover)::after {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* =============================================================================
+   U) AVISO ÉXITO PEDIDO RECIBIDO — texto azul para resaltar
+   ========================================================================== */
+html body .woocommerce-order .woocommerce-thankyou-order-received,
+html body .woocommerce-thankyou-order-received {
+  color: #1d4ed8 !important;         /* azul */
+  font-weight: 700 !important;
+}
+
+/* =============================================================================
+   T) ERRORES DE VALIDACIÓN — texto rojo + subrayado (dar importancia)
+   Aplica a la caja nativa de Woo Blocks: .wc-block-components-validation-error
+   y su <p> interno. También al texto del mensaje.
+   ========================================================================== */
+html body.woocommerce-checkout .wc-block-components-validation-error,
+html body.woocommerce-checkout .wc-block-components-validation-error p,
+html body.woocommerce-checkout .wc-block-components-validation-error span {
+  color: #dc2626 !important;         /* rojo */
+  text-decoration: underline !important;
+  font-weight: 600 !important;
 }
 
 /* =============================================================================

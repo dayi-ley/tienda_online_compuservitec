@@ -316,6 +316,23 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Place Order'                                => 'Finalizar compra',
 			'Place order'                                => 'Finalizar compra',
 			'Order summary'                              => 'Resumen del pedido',
+
+			// ====== Página Pedido Recibido (thank-you / order-received) ======
+			'Thank you. Your order has been received.'   => 'Gracias. Tu pedido ha sido recibido.',
+			'Order number:'                              => 'Número de pedido:',
+			'Date:'                                      => 'Fecha:',
+			'Email:'                                     => 'Correo:',
+			'Total:'                                     => 'Total:',
+			'Payment method:'                            => 'Método de pago:',
+			'Our bank details'                           => 'Nuestros datos bancarios',
+			'Account name'                               => 'Titular de la cuenta',
+			'Account number'                             => 'Número de cuenta',
+			'Bank name'                                  => 'Nombre del banco',
+			'Sort code'                                  => 'Código de sucursal',
+			'Order details'                              => 'Detalles del pedido',
+			'Note:'                                      => 'Nota:',
+			'Actions:'                                   => 'Acciones:',
+			'Billing email'                              => 'Correo de facturación',
 		// ⚠️ 2026-08-29 FIX BUG SUBSTRING genéricos sin <> (iguales motivos arriba)
 		// 'Summary'                                    => 'Resumen',   // ❌ BUG
 		// 'item'                                       => 'producto',  // ❌ BUG menuItem / itemCount
@@ -624,6 +641,12 @@ add_action('wp_footer', function () {
         'Pickup': 'Recojo en tienda',
         'Pickup locations': 'Puntos de recojo',
         'Pickup location': 'Punto de recojo',
+        'Flat rate': 'Tarifa fija',
+        'Flat Rate': 'Tarifa fija',
+        'No shipping options are available for this address. Please verify the address is correct or try a different address.': 'No hay opciones de envío disponibles para esta dirección. Verifica que la dirección sea correcta o prueba con una diferente.',
+        'Shipping options': 'Opciones de envío',
+        'Shipping option': 'Opción de envío',
+        'Enter a shipping address to view shipping options.': 'Ingresa una dirección de envío para ver las opciones de envío.',
         'Free': '(Gratis)',
         'free': '(Gratis)',
         '(Free)': '(Gratis)',
@@ -654,7 +677,12 @@ add_action('wp_footer', function () {
         'Grand total': 'Total final',
         'Estimated total': 'Total estimado',
         'Place Order': 'Realizar pedido',
-        'Place order': 'Realizar pedido'
+        'Place order': 'Realizar pedido',
+        // Errores de validación (formato exacto)
+        'Please enter a valid email address': 'Ingresa un correo electrónico válido',
+        'Please enter a valid postcode': 'Ingresa un código postal válido',
+        'Please enter a valid postcode / ZIP.': 'Ingresa un código postal válido.',
+        'Please enter a valid phone number': 'Ingresa un teléfono válido'
     };
 
     // Reemplazar texto exacto en un nodo (text node)
@@ -666,6 +694,13 @@ add_action('wp_footer', function () {
         if (trimmed === '') return;
         if (T.hasOwnProperty(trimmed)) {
             node.nodeValue = T[trimmed];
+            return;
+        }
+        // Fallback: mensajes de validación tipo "Please enter a valid X"
+        // (X ya viene traducido del label del campo: ej. "correo electrónico").
+        var m = trimmed.match(/^Please enter a valid\s+(.+)$/i);
+        if (m) {
+            node.nodeValue = 'Ingresa un ' + m[1] + ' válido';
         }
     }
 
@@ -682,14 +717,30 @@ add_action('wp_footer', function () {
     }
 
     // Frase de términos: "By proceeding... agree to our [link] and [link]."
-    // Tiene links en medio, NO es un solo text node → se maneja con innerHTML.
+    // Tiene links en medio, así que NO es un solo text node.
+    // ⚠️ SIN innerHTML (eso destruía nodos de React → removeChild error).
+    // Recorremos SOLO los nodos de texto y reemplazamos ahí:
+    //   - nodo del prefijo  → "Al continuar tu compra aceptas nuestros"
+    //   - nodo conector "and" → "y"  (solo el que es exactamente 'and')
     function traducirFraseTerminos() {
         var termsBlock = document.querySelector('.wc-block-checkout__terms');
         if (!termsBlock) return;
-        termsBlock.innerHTML = termsBlock.innerHTML.replace(
-            /By proceeding with your purchase you agree to our\s*(.+?)\s*and\s*(.+?)\./,
-            'Al continuar tu compra aceptas nuestros $1 y $2.'
-        );
+        var walker = document.createTreeWalker(termsBlock, NodeFilter.SHOW_TEXT, null);
+        var node;
+        while (node = walker.nextNode()) {
+            var t = node.nodeValue;
+            if (!t || t.trim() === '') continue;
+            var trimmed = t.trim().toLowerCase();
+            // 1) Prefijo de la frase
+            if (/by proceeding with your purchase you agree to our/i.test(t)) {
+                node.nodeValue = t.replace(/By proceeding with your purchase you agree to our/i, 'Al continuar tu compra aceptas nuestros');
+                continue;
+            }
+            // 2) Conector entre los 2 links (nodo que es SOLO 'and')
+            if (trimmed === 'and') {
+                node.nodeValue = t.replace(/and/i, 'y');
+            }
+        }
     }
 
     // Recorrer todos los text nodes de un subárbol
