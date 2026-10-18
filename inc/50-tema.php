@@ -1610,6 +1610,48 @@ if ( ! function_exists( 'storex_child_shutdown_final' ) ) {
 		}
 	}
 }
+/* ==========================================================================
+   WHATSAPP SOBRE EL BOTON SCROLL-TO-TOP (reemplazo total)
+   Reutiliza el .scroll-to-top del tema padre (HTML estatico, NO React):
+   - CSS en style.css lo pinta verde con el logo de WhatsApp.
+   - Este JS reemplaza su click para abrir WhatsApp.
+   Solo en Inicio y Tienda; en el resto conserva su funcion original (subir).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_whatsapp_scrolltop_js' ) ) :
+	function storex_child_whatsapp_scrolltop_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$es_inicio = function_exists( 'is_front_page' ) && is_front_page();
+		$es_tienda = function_exists( 'is_shop' ) && is_shop();
+		if ( ! $es_inicio && ! $es_tienda ) {
+			return;
+		}
+		$wa_url = 'https://wa.me/51971387882?text=' . rawurlencode( 'Hola, necesito ayuda con mi compra' );
+		?>
+<script type="text/javascript">
+(function(){
+    var url = <?php echo wp_json_encode( $wa_url ); ?>;
+    function initWA(){
+        var btn = document.querySelector('.scroll-to-top');
+        if (!btn) return;
+        document.body.classList.add('scx-wa-scrolltop');
+        if (window.jQuery) { jQuery('.scroll-to-top').off('click'); }
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.open(url, '_blank', 'noopener');
+        }, true);
+    }
+    if (document.readyState !== 'loading') { setTimeout(initWA, 300); }
+    else { document.addEventListener('DOMContentLoaded', function(){ setTimeout(initWA, 300); }); }
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_whatsapp_scrolltop_js', 20 );
+
 add_action( 'shutdown', 'storex_child_shutdown_final', 0 );
 
 /* ==========================================================================

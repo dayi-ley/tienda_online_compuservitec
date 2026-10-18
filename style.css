@@ -3315,6 +3315,37 @@ div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
 }
 .scx-foo-redes a i{ font-size: 1rem; }
 
+/* ---------- WhatsApp sobre el boton scroll-to-top (Inicio y Tienda) ---------- */
+body.scx-wa-scrolltop .scroll-to-top{
+  right: auto !important;
+  left: 30px !important;
+  width: 68px !important;
+  height: 68px !important;
+  background: #25D366 !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.28) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  transition: background .2s ease, transform .2s ease !important;
+}
+body.scx-wa-scrolltop .scroll-to-top:hover,
+body.scx-wa-scrolltop .scroll-to-top:focus{
+  background: #1EBE5D !important;
+  transform: translateY(-3px) !important;
+}
+body.scx-wa-scrolltop .scroll-to-top::after{
+  content: "\f232" !important;
+  color: #ffffff !important;
+  font-size: 34px !important;
+  line-height: 68px !important;
+  width: 68px !important;
+  height: 68px !important;
+}
+body.scx-wa-scrolltop .scroll-to-top .scroll-top-inner{
+  display: none !important;
+}
+
 /* ---------- 5) Columnas 2 · 3: listas de enlaces ---------- */
 .scx-foo-enlaces ul,
 .scx-foo-ayuda ul{
@@ -4431,6 +4462,7 @@ button.wc-block-components-button:hover {
   }
   .wc-block-cart-items__row,
   .wc-block-cart-item {
+    position: relative !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 12px !important;
