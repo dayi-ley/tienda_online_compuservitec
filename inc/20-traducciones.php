@@ -49,8 +49,13 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 				'Login', 'Password', 'Register', 'Username', 'Logout',
 				'Dashboard', 'Orders', 'Downloads', 'Addresses', 'Resend',
 				'Phone', 'optional',
+				'Query', 'Actions',
+				'You do not have any enquiry yet!',
 				'%1$sResend%2$s',
 				'Apartment, suite, unit, etc. (optional)',
+				'Current password (leave blank to leave unchanged)',
+				'New password (leave blank to leave unchanged)',
+				'Confirm new password',
 				'Country / Region', 'Country / Region *',
 				'Town / City', 'Town / City *',
 				'State / County', 'State / County *',
@@ -85,7 +90,7 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 		// + woocommerce-blocks: Woo 8+ usa DOMINIO SEPARADO para bloques Gutenberg React
 		//   (result count, ordenar por, shop page title de los bloques, etc.). Sin este dominio
 		//   no se traduce Showing 1-16 of 39 ni Shop title del h1.page-title del archive.
-		$dominios_permitidos = array( 'woocommerce', 'woocommerce-blocks', 'storex', 'storex-child', 'default', 'burger-companion' );
+		$dominios_permitidos = array( 'woocommerce', 'woocommerce-blocks', 'storex', 'storex-child', 'default', 'burger-companion', 'wc-frontend-manager' );
 		if ( ! in_array( $domain, $dominios_permitidos, true ) ) {
 			return $translated;
 		}
@@ -249,6 +254,10 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Orders'                                     => 'Pedidos',
 			'Downloads'                                  => 'Descargas',
 			'Addresses'                                  => 'Direcciones',
+			'Query'                                      => 'Consulta',
+			'Additional Info'                            => 'Informacion adicional',
+			'Actions'                                    => 'Acciones',
+			'You do not have any enquiry yet!'           => 'Aun no tienes ninguna consulta!',
 			'Inquiries'                                  => 'Consultas',
 			'Account details'                            => 'Detalles de la cuenta',
 			'Log out'                                    => 'Cerrar sesión',
@@ -323,6 +332,13 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'First name *'                               => 'Nombres *',
 			'Last name'                                  => 'Apellidos',
 			'Last name *'                                => 'Apellidos *',
+			'Display name'                               => 'Nombre para mostrar',
+			'This will be how your name will be displayed in the account section and in reviews' => 'Asi se mostrara tu nombre en la seccion de tu cuenta y en las opiniones',
+			'Password change'                            => 'Cambio de contrasena',
+			'Current password (leave blank to leave unchanged)' => 'Contrasena actual (dejar en blanco para no cambiarla)',
+			'New password (leave blank to leave unchanged)' => 'Nueva contrasena (dejar en blanco para no cambiarla)',
+			'Confirm new password'                       => 'Confirmar nueva contrasena',
+			'Save changes'                               => 'Guardar cambios',
 			'Company name'                               => 'Empresa (opcional)',
 			'Company'                                    => 'Empresa',
 			'Country / Region'                           => 'Pais',
@@ -338,8 +354,8 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Town / City *'                              => 'Provincia & distrito *',
 			'State / County'                             => 'Departamento/Region',
 			'State / County *'                           => 'Departamento/Region *',
-			'Postcode / ZIP'                             => 'Código postal',
-			'Postcode / ZIP *'                           => 'Código postal *',
+			'Postcode / ZIP'                             => 'Código postal (san ignacio=06846)',
+			'Postcode / ZIP *'                           => 'Código postal (san ignacio=06846) *',
 			'Postcode'                                   => 'Código postal',
 			'Phone'                                      => 'Teléfono',
 			'Phone *'                                    => 'Teléfono *',
@@ -437,7 +453,7 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 		if ( is_string( $single ) ) {
 			$sin_esp = preg_replace( '~\s+~u', '', $single );
 			// Excepcion: terminos de una sola palabra que SI queremos traducir (Addresses usa _n()).
-			$permitir_suelta_ng = in_array( $single, array( 'Addresses' ), true );
+			$permitir_suelta_ng = in_array( $single, array( 'Address', 'Addresses' ), true );
 			if ( ! $permitir_suelta_ng && ( strlen( $single ) < 6 || $sin_esp === $single || @preg_match( $re_no_traducir_ng, (string)$single ) ) ) {
 				return $translated;
 			}
@@ -457,12 +473,8 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 			return $translated;
 		}
 
-		if ( 'Addresses' === $single ) {
-			return 'Direcciones';
-		}
-
-		if ( 'Addresses' === $single ) {
-			return 'Direcciones';
+		if ( 'Address' === $single || 'Addresses' === $plural ) {
+			return ( (int) $number > 1 ) ? 'Direcciones' : 'Direccion';
 		}
 
 		// Showing X-Y of Z results, singular/plural (incluye variantes con HTML span exactas usadas por Woo Blocks)
