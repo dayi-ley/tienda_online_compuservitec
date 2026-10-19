@@ -19,7 +19,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-add_action('plugins_loaded', function () {
+add_action('after_setup_theme', function () {
     if (!class_exists('WooCommerce')) return;
 
     /* ========================================================
@@ -34,29 +34,26 @@ add_action('plugins_loaded', function () {
     }, 999999, 1);
 
     /* ========================================================
-       2) PAISES PERMITIDOS en TODO el Sistema (Billing + Checkout Admin)
-          = SOLO PERÚ. Otros 249 países NUNCA LLEGAN al HTML del combo.
+       2) PAISES PERMITIDOS = SOLO PERU, solo en "Mi Cuenta".
+          Filtros REALES de WooCommerce (los anteriores no existian):
+            - woocommerce_countries_allowed_countries
+            - woocommerce_countries_shipping_countries
+          Al quedar 1 solo pais, el <select> entra en modo "single":
+          <option value="PE" selected> (sin placeholder ni select2).
+          El checkout queda intacto.
        ======================================================== */
-    add_filter('woocommerce_allowed_countries', function ($modo) {
-        // 'specific' = usamos la lista whitelist de specific_allowed_countries
-        return 'specific';
+    add_filter('woocommerce_countries_allowed_countries', function ($paises) {
+        if (function_exists('is_account_page') && is_account_page()) {
+            return ['PE' => isset($paises['PE']) ? $paises['PE'] : 'Perú'];
+        }
+        return $paises;
     }, 999999, 1);
 
-    add_filter('woocommerce_specific_allowed_countries', function ($lista) {
-        // ÚNICO país permitido = Perú
-        return ['PE'];
-    }, 999999, 1);
-
-    /* ========================================================
-       3) PAISES DE ENVÍO (Shipping) = SOLO PERÚ
-          (Por si en el futuro hay cálculo de envío).
-       ======================================================== */
-    add_filter('woocommerce_shipping_countries', function ($modo_envio) {
-        return 'specific';
-    }, 999999, 1);
-
-    add_filter('woocommerce_specific_shipping_countries', function ($lista_envio) {
-        return ['PE'];
+    add_filter('woocommerce_countries_shipping_countries', function ($paises) {
+        if (function_exists('is_account_page') && is_account_page()) {
+            return ['PE' => isset($paises['PE']) ? $paises['PE'] : 'Perú'];
+        }
+        return $paises;
     }, 999999, 1);
 
     /* ========================================================
@@ -127,5 +124,21 @@ add_action('plugins_loaded', function () {
             wc_add_notice('El teléfono celular es un campo obligatorio.', 'error');
         }
     });
+
+    /* ========================================================
+       10) PAIS POR DEFECTO en "Mi Cuenta > Direcciones" (form clásico).
+          WooCommerce lee el país desde user_meta; para un usuario nuevo
+          está vacío y muestra el placeholder "Select a country / region…".
+          Este filtro fuerza PE cuando no hay valor guardado.
+       ======================================================== */
+    add_filter('woocommerce_my_account_edit_address_field_value', function ($valor, $campo, $tipo) {
+        if (($campo === $tipo . '_country') && empty($valor)) {
+            return 'PE';
+        }
+        if (($campo === $tipo . '_state') && empty($valor)) {
+            return 'CAJ';
+        }
+        return $valor;
+    }, 999999, 3);
 
 }, 5);

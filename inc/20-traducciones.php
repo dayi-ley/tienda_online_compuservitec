@@ -42,7 +42,30 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 		// Textos muy cortos o que parezcan código → devolver ORIGINAL sin tocar.
 		if ( is_string( $text ) ) {
 			$sin_espacios = preg_replace( '~\s+~u', '', $text );
-			if ( strlen( $text ) < 6 || $sin_espacios === $text || @preg_match( $re_no_traducir, (string)$text ) ) {
+			// Excepción: términos de UNA sola palabra que SÍ queremos traducir.
+			// El guardián de abajo los bloquea por no tener espacios o ser cortos.
+			// + frases legítimas que el regex anti-código bloquea por error (contienen 'new ').
+			$permitir_exacta = in_array( $text, array(
+				'Login', 'Password', 'Register', 'Username', 'Logout',
+				'Dashboard', 'Orders', 'Downloads', 'Addresses', 'Resend',
+				'Phone', 'optional',
+				'%1$sResend%2$s',
+				'Apartment, suite, unit, etc. (optional)',
+				'Country / Region', 'Country / Region *',
+				'Town / City', 'Town / City *',
+				'State / County', 'State / County *',
+				'Postcode / ZIP', 'Postcode / ZIP *',
+				'A link to set a new password will be sent to your email address.',
+				'Lost your password? Please enter your username or email address. You will receive a link to create a new password via email.',
+				'Hello %1$s (not %1$s? <a href="%2$s">Log out</a>)',
+				'From your account dashboard you can view your <a href="%1$s">recent orders</a>, manage your <a href="%2$s">shipping and billing addresses</a>, and <a href="%3$s">edit your password and account details</a>.',
+				'<strong>Error:</strong> The password you entered for the email address %s is incorrect.',
+				'<strong>Error:</strong> The password you entered for the username %s is incorrect.',
+				'<strong>Error:</strong> The username <strong>%s</strong> is not registered on this site. If you are unsure of your username, try your email address instead.',
+				'<strong>Error:</strong> Unknown email address. Check again or try your username.',
+				'Unknown email address. Check again or try your username.',
+			), true );
+			if ( ! $permitir_exacta && ( strlen( $text ) < 6 || $sin_espacios === $text || @preg_match( $re_no_traducir, (string)$text ) ) ) {
 				return $text;
 			}
 			// Corregir typo residual (si ya llegó "initializeEditaror" con R de más)
@@ -240,21 +263,39 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'A link to set a new password will be sent to your email address.' => 'Te enviaremos un enlace a tu correo para que establezcas tu contraseña.',
 			'Your account is using a temporary password. We emailed you a link to change your password.' => 'Tu cuenta está usando una contraseña temporal. Te enviamos un enlace a tu correo para que cambies tu contraseña.',
 			'Resend'                                     => 'Reenviar',
+			'%1$sResend%2$s'                             => '%1$sReenviar%2$s',
 			'Resend link'                                => 'Reenviar enlace',
 			'Lost your password?'                        => '¿Olvidaste tu contraseña?',
 			'Lost your password'                         => '¿Olvidaste tu contraseña?',
+			'Lost your password? Please enter your username or email address. You will receive a link to create a new password via email.' => '¿Olvidaste tu contraseña? Ingresa tu usuario o correo electrónico. Recibirás un enlace para crear una nueva contraseña por correo electrónico.',
+			'Reset password'                             => 'Restablecer contraseña',
+			'Username or email *'                        => 'Usuario o correo *',
+			'Username or email'                          => 'Usuario o correo',
 			'Remember me'                                => 'Recuérdame',
 			'Username or email address *'                => 'Usuario o correo electrónico *',
 			'Username or email address'                  => 'Usuario o correo electrónico',
+			'Username *'                                 => 'Usuario *',
+			'Username'                                   => 'Usuario',
 			'Password *'                                 => 'Contraseña *',
 			'Password'                                   => 'Contraseña',
+			'The password field is empty.'               => 'El campo de contraseña está vacío.',
+			'The username field is empty.'               => 'El campo de usuario está vacío.',
+			'The password you entered is incorrect.'     => 'La contraseña que ingresaste es incorrecta.',
+			'No order has been made yet.'                => 'Aún no has realizado ningún pedido.',
+			'No downloads available yet.'                => 'Aún no hay descargas disponibles.',
+			'Browse products'                            => 'Ver productos',
+			'Previous'                                   => 'Anterior',
+			'Next'                                       => 'Siguiente',
+			'The username or email address you entered is not registered on this site.' => 'El usuario o correo electrónico que ingresaste no está registrado en este sitio.',
+			'<strong>Error:</strong> The password you entered for the email address %s is incorrect.' => '<strong>Error:</strong> La contraseña que ingresaste para el correo %s es incorrecta.',
+			'<strong>Error:</strong> The password you entered for the username %s is incorrect.' => '<strong>Error:</strong> La contraseña que ingresaste para el usuario %s es incorrecta.',
+			'<strong>Error:</strong> The username <strong>%s</strong> is not registered on this site. If you are unsure of your username, try your email address instead.' => '<strong>Error:</strong> El usuario <strong>%s</strong> no está registrado en este sitio. Si no estás seguro de tu usuario, intenta con tu correo electrónico.',
+			'<strong>Error:</strong> Unknown email address. Check again or try your username.' => '<strong>Error:</strong> Correo electrónico desconocido. Verifícalo o intenta con tu usuario.',
+			'Unknown email address. Check again or try your username.' => 'Correo electrónico desconocido. Verifícalo o intenta con tu usuario.',
 			'Required'                                   => 'Obligatorio',
 			'Hello %s'                                   => 'Hola %s',
-			'Hello %1$s (not %1$s? %2$s)'                => 'Hola %1$s (¿no eres %1$s? %2$s)',
-			'From your account dashboard you can view your recent orders, manage your shipping and billing addresses, and edit your password and account details.' => 'Desde el panel de tu cuenta puedes ver tus %1$spedidos recientes%2$s, gestionar tus %3$sdirecciones de envío y facturación%4$s, y %5$s editar tu contraseña y los detalles de tu cuenta%6$s.',
-			'recent orders'                              => 'pedidos recientes',
-			'shipping and billing addresses'             => 'direcciones de envío y facturación',
-			'edit your password and account details.'    => 'edita tu contraseña y los detalles de tu cuenta.',
+			'Hello %1$s (not %1$s? <a href="%2$s">Log out</a>)' => 'Hola %1$s (¿no eres %1$s? <a href="%2$s">Cerrar sesión</a>)',
+			'From your account dashboard you can view your <a href="%1$s">recent orders</a>, manage your <a href="%2$s">shipping and billing addresses</a>, and <a href="%3$s">edit your password and account details</a>.' => 'Desde el panel de tu cuenta puedes ver tus <a href="%1$s">pedidos recientes</a>, gestionar tus <a href="%2$s">direcciones de envío y facturación</a>, y <a href="%3$s">editar tu contraseña y los detalles de tu cuenta</a>.',
 			'We have emailed you a new link to change your password.' => 'Te hemos enviado un nuevo enlace para cambiar tu contraseña.',
 
 			// ====== Página Checkout / Pagar ======
@@ -272,6 +313,10 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Billing address'                            => 'Dirección de facturación',
 			'Billing details'                            => 'Datos de facturación',
 			'Shipping address'                           => 'Dirección de envío',
+			'The following addresses will be used on the checkout page by default.' => 'Las siguientes direcciones se usarán por defecto en la página de pago.',
+			'You have not set up this type of address yet.' => 'Aún no has configurado este tipo de dirección.',
+			'Add %s'                                     => 'Agregar %s',
+			'Edit %s'                                    => 'Editar %s',
 			'Edit'                                       => 'Editar',
 			'Change'                                     => 'Cambiar',
 			'First name'                                 => 'Nombres',
@@ -280,22 +325,26 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Last name *'                                => 'Apellidos *',
 			'Company name'                               => 'Empresa (opcional)',
 			'Company'                                    => 'Empresa',
-			'Country / Region'                           => 'País / Región',
-			'Country / Region *'                         => 'País / Región *',
+			'Country / Region'                           => 'Pais',
+			'Country / Region *'                         => 'Pais *',
 			'Street address'                             => 'Dirección',
 			'Street address *'                           => 'Dirección *',
+			'House number and street name'               => 'Nombre de la calle y numero',
 			'Apartment, suite, unit, etc.'               => 'Depto., piso, interior, etc. (opcional)',
+			'Apartment, suite, unit, etc. (optional)'     => 'Depto., piso, interior, etc. (opcional)',
+			'Save address'                               => 'Guardar dirección',
 			'+ Add apartment, suite, unit, etc.'         => '+ Añadir depto., piso, interior, etc.',
-			'Town / City'                                => 'Ciudad / Distrito',
-			'Town / City *'                              => 'Ciudad / Distrito *',
-			'State / County'                             => 'Departamento / Provincia',
-			'State / County *'                           => 'Departamento / Provincia *',
+			'Town / City'                                => 'Provincia & distrito',
+			'Town / City *'                              => 'Provincia & distrito *',
+			'State / County'                             => 'Departamento/Region',
+			'State / County *'                           => 'Departamento/Region *',
 			'Postcode / ZIP'                             => 'Código postal',
 			'Postcode / ZIP *'                           => 'Código postal *',
 			'Postcode'                                   => 'Código postal',
 			'Phone'                                      => 'Teléfono',
 			'Phone *'                                    => 'Teléfono *',
 			'Phone (optional)'                           => 'Teléfono (opcional)',
+			'optional'                                   => 'opcional',
 			'Payment options'                            => 'Métodos de pago',
 			'Payment method'                             => 'Método de pago',
 			'Payment methods'                            => 'Métodos de pago',
@@ -387,7 +436,9 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 		}
 		if ( is_string( $single ) ) {
 			$sin_esp = preg_replace( '~\s+~u', '', $single );
-			if ( strlen( $single ) < 6 || $sin_esp === $single || @preg_match( $re_no_traducir_ng, (string)$single ) ) {
+			// Excepcion: terminos de una sola palabra que SI queremos traducir (Addresses usa _n()).
+			$permitir_suelta_ng = in_array( $single, array( 'Addresses' ), true );
+			if ( ! $permitir_suelta_ng && ( strlen( $single ) < 6 || $sin_esp === $single || @preg_match( $re_no_traducir_ng, (string)$single ) ) ) {
 				return $translated;
 			}
 			// Corrección typo residual
@@ -404,6 +455,14 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 		$dominios_permitidos = array( 'woocommerce', 'woocommerce-blocks', 'storex', 'storex-child', 'default', 'burger-companion' );
 		if ( ! in_array( $domain, $dominios_permitidos, true ) ) {
 			return $translated;
+		}
+
+		if ( 'Addresses' === $single ) {
+			return 'Direcciones';
+		}
+
+		if ( 'Addresses' === $single ) {
+			return 'Direcciones';
 		}
 
 		// Showing X-Y of Z results, singular/plural (incluye variantes con HTML span exactas usadas por Woo Blocks)

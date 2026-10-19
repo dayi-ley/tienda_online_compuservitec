@@ -4462,7 +4462,6 @@ button.wc-block-components-button:hover {
   }
   .wc-block-cart-items__row,
   .wc-block-cart-item {
-    position: relative !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 12px !important;
@@ -4494,9 +4493,7 @@ button.wc-block-components-button:hover {
     justify-content: flex-start !important;
   }
   .wc-block-cart-item__remove-link {
-    position: absolute !important;
-    top: 14px !important;
-    right: 14px !important;
+    position: static !important;
   }
 }
 
@@ -5625,7 +5622,7 @@ body.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-totals-bl
 .woocommerce-billing-fields input,
 .woocommerce-shipping-fields input,
 .woocommerce-additional-fields input,
-.woocommerce-form-login input,
+.woocommerce-form-login input:not([type="checkbox"]):not([type="radio"]),
 #payment input[type="text"],
 #payment input[type="email"],
 #payment input[type="tel"],
@@ -8483,6 +8480,44 @@ html body.woocommerce-checkout fieldset#shipping-fields div#shipping select {
 }
 html body.woocommerce-checkout fieldset#shipping-fields div#shipping select {
   appearance: none !important;
+}
+
+/* P.0) PAIS bloqueado en Mi Cuenta (edit-address): solo Peru.
+   Con el limite real a 1 solo pais (PHP), el <select> queda en modo "single"
+   (sin select2). Se bloquea el select nativo y, como respaldo, select2. */
+body.woocommerce-account p#billing_country_field select#billing_country,
+body.woocommerce-account p#shipping_country_field select#shipping_country,
+body.woocommerce-account p#billing_country_field .select2-container,
+body.woocommerce-account p#shipping_country_field .select2-container {
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: not-allowed !important;
+}
+body.woocommerce-account p#billing_country_field select#billing_country,
+body.woocommerce-account p#shipping_country_field select#shipping_country,
+body.woocommerce-account p#billing_country_field .select2-selection,
+body.woocommerce-account p#shipping_country_field .select2-selection {
+  background-color: #eef2f7 !important;
+  opacity: 0.9 !important;
+}
+
+/* P.1) DEPARTAMENTO bloqueado en Mi Cuenta (edit-address): solo Cajamarca.
+   WooCommerce limita los estados de PE a CAJ (PHP), pero el campo igual usa
+   select2. Se bloquea el contenedor visible y se mantiene en gris. */
+body.woocommerce-account p#billing_state_field select#billing_state,
+body.woocommerce-account p#shipping_state_field select#shipping_state,
+body.woocommerce-account p#billing_state_field .select2-container,
+body.woocommerce-account p#shipping_state_field .select2-container {
+  pointer-events: none !important;
+  user-select: none !important;
+  cursor: not-allowed !important;
+}
+body.woocommerce-account p#billing_state_field select#billing_state,
+body.woocommerce-account p#shipping_state_field select#shipping_state,
+body.woocommerce-account p#billing_state_field .select2-selection,
+body.woocommerce-account p#shipping_state_field .select2-selection {
+  background-color: #eef2f7 !important;
+  opacity: 0.9 !important;
 }
 
 /* P) PAÍS bloqueado (solo Perú, PHP): pointer-events none + gris */
