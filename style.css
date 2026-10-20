@@ -405,6 +405,20 @@ a:active{
 }
 
 /* --------------------------------------------------------------------------
+   12.2) BOTON DE CERRAR MINI-CART DEL HEADER (close-icon-one) EN ROJO
+   -------------------------------------------------------------------------- */
+.main-header .menu-right-content .info-list .cart-menu .close-icon.close-icon-one .menu-close{
+  border-color: #dc2626;
+  color: #dc2626;
+  opacity: 1;
+}
+.main-header .menu-right-content .info-list .cart-menu .close-icon.close-icon-one .menu-close:hover,
+.main-header .menu-right-content .info-list .cart-menu .close-icon.close-icon-one .menu-close:focus{
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+/* --------------------------------------------------------------------------
    12.1) MINI-CART HEADER: LAYOUT NUEVO (CORREGIDO: PRECIO DEBAJO)
    --------------------------------------------------------------------------
    Basado en HTML REAL que me pegó HOY (F12):
@@ -482,6 +496,32 @@ a:active{
 .main-header .cart-menu .mini_cart_item a.remove:focus{
   color: #E92530 !important;
   background-color: #fde8ea !important;
+}
+
+/* ========== ICONO DEL BOTON QUITAR PRODUCTO: REEMPLAZA LA X POR "━" ROJA ========== */
+.main-header .cart-menu .mini_cart_item a.remove_from_cart_button,
+.main-header .cart-menu .mini_cart_item a.remove,
+.cart-menu .mini_cart_item .remove_from_cart_button,
+.info-list .cart-menu .mini_cart_item a.remove{
+  font-size: 0 !important;
+  color: transparent !important;
+  background: none !important;
+}
+.main-header .cart-menu .mini_cart_item a.remove_from_cart_button::before,
+.main-header .cart-menu .mini_cart_item a.remove::before,
+.cart-menu .mini_cart_item .remove_from_cart_button::before,
+.info-list .cart-menu .mini_cart_item a.remove::before{
+  content: "\2501" !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  color: #dc2626 !important;
+}
+.main-header .cart-menu .mini_cart_item a.remove_from_cart_button:hover::before,
+.main-header .cart-menu .mini_cart_item a.remove:hover::before,
+.cart-menu .mini_cart_item .remove_from_cart_button:hover::before,
+.info-list .cart-menu .mini_cart_item a.remove:hover::before{
+  color: #b91c1c !important;
 }
 
 /* ========== PARTE 1 - ARRIBA: <a> (IMG + TÍTULO) = FILA HORIZONTAL ========== */
@@ -5538,6 +5578,18 @@ body.woocommerce-checkout .checkout-order-summary-block-fill-wrapper {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+/* Checkout: ocultar el texto de impuestos del total final (se mantiene en el DOM) */
+body.woocommerce-checkout .wc-block-components-totals-footer-item-tax {
+  display: none !important;
+}
+/* Checkout: quitar bordes/cajas internas del resumen del pedido (look limpio) */
+body.woocommerce-checkout .wc-block-components-checkout-order-summary__content .wc-block-components-totals-wrapper,
+body.woocommerce-checkout .wc-block-components-checkout-order-summary__content .wp-block-woocommerce-checkout-order-summary-totals-block {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
 /* Cupón: margin y paddings verticales reducidos */
 body.woocommerce-checkout .wc-block-components-totals-coupon.wc-block-components-panel {
   margin-top: 0 !important;
@@ -5548,25 +5600,14 @@ body.woocommerce-checkout .wc-block-components-totals-coupon.wc-block-components
 body.woocommerce-checkout .wc-block-components-totals-coupon .wc-block-components-panel__button {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
   min-height: 20px !important;
 }
-/* TEMPORAL: mostrar títulos en bloques vacíos de totales para visualizarlos */
-body.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-totals-block > *:empty::before {
-  content: attr(class);
-  display: block;
-  padding: 4px 8px;
-  font-size: 11px;
-  color: #888;
-  background: #f0f0f0;
-  border: 1px dashed #ccc;
-  word-break: break-all;
-}
-/* Bloques de totales (subtotal, discount, fee, shipping): padding vertical 2px */
+/* Bloques de totales (subtotal, discount, fee, shipping): una linea de aire vertical */
 body.woocommerce-checkout .wp-block-woocommerce-checkout-order-summary-totals-block > .wc-block-components-totals-wrapper {
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
 }
 
 /* Tarjetas / Secciones individuales: bordes suaves, padding ordenado */
@@ -8754,6 +8795,56 @@ html body.woocommerce-checkout div.wc-block-checkout__terms .wc-block-components
 html body.woocommerce-checkout div#order-notes .wc-block-components-checkbox {
   padding-top: 0 !important;
   margin-top: 0 !important;
+}
+
+/* =============================================================================
+   WCFM (WooCommerce Frontend Manager) — PANEL DEL VENDEDOR / SHOP MANAGER
+   Scopeado a body.wcfm-dashboard-page: imposible que afecte la tienda o Mi Cuenta.
+   ============================================================================= */
+
+/* Ocultar barra superior del panel (ocupa espacio innecesario) */
+body.wcfm-dashboard-page #wcfm-header {
+  display: none !important;
+}
+
+/* Quitar padding superior del contenido principal del panel */
+body.wcfm-dashboard-page #wcfm-main-content {
+  padding-top: 0 !important;
+}
+
+/* Texto del encabezado de seccion ("Inicio", etc.) en blanco para contrastar
+   con el fondo oscuro del heading. El plugin lo pintaba turquesa (#17a2b8). */
+body.wcfm-dashboard-page .wcfm-page-headig .wcfm-page-heading-text,
+body.wcfm-dashboard-page .wcfm-store-name-heading-text {
+  color: #ffffff !important;
+}
+
+/* Icono ACTIVO del header del panel (#wcfm_header_panel: campana, consultas,
+   avisos, base de conocimiento). El plugin lo pinta turquesa (#17a2b8), poco
+   visible sobre el fondo oscuro. Lo invertimos: circulo blanco + icono azul. */
+body.wcfm-dashboard-page .wcfm_header_panel a.active .wcfmfa {
+  background: #ffffff !important;
+  color: #17a2b8 !important;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 50%;
+  text-align: center;
+  display: inline-block;
+  margin-top: 10px !important;
+}
+
+/* Item ACTIVO del menu lateral: el plugin pinta toda la fila de turquesa
+   (#17a2b8). Lo reemplazamos por fondo BLANCO RECTANGULAR en todo el item
+   (icono + texto) y su contenido en azul. */
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a.active {
+  background: #ffffff !important;
+  border-radius: 0 !important;
+}
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a.active span,
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a.active span.wcfmfa,
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a.active span.text {
+  color: #17a2b8 !important;
 }
 
 /* =============================================================================

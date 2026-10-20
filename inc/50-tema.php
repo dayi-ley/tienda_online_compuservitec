@@ -121,6 +121,35 @@ endif;
 add_action( 'wp_enqueue_scripts', 'storex_child_enqueue_styles', 20 );
 
 /* ==========================================================================
+   FIX scrolltop del tema padre: la version MINIFICADA (scrolltop.min.js) NO
+   tiene la guarda `if (!path) return;` y lanza en consola
+   "Cannot read properties of null (reading 'getTotalLength')" en paginas donde
+   NO se imprime el boton .scroll-to-top (ej. panel WCFM, que llama a
+   wp_footer() sin el footer del tema).
+   Solucion: desencolar el .min roto y cargar la version FUENTE del padre
+   (scrolltop.js) que SI trae la guarda. Sin tocar el tema padre.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_fix_scrolltop_script' ) ) :
+	function storex_child_fix_scrolltop_script() {
+		$src_path = get_template_directory() . '/assets/js/scrolltop.js';
+		if ( ! file_exists( $src_path ) ) {
+			return;
+		}
+		if ( wp_script_is( 'storex-scrolltop-js', 'enqueued' ) ) {
+			wp_dequeue_script( 'storex-scrolltop-js' );
+		}
+		wp_enqueue_script(
+			'storex-scrolltop-js-fixed',
+			 get_template_directory_uri() . '/assets/js/scrolltop.js',
+			array( 'jquery' ),
+			wp_get_theme( get_template() )->get( 'Version' ),
+			true
+		);
+	}
+endif;
+add_action( 'wp_enqueue_scripts', 'storex_child_fix_scrolltop_script', 20 );
+
+/* ==========================================================================
    FIXES: Burger Companion — Frontpage sections para tema hijo StoreX
    ========================================================================== */
 
