@@ -8847,6 +8847,57 @@ body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a.active span.text {
   color: #17a2b8 !important;
 }
 
+/* Submenu emergente del menu lateral (al pasar el mouse): WCFM lo pinta
+   AZUL (#17a2b8) via CSS dinamico ("a:hover span" alcanza al span del submenu).
+   Forzamos BLANCO en su texto para que se lea bien. */
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items:hover .wcfm_sub_menu_items a,
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items:hover .wcfm_sub_menu_items a span,
+body.wcfm-dashboard-page #wcfm_menu span.wcfm_sub_menu_items a,
+body.wcfm-dashboard-page #wcfm_menu span.wcfm_sub_menu_items,
+body.wcfm-dashboard-page #wcfm_menu .wcfm_menu_items a:hover span.wcfm_sub_menu_items {
+  color: #ffffff !important;
+}
+
+/* Boton "Agregar nuevo" (Avisos y otras secciones): el plugin lo pinta
+   #b0bec5 (azulado) y no se ve sobre el fondo oscuro. Texto a BLANCO. */
+body.wcfm-dashboard-page #wcfm-main-contentainer a.add_new_wcfm_ele_dashboard,
+body.wcfm-dashboard-page #wcfm-main-contentainer a.add_new_wcfm_ele_dashboard span {
+  color: #ffffff !important;
+}
+
+/* Campo "Idioma" del Perfil (WCFM): BLOQUEADO (solo Español de Peru).
+   Evita que el gestor cambie el idioma y rompa las traducciones del hijo.
+   Solo afecta al select #locale del panel. */
+body.wcfm-dashboard-page #locale {
+  pointer-events: none !important;
+  background-color: #f6f7f9 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
+/* Pais del Perfil (WCFM): BLOQUEADO (solo Peru), para que no se elija otro
+   por error. El select2 oculta el <select>, asi que bloqueamos su contenedor. */
+body.wcfm-dashboard-page #bcountry + .select2-container,
+body.wcfm-dashboard-page #scountry + .select2-container {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+body.wcfm-dashboard-page #bcountry + .select2-container .select2-selection,
+body.wcfm-dashboard-page #scountry + .select2-container .select2-selection {
+  background-color: #f6f7f9 !important;
+  cursor: not-allowed !important;
+}
+
+/* Campo "Idioma" del Perfil: BLOQUEADO (solo Español de Peru).
+   Evita que el gestor cambie el idioma y rompa las traducciones.
+   Solo bloquea el select #locale: no afecta otros campos del panel. */
+body.wcfm-dashboard-page #locale {
+  pointer-events: none !important;
+  background: #f6f7f9 !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
 /* =============================================================================
    FIN DE ESTILOS PERSONALIZADOS
    ========================================================================== */

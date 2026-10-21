@@ -1681,6 +1681,254 @@ if ( ! function_exists( 'storex_child_whatsapp_scrolltop_js' ) ) :
 endif;
 add_action( 'wp_footer', 'storex_child_whatsapp_scrolltop_js', 20 );
 
+/* ==========================================================================
+   TOOLTIP INFORMATIVO EN BOTON ELIMINAR DE NOTIFICACIONES (panel WCFM)
+   El boton #wcfm_bulk_mark_delete es un <input> (no admite ::after en CSS).
+   WCFM ya trae un motor de tooltips (qTip2) que se activa con la clase
+   text_tip + data-tip. Aqui inicializamos qTip SOLO en ese boton para guiar
+   al gestor sin tocar el plugin ni reinicializar el resto de tooltips.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_delete_tooltip_js' ) ) :
+	function storex_child_wcfm_delete_tooltip_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$texto = 'Elimina las notificaciones que seleccionaste. Primero marca las casillas de la izquierda y luego pulsa aqui.';
+		$texto_leido = 'Marca como leidas las notificaciones que seleccionaste. Primero marca las casillas de la izquierda y luego pulsa aqui.';
+		$texto_consulta = 'Elimina las consultas que seleccionaste. Primero marca las casillas de la izquierda y luego pulsa aqui.';
+		$texto_agregar = 'Agrega un nuevo aviso para informar novedades a tus clientes. Completa el titulo y el contenido.';
+		$texto_agregar_kb = 'Crea una nueva guia o articulo de ayuda para tus usuarios. Completa el titulo y el contenido.';
+		?>
+<script type="text/javascript">
+(function(){
+    // Boton "Agregar nuevo" de Avisos: lleva class="text_tip", asi que WCFM lo
+    // inicializa en document.ready leyendo su data-tip. Este script (footer) corre
+    // ANTES de ese momento, asi que sobrescribimos el data-tip aqui mismo (al instante)
+    // y WCFM creara el tooltip ya con el texto informativo.
+    var addBtn = document.querySelector('a.add_new_wcfm_ele_dashboard.text_tip[href*="notice-manage"]');
+    if (addBtn) {
+        addBtn.setAttribute('data-tip', <?php echo wp_json_encode( $texto_agregar ); ?>);
+    }
+
+    // Boton "Agregar nuevo" de Base de conocimiento: mismo patron.
+    var addBtnKb = document.querySelector('a.add_new_wcfm_ele_dashboard.text_tip[href*="knowledgebase-manage"]');
+    if (addBtnKb) {
+        addBtnKb.setAttribute('data-tip', <?php echo wp_json_encode( $texto_agregar_kb ); ?>);
+    }
+
+    var grupos = [
+        { scope: '#wcfm-messages_wrapper', tips: {
+            wcfm_bulk_mark_delete: <?php echo wp_json_encode( $texto ); ?>,
+            wcfm_bulk_mark_read: <?php echo wp_json_encode( $texto_leido ); ?>
+        }},
+        { scope: '#wcfm-enquiry_wrapper', tips: {
+            wcfm_bulk_mark_delete: <?php echo wp_json_encode( $texto_consulta ); ?>
+        }}
+    ];
+    function initTip(){
+        if (!window.jQuery) return;
+        var $ = jQuery;
+        grupos.forEach(function(g){
+            Object.keys(g.tips).forEach(function(id){
+                var btn = document.querySelector(g.scope + ' #' + id);
+                if (!btn) return;
+                if ($(btn).data('qtip')) return; // ya inicializado, no duplicar
+                $(btn).qtip({
+                    content: g.tips[id],
+                    position: { my: 'top center', at: 'bottom center', viewport: $(window) },
+                    show: { event: 'mouseenter focus', solo: true },
+                    hide: { inactive: 60000, fixed: true },
+                    style: { classes: 'qtip-dark qtip-shadow qtip-rounded qtip-wcfm-css qtip-wcfm-core-css' }
+                });
+            });
+        });
+    }
+    if (document.readyState !== 'loading') { setTimeout(initTip, 600); }
+    else { document.addEventListener('DOMContentLoaded', function(){ setTimeout(initTip, 600); }); }
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_delete_tooltip_js', 21 );
+
+/* ==========================================================================
+   TRADUCCION VISUAL DE CATEGORIAS DE BASE DE CONOCIMIENTO (WCFM)
+   --------------------------------------------------------------------------
+   Los terminos del select (#dropdown_knowledgebase_cat) y la columna Category
+   de la tabla son DATOS de la BD (taxonomia wcfm_knowledgebase_category).
+   NO se toca la base de datos: solo se reemplaza el TEXTO visible con JS
+   (traduccion visual, se pierde al recargar y se vuelve a aplicar).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_cats_traducir_js' ) ) :
+	function storex_child_wcfm_cats_traducir_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$mapa = array(
+			'Product'        => 'Producto',
+			'Order'          => 'Pedido',
+			'Coupon'         => 'Cupon',
+			'Article'        => 'Articulo',
+			'Shipping'       => 'Envio',
+			'Settings'       => 'Ajustes',
+			'Membership'     => 'Membresia',
+			'Profile'        => 'Perfil',
+			'Payment'        => 'Pago',
+			'Withdrawal'     => 'Retiro',
+			'Refund'         => 'Reembolso',
+			'Review'         => 'Reseña',
+			'Policy'         => 'Politica',
+			'Inquiry'        => 'Consulta',
+			'Support Ticket' => 'Ticket de soporte',
+			'Invoice'        => 'Factura',
+			'Vacation'       => 'Vacaciones',
+			'Verification'   => 'Verificacion',
+			'Report'         => 'Reporte',
+			'Customer'       => 'Cliente',
+			'Followers'      => 'Seguidores',
+			'Notice'         => 'Aviso',
+			'Notification'   => 'Notificacion',
+			'Analytics'      => 'Analiticas',
+			'Marketing'      => 'Marketing',
+		);
+		?>
+<script type="text/javascript">
+(function(){
+    var mapa = <?php echo wp_json_encode( $mapa ); ?>;
+    function traducirTexto(txt){
+        if (!txt) return txt;
+        var t = txt.trim();
+        return mapa[t] ? mapa[t] : txt;
+    }
+    function traducirSelectores(root){
+        (root || document).querySelectorAll('#dropdown_knowledgebase_cat option').forEach(function(op){
+            var orig = op.textContent;
+            var nuevo = traducirTexto(orig);
+            if (nuevo !== orig) { op.textContent = nuevo; }
+        });
+    }
+    function traducirTabla(root){
+        (root || document).querySelectorAll('#wcfm-knowledgebase td').forEach(function(td){
+            var orig = td.textContent;
+            var nuevo = traducirTexto(orig);
+            if (nuevo !== orig) { td.textContent = nuevo; }
+        });
+    }
+    function traducirChecklist(root){
+        (root || document).querySelectorAll('#knowledgebase_cats_checklist li span').forEach(function(sp){
+            var orig = sp.textContent;
+            var nuevo = traducirTexto(orig);
+            if (nuevo !== orig) { sp.textContent = nuevo; }
+        });
+    }
+    function aplicar(){
+        traducirSelectores(document);
+        traducirTabla(document);
+        traducirChecklist(document);
+    }
+    aplicar();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', aplicar);
+    }
+    // La tabla se carga por AJAX (serverSide): observar para re-traducir filas nuevas.
+    var cont = document.getElementById('wcfm-knowledgebase_wrapper');
+    if (cont && window.MutationObserver) {
+        new MutationObserver(function(){ traducirTabla(cont); }).observe(cont, { childList: true, subtree: true });
+    }
+    // El checklist de categorias tambien se llena por AJAX.
+    var chk = document.getElementById('knowledgebase_cats_checklist');
+    if (chk && window.MutationObserver) {
+        new MutationObserver(function(){ traducirChecklist(chk); }).observe(chk, { childList: true, subtree: true });
+    }
+    setTimeout(aplicar, 1200);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_cats_traducir_js', 22 );
+
+/* ==========================================================================
+   BLOQUEO DEL CAMPO IDIOMA EN EL PERFIL (WCFM)
+   --------------------------------------------------------------------------
+   Fuerza el locale a es_PE y lo deja fuera del tabulado para que el gestor
+   no pueda cambiar el idioma del panel (romperia las traducciones del hijo).
+   NO usamos "disabled": un campo deshabilitado no se envia al guardar.
+   El bloqueo visual/del clic lo hace el CSS (pointer-events: none en #locale).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_locale_lock_js' ) ) :
+	function storex_child_wcfm_locale_lock_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		?>
+<script type="text/javascript">
+(function(){
+    function lock(){
+        var sel = document.getElementById('locale');
+        if (!sel) return;
+        sel.value = 'es_PE';
+        sel.setAttribute('tabindex', '-1');
+    }
+    lock();
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', lock); }
+    setTimeout(lock, 1000);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_locale_lock_js', 22 );
+
+/* ==========================================================================
+   PAIS POR DEFECTO EN EL PERFIL (WCFM)
+   --------------------------------------------------------------------------
+   Fuerza el country a "PE" (Peru) en #bcountry y #scountry. Espera a que el
+   select2 exista y tenga opciones, luego fija el valor y dispara 'change'
+   (asi el select2 muestra Peru y se cargan sus departamentos).
+   El bloqueo del clic lo hace el CSS (pointer-events en el .select2-container).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_country_lock_js' ) ) :
+	function storex_child_wcfm_country_lock_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		?>
+<script type="text/javascript">
+(function(){
+    var ids = ['bcountry','scountry'];
+    function setPE(el){
+        if (el.dataset.scxPe === '1') return;
+        if (el.options.length < 2) return;                 // aun sin opciones
+        if (!(window.jQuery && jQuery(el).data('select2'))) return; // aun sin select2
+        el.value = 'PE';
+        jQuery(el).val('PE').trigger('change');
+        el.dataset.scxPe = '1';
+        // Al disparar 'change' en scountry, WCFM recrea #sstate SIN la clase
+        // wcfm_ele_hide -> los campos de envio quedan visibles aunque "Igual que
+        // facturacion" este marcado. Re-aplicamos el estado de la casilla.
+        if (el.id === 'scountry') {
+            var sab = document.getElementById('same_as_billing');
+            if (sab && sab.checked) { jQuery(sab).trigger('change'); }
+        }
+    }
+    function intento(){
+        ids.forEach(function(id){
+            var el = document.getElementById(id);
+            if (el) setPE(el);
+        });
+    }
+    intento();
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', intento); }
+    var n = 0, t = setInterval(function(){ intento(); if (++n > 20) clearInterval(t); }, 300);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_country_lock_js', 22 );
+
 add_action( 'shutdown', 'storex_child_shutdown_final', 0 );
 
 /* ==========================================================================
