@@ -61,7 +61,16 @@ add_action('after_setup_theme', function () {
           = Perú. (afecta cálculo de impuestos, shipping preview).
        ======================================================== */
     add_filter('woocommerce_customer_default_location', function ($loc) {
-        return 'PE';
+        return 'PE:CAJ';
+    }, 999999, 1);
+
+    /* Este filtro corre DESPUES de la geolocalizacion: garantiza el array
+       final country/state que usa set_defaults() del customer de sesion. */
+    add_filter('woocommerce_customer_default_location_array', function ($loc) {
+        return array(
+            'country' => 'PE',
+            'state'   => 'CAJ',
+        );
     }, 999999, 1);
 
     /* ========================================================
@@ -87,6 +96,21 @@ add_action('after_setup_theme', function () {
         }
         return $estados;
     }, 999999, 1);
+
+    /* ========================================================
+       6.b) ENVIO A DOMICILIO: el core NO copia el state del
+       billing cuando YA existe direccion de envio
+       (has_shipping_address() = true), por eso el select de
+       Departamento de envio quedaba vacio. Se fuerza CAJ en
+       LECTURA cuando esta vacio (no toca la BD).
+       ======================================================== */
+    add_filter('woocommerce_customer_get_shipping_state', function ($estado, $cliente) {
+        $pais = $cliente->get_shipping_country();
+        if ($pais === 'PE' && empty($estado)) {
+            return 'CAJ';
+        }
+        return $estado;
+    }, 999999, 2);
 
     /* ========================================================
        7) VALIDACIÓN SERVER-SIDE: Estado debe ser Cajamarca (CAJ).

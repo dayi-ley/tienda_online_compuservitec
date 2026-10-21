@@ -8865,6 +8865,13 @@ body.wcfm-dashboard-page #wcfm-main-contentainer a.add_new_wcfm_ele_dashboard sp
   color: #ffffff !important;
 }
 
+/* Boton "Ver todo" (Show All) del widget de Notificaciones y Consultas:
+   el plugin pinta el texto oscuro y no se lee sobre el fondo negro. A BLANCO. */
+body.wcfm-dashboard-page #wcfm-main-contentainer .wcfm_dashboard_notifications_show_all a.wcfm_submit_button,
+body.wcfm-dashboard-page #wcfm-main-contentainer .wcfm_dashboard_enquiry_show_all a.wcfm_submit_button {
+  color: #ffffff !important;
+}
+
 /* Campo "Idioma" del Perfil (WCFM): BLOQUEADO (solo Español de Peru).
    Evita que el gestor cambie el idioma y rompa las traducciones del hijo.
    Solo afecta al select #locale del panel. */

@@ -55,7 +55,10 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 				'Notifications', 'Delete', 'Type', 'Message', 'From', 'Date', 'All', 'Show', 'entries',
 				'New Product', 'New Category', 'New Order', 'New Enquiry', 'New Customer',
 				'Customer', 'Processing', 'Completed', 'Cancelled', 'Canceled', 'Refunded', 'Failed', 'Online',
-				'Replies', 'Enquiries', 'Day', 'Days', 'Close', 'Week', 'Month', 'Year', 'Time', 'Hour', 'Minute',
+				'Replies', 'Enquiries', 'Inquiries', 'Day', 'Days', 'Close', 'Week', 'Month', 'Year', 'Time', 'Hour', 'Minute',
+				'There is no enquiry yet!!', 'There is no topic yet!!',
+				'%1$s top seller in last 7 days (sold %2$d)',
+				'Year', 'This Month', 'Custom:', 'Print',
 				'Search:', 'Search',
 				'Topics', 'Add New', 'Add New Topic', 'View Topic', 'Edit Topic', 'View', 'Edit', 'Title',
 				'Add New Knowledgebase', 'Category', 'Details', 'Categories', 'Add new category', 'Add Knowledgebase',
@@ -63,7 +66,7 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 				'Billing', 'Country', 'City/Town', 'State/County', 'Postcode/Zip', '-Select a location-',
 				'Shipping',
 				'Add Topic', 'Content', 'Submit', 'SUBMIT', 'Allow Reply', 'Close for New Reply',
-				'Past', 'Following', 'Shortcuts', 'Selected:',
+				'Past', 'Following', 'Shortcuts', 'Selected:', 'Last Login:',
 				'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December',
 				'mo', 'tu', 'we', 'th', 'fr', 'su',
 				'You have received an Order <b>#%s</b>',
@@ -272,6 +275,45 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			// ====== Página My Account (Mi Cuenta) ======
 			'My Account'                                 => 'Mi Cuenta',
 			'Dashboard'                                  => 'Panel',
+			'gross sales in last 7 days'                 => 'Ventas brutas en los ultimos 7 dias',
+			'received in last 7 days'                    => 'Recibidos en los ultimos 7 dias',
+			'Sales Report by Date'                       => 'Reporte de ventas por fecha',
+			'Store Analytics'                            => 'Analiticas de la tienda',
+			'Store Stats'                                => 'Estadisticas de la tienda',
+			'Sales by Product'                           => 'Ventas por producto',
+			'Inquiries'                                  => 'Consultas',
+			'There is no enquiry yet!!'                  => 'Aun no hay consultas!!',
+			'Latest Topics'                              => 'Temas recientes',
+			'There is no topic yet!!'                    => 'Aun no hay temas!!',
+			'Show All'                                   => 'Ver todo',
+			'%1$s top seller in last 7 days (sold %2$d)' => '%1$s mas vendido en los ultimos 7 dias (vendidos %2$d)',
+			'Year'                                       => 'Ano',
+			'Last Month'                                 => 'Mes pasado',
+			'This Month'                                 => 'Este mes',
+			'Last 7 Days'                                => 'Ultimos 7 dias',
+			'Custom:'                                    => 'Personalizado:',
+			'Print'                                      => 'Imprimir',
+			'Print Report'                               => 'Imprimir reporte',
+			'Sales by date'                              => 'Ventas por fecha',
+			'Sales BY Date'                              => 'Ventas por fecha',
+			'From %1$s to %2$s'                          => 'Del %1$s al %2$s',
+			'%s average gross daily sales'               => '%s promedio de ventas brutas diarias',
+			'%s average net daily sales'                 => '%s promedio de ventas netas diarias',
+			'%s gross sales in this period'              => '%s ventas brutas en este periodo',
+			'%s net sales in this period'                => '%s ventas netas en este periodo',
+			'%s orders placed'                           => '%s pedidos realizados',
+			'%s items purchased'                         => '%s articulos comprados',
+			'%s charged for shipping'                    => '%s cobrado por envio',
+			'%s worth of coupons used'                   => '%s en cupones usados',
+			'Gross Sales'                                => 'Ventas brutas',
+			'Net Sales'                                  => 'Ventas netas',
+			'Order Counts'                               => 'Cantidad de pedidos',
+			'Order Item Counts'                          => 'Cantidad de articulos',
+			'Coupon Amounts'                             => 'Monto en cupones',
+			'Refund Amounts'                             => 'Monto reembolsado',
+			'Welcome to the %s Dashboard'                => 'Bienvenido al Panel de %s',
+			'Welcome to your Store Manager'              => 'Bienvenido a tu Gestor de tienda',
+			'Last Login:'                                => 'Ultimo ingreso:',
 			'Orders'                                     => 'Pedidos',
 			'Order Status'                               => 'Estado del pedido',
 			'Order status'                               => 'Estado del pedido',
@@ -611,6 +653,23 @@ add_filter( 'gettext', 'storex_child_traducciones_personalizadas', 999999, 3 );
 
 if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) ) :
 	function storex_child_traducciones_numericas_personalizadas( $translated, $single, $plural, $number, $domain ) {
+		// WCFM Store Stats: cadenas _n() con etiquetas <strong> y sufijo - estado.
+		// Se resuelven ANTES del guardian (que bloquea por '<', '>' y '-').
+		if ( 'wc-frontend-manager' === $domain && is_string( $single ) ) {
+			if ( false !== strpos( $single, 'order</strong> - processing' ) ) {
+				return ( (int) $number > 1 ) ? '<strong>%s pedidos</strong> - en proceso' : '<strong>%s pedido</strong> - en proceso';
+			}
+			if ( false !== strpos( $single, 'order</strong> - on-hold' ) ) {
+				return ( (int) $number > 1 ) ? '<strong>%s pedidos</strong> - en espera' : '<strong>%s pedido</strong> - en espera';
+			}
+			if ( false !== strpos( $single, 'product</strong> - low in stock' ) ) {
+				return ( (int) $number > 1 ) ? '<strong>%s productos</strong> - con stock bajo' : '<strong>%s producto</strong> - con stock bajo';
+			}
+			if ( false !== strpos( $single, 'product</strong> - out of stock' ) ) {
+				return ( (int) $number > 1 ) ? '<strong>%s productos</strong> - agotado' : '<strong>%s producto</strong> - agotado';
+			}
+		}
+
 		// PROTECCIÓN CRÍTICA ANTI-CÓDIGO (igual que gettext):
 		static $re_no_traducir_ng = null;
 		if ( null === $re_no_traducir_ng ) {
@@ -626,7 +685,7 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 		if ( is_string( $single ) ) {
 			$sin_esp = preg_replace( '~\s+~u', '', $single );
 			// Excepcion: terminos de una sola palabra que SI queremos traducir (Addresses usa _n()).
-			$permitir_suelta_ng = in_array( $single, array( 'Address', 'Addresses' ), true );
+			$permitir_suelta_ng = in_array( $single, array( 'Address', 'Addresses', '%1$s refunded %2$d order (%3$d item)' ), true );
 			if ( ! $permitir_suelta_ng && ( strlen( $single ) < 6 || $sin_esp === $single || @preg_match( $re_no_traducir_ng, (string)$single ) ) ) {
 				return $translated;
 			}
@@ -648,6 +707,13 @@ if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) )
 
 		if ( 'Address' === $single || 'Addresses' === $plural ) {
 			return ( (int) $number > 1 ) ? 'Direcciones' : 'Direccion';
+		}
+
+		// Reporte de ventas: refunded X orders (Y items)
+		if ( false !== strpos( $single, 'refunded %2$d order (' ) ) {
+			return ( (int) $number > 1 )
+				? '%1$s reembolsado en %2$d pedidos (%3$d articulos)'
+				: '%1$s reembolsado en %2$d pedido (%3$d articulo)';
 		}
 
 		// Showing X-Y of Z results, singular/plural (incluye variantes con HTML span exactas usadas por Woo Blocks)
