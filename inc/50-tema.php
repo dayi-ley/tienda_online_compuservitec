@@ -1192,7 +1192,7 @@ endif;
 if ( ! function_exists( 'storex_child_theme_mod_product_cat_id' ) ) :
 	function storex_child_theme_mod_product_cat_id( $value ) {
 		if ( empty( $value ) || ! is_array( $value ) ) {
-			return storex_child_existing_product_cat_slugs();
+			return array();
 		}
 		return $value;
 	}
@@ -1589,9 +1589,21 @@ if ( ! function_exists( 'storex_child_aplicar_reemplazos_globales' ) ) {
 /* --- C) SHUTDOWN priority 0: capturar buffer, aplicar reemplazos, imprimir. --- */
 if ( ! function_exists( 'storex_child_shutdown_final' ) ) {
 	function storex_child_shutdown_final() {
+		// Mismo guardián que la apertura: nunca tocar respuestas AJAX/REST/admin/cron.
+		if ( is_admin() ) { return; }
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) { return; }
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) { return; }
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) { return; }
+		if ( PHP_SAPI === 'cli' ) { return; }
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
+		if (
+			strpos( $uri, '/wp-admin/' ) !== false ||
+			strpos( $uri, 'admin-ajax' ) !== false ||
+			strpos( $uri, 'wp-json' ) !== false
+		) { return; }
+
 		$_scx_nivel = ob_get_level();
 		if ( $_scx_nivel <= 0 ) {
-			echo '<!-- SCX_SHUTDOWN_RAN_BUT_NO_OPEN_BUFFERS_LEVEL_0 -->';
 			return;
 		}
 		$_scx_html = '';
@@ -1698,6 +1710,8 @@ if ( ! function_exists( 'storex_child_wcfm_delete_tooltip_js' ) ) :
 		$texto_consulta = 'Elimina las consultas que seleccionaste. Primero marca las casillas de la izquierda y luego pulsa aqui.';
 		$texto_agregar = 'Agrega un nuevo aviso para informar novedades a tus clientes. Completa el titulo y el contenido.';
 		$texto_agregar_kb = 'Crea una nueva guia o articulo de ayuda para tus usuarios. Completa el titulo y el contenido.';
+		$texto_agregar_articulo = 'Crea un nuevo articulo para tu blog. Escribe el titulo y el contenido, elige una imagen destacada y publicalo.';
+		$texto_agregar_producto = 'Crea un nuevo producto. Completa los datos y publicalo.';
 		?>
 <script type="text/javascript">
 (function(){
@@ -1714,6 +1728,37 @@ if ( ! function_exists( 'storex_child_wcfm_delete_tooltip_js' ) ) :
     var addBtnKb = document.querySelector('a.add_new_wcfm_ele_dashboard.text_tip[href*="knowledgebase-manage"]');
     if (addBtnKb) {
         addBtnKb.setAttribute('data-tip', <?php echo wp_json_encode( $texto_agregar_kb ); ?>);
+    }
+
+    // Boton "Agregar nuevo" de Articulos (blog): mismo patron.
+    var addBtnArt = document.querySelector('a#add_new_article_dashboard.text_tip');
+    if (addBtnArt) {
+        addBtnArt.setAttribute('data-tip', <?php echo wp_json_encode( $texto_agregar_articulo ); ?>);
+    }
+
+    // Boton "Agregar nuevo" de Productos: tooltip informativo corto.
+    // Seleccionamos por HREF (igual que el de exportar, que si funciono) y
+    // re-aplicamos por si WCFM vuelve a crear el boton. Si ya hay un qTip,
+    // actualizamos su contenido para no dejar el texto viejo.
+    var tipProducto = <?php echo wp_json_encode( $texto_agregar_producto ); ?>;
+    function aplicarTipProducto(){
+        var btns = document.querySelectorAll('a.add_new_wcfm_ele_dashboard.text_tip[href*="products-manage"]');
+        for (var i = 0; i < btns.length; i++) {
+            var btn = btns[i];
+            btn.setAttribute('data-tip', tipProducto);
+            if (window.jQuery && jQuery(btn).data('qtip')) {
+                try { jQuery(btn).qtip('option', 'content', tipProducto); } catch (e) {}
+            }
+        }
+    }
+    aplicarTipProducto();
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', aplicarTipProducto); }
+    setTimeout(aplicarTipProducto, 900);
+
+    // Boton "Products Export": solo traducir su tooltip (no toca el encabezado).
+    var exportBtn = document.querySelector('a.add_new_wcfm_ele_dashboard.text_tip[href*="products-export"]');
+    if (exportBtn) {
+        exportBtn.setAttribute('data-tip', 'Exportar productos');
     }
 
     var grupos = [
@@ -1751,6 +1796,224 @@ if ( ! function_exists( 'storex_child_wcfm_delete_tooltip_js' ) ) :
 	}
 endif;
 add_action( 'wp_footer', 'storex_child_wcfm_delete_tooltip_js', 21 );
+
+/* ==========================================================================
+   TOOLTIPS INFORMATIVOS EN LAS CAJAS DE MODULOS (Ajustes > Modulos, WCFM)
+   --------------------------------------------------------------------------
+   Cada caja (.wcfm_module_box) trae class="text_tip" y WCFM crea su tooltip
+   (qTip2) en document.ready leyendo data-tip. Este script corre en el footer
+   ANTES de ese momento, asi que reemplazamos data-tip por textos mas utiles.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_modules_tooltip_js' ) ) :
+	function storex_child_wcfm_modules_tooltip_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$tips = array(
+			'article'            => 'Activa o desactiva la gestion de articulos (entradas de blog) en el panel. Al desactivarlo, se oculta del menu.',
+			'customer'           => 'Muestra la seccion de clientes, con sus datos y pedidos.',
+			'coupon'             => 'Permite crear y administrar cupones de descuento para tu tienda.',
+			'policies'           => 'Gestiona las politicas de la tienda (envio, reembolsos, etc.) que ven tus clientes.',
+			'membership'         => 'Habilita el modulo de membresias para ofrecer planes a tus clientes.',
+			'profile'            => 'Permite al vendedor editar su perfil, los datos de la tienda y sus direcciones.',
+			'withdrawal'         => 'Gestiona las solicitudes de retiro de dinero (pagos al vendedor).',
+			'refund'             => 'Gestiona las solicitudes de reembolso de pedidos.',
+			'enquiry'            => 'Muestra las consultas que hacen los clientes sobre tus productos.',
+			'enquiry_tab'        => 'Muestra u oculta la pestana de consultas en la ficha del producto. Si la ocultas, las consultas siguen activas en el panel.',
+			'catalog'            => 'Modo catalogo: oculta precios y el boton de compra para que los clientes solo consulten. Requiere que las consultas esten activas.',
+			'product_popup'      => 'Permite agregar productos rapidamente desde un formulario emergente en el panel.',
+			'custom_field'       => 'Administra campos personalizados adicionales para tus productos.',
+			'notification'       => 'Muestra las notificaciones y avisos importantes del sistema para el vendedor.',
+			'direct_message'     => 'Permite enviar y recibir mensajes directos entre el vendedor y los clientes.',
+			'knowledgebase'      => 'Base de conocimiento: crea articulos de ayuda para tus clientes.',
+			'notice'             => 'Avisos: publica anuncios que aparecen en la tienda.',
+			'buddypress'         => 'Integra BuddyPress para mostrar la actividad social de la tienda.',
+			'analytics_disabled' => 'Analiticas: muestra reportes y estadisticas de ventas de la tienda.',
+		);
+		?>
+<script type="text/javascript">
+(function(){
+    var tips = <?php echo wp_json_encode( $tips ); ?>;
+    function aplicar(){
+        var boxes = document.querySelectorAll('#wcfm_settings_form_modules_expander .wcfm_module_box');
+        boxes.forEach(function(box){
+            var clave = null;
+            box.className.split(/\s+/).forEach(function(c){
+                var m = c.match(/^wcfm_module_(.+)$/);
+                if (m) { clave = m[1]; }
+            });
+            if (clave && tips[clave]) {
+                box.setAttribute('data-tip', tips[clave]);
+            }
+        });
+    }
+    aplicar();
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', aplicar); }
+    setTimeout(aplicar, 800);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_modules_tooltip_js', 21 );
+
+/* ==========================================================================
+   CONFIRMACION EN "Reset to Default" (Ajustes > Estilo del panel, WCFM)
+   --------------------------------------------------------------------------
+   El plugin engancha el click del boton #wcfm_color_setting_reset_button en
+   document.ready y, al pulsarlo, restablece TODOS los colores y GUARDA al
+   instante, sin pedir confirmacion. Para evitarlo registramos un listener en
+   FASE DE CAPTURA sobre document: la captura corre antes que el handler del
+   boton, asi que si el usuario cancela hacemos stopPropagation y el reseteo
+   del plugin nunca se ejecuta.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_reset_confirm_js' ) ) :
+	function storex_child_wcfm_reset_confirm_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$msg = 'Se restableceran TODOS los colores del panel a sus valores originales y se guardara de inmediato. Se perderan los colores personalizados.\n\nDeseas continuar?';
+		?>
+<script type="text/javascript">
+(function(){
+    var msg = <?php echo wp_json_encode( $msg ); ?>;
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest ? e.target.closest('#wcfm_color_setting_reset_button') : null;
+        if (!btn) return;
+        if (!window.confirm(msg)) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_reset_confirm_js', 21 );
+
+/* ==========================================================================
+   TRADUCCION VISUAL DE ETIQUETAS DE ENDPOINTS (Ajustes > Paginas del panel)
+   --------------------------------------------------------------------------
+   Los labels de "My Account End Points" (inquiry, view-inquiry) NO pasan por
+   __(): el plugin imprime el slug crudo. gettext no los ve, asi que los
+   traducimos por JS. IMPORTANTE: solo cambiamos el TEXTO de la etiqueta
+   (<strong>), nunca el value/placeholder del input, que es el slug real de
+   la URL y si se traduce rompen los enlaces.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_endpoints_label_js' ) ) :
+	function storex_child_wcfm_endpoints_label_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		$mapa = array(
+			'inquiry'      => 'Consulta',
+			'view-inquiry' => 'Ver consulta',
+		);
+		?>
+<script type="text/javascript">
+(function(){
+    var mapa = <?php echo wp_json_encode( $mapa ); ?>;
+    function aplicar(){
+        var cont = document.getElementById('wcfm_settings_form_pages_expander');
+        if (!cont) return;
+        cont.querySelectorAll('.store_address p.wcfm_title strong').forEach(function(st){
+            var t = st.textContent.trim();
+            if (mapa[t]) { st.textContent = mapa[t]; }
+        });
+    }
+    aplicar();
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', aplicar); }
+    setTimeout(aplicar, 800);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_wcfm_endpoints_label_js', 21 );
+
+/* ==========================================================================
+   AJUSTES GLOBALES SOLO PARA EL ADMIN (WCFM)
+   --------------------------------------------------------------------------
+   Los "Ajustes globales" del panel (colores, modulos, aviso de Ultimate,
+   endpoints) requieren la capability access_wcfm_site_setup, que solo tiene
+   el rol administrator. El Shop Manager no puede guardarlos y ademas el
+   boton Guardar se quedaba cargando. Aqui:
+     1) Quitamos "Ajustes" del menu lateral a quien no pueda guardarlos.
+     2) Bloqueamos el acceso directo por URL a esa seccion.
+     3) Ocultamos el aviso de Ultimate para todos (equivale al checkbox).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_settings_solo_admin' ) ) :
+	function storex_child_wcfm_settings_solo_admin( $menus ) {
+		if ( ! current_user_can( 'access_wcfm_site_setup' ) ) {
+			unset( $menus['wcfm-settings'] );
+		}
+		return $menus;
+	}
+endif;
+add_filter( 'wcfm_menus', 'storex_child_wcfm_settings_solo_admin', 99 );
+
+if ( ! function_exists( 'storex_child_wcfm_block_settings_url' ) ) :
+	function storex_child_wcfm_block_settings_url( $allow ) {
+		if ( ! current_user_can( 'access_wcfm_site_setup' ) ) {
+			return false;
+		}
+		return $allow;
+	}
+endif;
+add_filter( 'wcfm_is_allow_manage_settings', 'storex_child_wcfm_block_settings_url', 99 );
+
+if ( ! function_exists( 'storex_child_wcfm_hide_ultimate_notice' ) ) :
+	function storex_child_wcfm_hide_ultimate_notice( $show ) {
+		return false;
+	}
+endif;
+add_filter( 'is_wcfmu_inactive_notice_show', 'storex_child_wcfm_hide_ultimate_notice', 99 );
+
+if ( ! function_exists( 'storex_child_wcfm_hide_wp_admin_view' ) ) :
+	function storex_child_wcfm_hide_wp_admin_view( $allow ) {
+		return false;
+	}
+endif;
+add_filter( 'wcfm_allow_wp_admin_view', 'storex_child_wcfm_hide_wp_admin_view', 999 );
+
+/* ==========================================================================
+   ARTICULOS (BLOG): EL SHOP MANAGER PUEDE CREAR/EDITAR/BORRAR (WCFM)
+   --------------------------------------------------------------------------
+   WCFM free bloquea la EDICION de articulos existentes al Shop Manager: la
+   validacion wcfm_user_can_perform_request() solo acepta a administrator, al
+   vendor dueño o a un manager de Marketplace, y no tiene filtro para conceder
+   permiso. El unico punto que concede es wcfm_is_vendor().
+   Aqui lo forzamos SOLO durante las peticiones AJAX de guardar (controller
+   wcfm-articles-manage) y borrar (action delete_wcfm_article), y SOLO para el
+   propio Shop Manager, de modo que pueda gestionar SUS articulos sin alterar
+   el resto del panel (listados, productos, pedidos).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_wcfm_articles_shop_manager' ) ) :
+	function storex_child_wcfm_articles_shop_manager( $is_vendor, $vendor_id = 0 ) {
+		if ( $is_vendor ) {
+			return $is_vendor;
+		}
+		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+			return $is_vendor;
+		}
+		$controller = isset( $_POST['controller'] ) ? sanitize_text_field( wp_unslash( $_POST['controller'] ) ) : '';
+		$action     = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '';
+		$en_ambito  = ( 'wcfm-articles-manage' === $controller ) || ( 'delete_wcfm_article' === $action );
+		if ( ! $en_ambito ) {
+			return $is_vendor;
+		}
+		$user = wp_get_current_user();
+		if ( ! $user || ! in_array( 'shop_manager', (array) $user->roles, true ) ) {
+			return $is_vendor;
+		}
+		if ( $vendor_id && (int) $vendor_id !== (int) $user->ID ) {
+			return $is_vendor;
+		}
+		return true;
+	}
+endif;
+add_filter( 'wcfm_is_vendor', 'storex_child_wcfm_articles_shop_manager', 999, 2 );
 
 /* ==========================================================================
    TRADUCCION VISUAL DE CATEGORIAS DE BASE DE CONOCIMIENTO (WCFM)
@@ -1928,6 +2191,54 @@ if ( ! function_exists( 'storex_child_wcfm_country_lock_js' ) ) :
 	}
 endif;
 add_action( 'wp_footer', 'storex_child_wcfm_country_lock_js', 22 );
+
+/* ==========================================================================
+   CHECKOUT: BLOQUEAR LA TECLA ENTER
+   --------------------------------------------------------------------------
+   El navegador dispara el submit del <form> al presionar Enter dentro de un
+   input. Eso hacia que el pedido se realizara sin querer. Aqui cancelamos
+   Enter en los campos del checkout: el pedido SOLO se realiza con click en
+   el boton "Realizar pedido". Se respeta textarea (Enter = salto de linea).
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_checkout_bloquear_enter_js' ) ) :
+	function storex_child_checkout_bloquear_enter_js() {
+		if ( is_admin() ) {
+			return;
+		}
+		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+			return;
+		}
+		?>
+<script type="text/javascript">
+(function(){
+    function bloquear(e){
+        if (e.key !== 'Enter' && e.keyCode !== 13) return;
+        var t = e.target || {};
+        var tag = (t.tagName || '').toLowerCase();
+        if (tag === 'textarea') return;               // Enter = salto de linea
+        var btn = t.closest ? t.closest('button[type="submit"], input[type="submit"]') : null;
+        if (btn) return;                              // Enter sobre el boton = intencional
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    function init(){
+        var form = document.querySelector('form.wc-block-checkout__form');
+        if (!form) {
+            form = document.querySelector('.wc-block-checkout');
+        }
+        if (!form || form.dataset.scxEnterLock === '1') return;
+        form.dataset.scxEnterLock = '1';
+        form.addEventListener('keydown', bloquear, true);
+    }
+    if (document.readyState !== 'loading') { setTimeout(init, 400); }
+    else { document.addEventListener('DOMContentLoaded', function(){ setTimeout(init, 400); }); }
+    var n = 0, int = setInterval(function(){ init(); if (++n > 25) clearInterval(int); }, 400);
+})();
+</script>
+		<?php
+	}
+endif;
+add_action( 'wp_footer', 'storex_child_checkout_bloquear_enter_js', 23 );
 
 add_action( 'shutdown', 'storex_child_shutdown_final', 0 );
 

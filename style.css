@@ -2998,7 +2998,7 @@ div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
   position: relative !important;
   z-index: 2 !important;
   display: inline-block !important;
-  color: #bfdbfe !important;
+  color: #ffffff !important;
   font-size: 0.80rem !important;
   font-weight: 700 !important;
   letter-spacing: 1.3px !important;
@@ -3006,7 +3006,7 @@ div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
   padding: 4px 12px !important;
   margin-bottom: 18px !important;
   border-radius: 999px !important;
-  background-color: rgba(255,255,255,0.10) !important;
+  background-color: #1c6eab !important;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(255,255,255,0.18);
@@ -3025,15 +3025,15 @@ div.banner-carousel div.slide-item .pattern-layer[style*="shape-2.png"]{
 .shop-one .shop-block-one .inner-box h4{
   position: relative !important;
   z-index: 2 !important;
-  color: #ffffff !important;
+  color: #e53e3e !important;
   font-size: 1.15rem !important;
   font-weight: 500 !important;
   margin-bottom: 22px !important;
   text-shadow: 0 2px 6px rgba(18,55,92,0.45) !important;
 }
 .shop-one .shop-block-one .inner-box h4 span{
-  color: #ffffff !important;
-  opacity: 0.85 !important;
+  color: #e53e3e !important;
+  opacity: 1 !important;
   margin-right: 6px;
   font-weight: 400 !important;
 }
@@ -6750,6 +6750,26 @@ html body.woocommerce-checkout #content.storex-content section#post-section .con
   max-width: 100% !important;
   width: 100% !important;
 }
+/* Tablet 768-1199px: reducir el padding lateral (aprovechar ancho) */
+@media (min-width: 768px) and (max-width: 1199px){
+  html body.woocommerce-checkout section#post-section > div.container,
+  html body.woocommerce-checkout section#post-section.st-py-default > div.container,
+  html body.woocommerce-checkout section#post-section.kg > div.container,
+  html body.woocommerce-checkout #content.storex-content section#post-section .container {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+/* Movil <=767px: padding lateral reducido (antes se quedaba en 50px) */
+@media (max-width: 767px){
+  html body.woocommerce-checkout section#post-section > div.container,
+  html body.woocommerce-checkout section#post-section.st-py-default > div.container,
+  html body.woocommerce-checkout section#post-section.kg > div.container,
+  html body.woocommerce-checkout #content.storex-content section#post-section .container {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+}
 
 /* --------------------------------------------------------------------------
    FIX CHECKOUT #3 (PARTE 1/6 — SÓLO BLOQUE "Contact Information"):
@@ -6783,6 +6803,59 @@ html body.woocommerce-checkout form.wc-block-checkout__form fieldset#contact-fie
   margin-bottom: 16px !important;
   box-sizing: border-box !important;
   box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   CONTACT INFORMATION — ORDEN: (1) label correo ARRIBA del input,
+   (2) link "Iniciar sesion" ABAJO del input. Solo CSS, no se mueve el DOM.
+   -------------------------------------------------------------------------- */
+/* (1) El label de correo va ENCIMA: flex column-reverse invierte el orden
+   visual (en el DOM el label esta despues del input). */
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-text-input.wc-block-components-address-form__email {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+}
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-text-input.wc-block-components-address-form__email label {
+  position: static !important;
+  transform: none !important;
+  margin: 0 0 6px 0 !important;
+  padding: 0 !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  pointer-events: none !important;
+}
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-text-input.wc-block-components-address-form__email input {
+  margin: 0 !important;
+}
+/* (2) Espacio interior para colocar el link abajo, sin tocar el padding del fieldset. */
+html body.woocommerce-checkout fieldset#contact-fields #contact.wc-block-components-address-form {
+  padding-bottom: 30px !important;
+}
+/* El fieldset es la referencia de posicion; sus cabeceras internas dejan de
+   serlo para que el link se ancle al fieldset y no al encabezado. */
+html body.woocommerce-checkout fieldset#contact-fields.wc-block-checkout__contact-fields {
+  position: relative !important;
+}
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-checkout-step__heading-container,
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-checkout-step__heading,
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-components-checkout-step__heading-content {
+  position: static !important;
+}
+/* "Iniciar sesion" baja al final (debajo del correo), anclado al fieldset. */
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-checkout__login-prompt {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 8px !important;
+  left: 22px !important;
+  right: auto !important;
+}
+/* Mensaje contextual ANTES del link (via ::before para que React no lo borre).
+   Resultado visual: ¿Ya tienes cuenta? Iniciar sesion */
+html body.woocommerce-checkout fieldset#contact-fields .wc-block-checkout__login-prompt::before {
+  content: "\00bfYa tienes cuenta? " !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
 }
 
 /* 3) ⭐ SVG Checkbox MUY GRANDE → achicamos la marca del tick (svg.viewBox 24)
@@ -6930,6 +7003,113 @@ html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radi
 html body.woocommerce-checkout form.wc-block-checkout__form input[type="radio"].wc-block-components-radio-control__input {
   accent-color: #0d9488 !important; /* color del radio al marcar = teal */
   cursor: pointer !important;       /* manita también en el radio */
+}
+
+/* --------------------------------------------------------------------------
+   MÉTODOS DE PAGO — LAYOUT HORIZONTAL + COLORES POR MÉTODO
+   Desktop: 3 cajas en fila. Móvil: apiladas (1 por fila).
+   -------------------------------------------------------------------------- */
+/* 1) Fila horizontal de los 3 métodos */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+}
+/* El envoltorio NO participa del layout: sus hijos (caja + formulario)
+   pasan a ser items directos de la fila. Asi las 3 cajas quedan en fila. */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control-accordion-option {
+  display: contents !important;
+}
+/* Cada caja (label) = 1/3 de la fila y SIEMPRE en la fila (order 1) */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option {
+  flex: 1 1 30% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  order: 1 !important;
+}
+/* 1.bis) OPCIÓN B: el formulario del método SELECCIONADO baja a ANCHO
+   COMPLETO. order:2 lo manda SIEMPRE después de las 3 cajas → la fila
+   de cajas nunca se rompe. */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control-accordion-content {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  order: 2 !important;
+  box-sizing: border-box !important;
+}
+/* 2) Colores representativos por método (fondo pastel + borde) */
+html body.woocommerce-checkout fieldset#payment-method label[for="radio-control-wc-payment-method-options-woo-mercado-pago-yape"] {
+  background: #f3e8ff !important;
+  border-color: #c084fc !important;
+}
+html body.woocommerce-checkout fieldset#payment-method label[for="radio-control-wc-payment-method-options-woo-mercado-pago-custom"] {
+  background: #fef9c3 !important;
+  border-color: #fde047 !important;
+}
+/* 3) Logo de Mercado Pago dentro del recuadro */
+html body.woocommerce-checkout fieldset#payment-method .row-image-select {
+  display: flex !important;
+  align-items: center !important;
+}
+html body.woocommerce-checkout fieldset#payment-method .row-image-select img {
+  max-height: 34px !important;
+  width: auto !important;
+}
+/* 3.ter) FIX 'caja dentro de caja' en TRANSFERENCIA: el span
+   .wc-block-components-payment-method-label heredaba borde/fondo/padding
+   del checkout clasico. Lo dejamos neutro dentro de la caja de Blocks. */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-payment-method-label {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  display: inline !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+/* 3.bis) INTERNO DE LA CAJA: bolita + contenido en UNA fila, centrado
+   vertical. La bolita (absoluta por Woo) vuelve al flujo como 1er item. */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option {
+  display: flex !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+}
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__input {
+  position: static !important;
+  margin: 0 12px 0 0 !important;
+  flex: 0 0 auto !important;
+}
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option-layout,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__label-group,
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__label {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option-layout {
+  flex: 1 1 auto !important;
+}
+/* 4) MÓVIL: apilar vertical (1 por fila) */
+@media (max-width: 600px) {
+  html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option {
+    flex: 1 1 100% !important;
+  }
+}
+/* 5) CHECK (✓) de la esquina derecha: CENTRADO VERTICAL en las cajas de pago
+   para que quede en la MISMA FILA que la bolita + titulo + logo
+   (antes iba pegado arriba, fuera de esa fila). */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__option:has(input[type="radio"]:checked)::after {
+  top: 50% !important;
+  right: 14px !important;
+  transform: translateY(-50%) !important;
+}
+/* El label-group reserva un hueco a la derecha para que el logo
+   no se solape con el check centrado. */
+html body.woocommerce-checkout fieldset#payment-method .wc-block-components-radio-control__label-group {
+  padding-right: 28px !important;
 }
 
 /* MÓVIL (<=992px): mantenemos los mismo estilos, solo padding más pequeño
@@ -8872,6 +9052,11 @@ body.wcfm-dashboard-page #wcfm-main-contentainer .wcfm_dashboard_enquiry_show_al
   color: #ffffff !important;
 }
 
+/* Ajustes > Modulos: ocultar el aviso de la version Ultimate que el plugin inyecta. */
+body.wcfm-dashboard-page #wcfm_settings_form_modules_expander #wcfmu-feature-missing-message {
+  display: none !important;
+}
+
 /* Campo "Idioma" del Perfil (WCFM): BLOQUEADO (solo Español de Peru).
    Evita que el gestor cambie el idioma y rompa las traducciones del hijo.
    Solo afecta al select #locale del panel. */
@@ -8903,6 +9088,55 @@ body.wcfm-dashboard-page #locale {
   background: #f6f7f9 !important;
   color: #6b7280 !important;
   cursor: not-allowed !important;
+}
+
+/* Placeholders del panel WCFM: mas tenues que el texto real.
+   WCFM pinta los inputs con color oscuro; aqui aclaramos el placeholder
+   sin afectar lo que el usuario escribe. */
+body.wcfm-dashboard-page input.wcfm-text::placeholder,
+body.wcfm-dashboard-page textarea.wcfm-textarea::placeholder,
+body.wcfm-dashboard-page .wcfm-text::placeholder,
+body.wcfm-dashboard-page .wcfm-textarea::placeholder {
+  color: #b0b6c0 !important;
+  opacity: 1 !important;
+}
+body.wcfm-dashboard-page input.wcfm-text::-webkit-input-placeholder,
+body.wcfm-dashboard-page textarea.wcfm-textarea::-webkit-input-placeholder {
+  color: #b0b6c0 !important;
+  opacity: 1 !important;
+}
+body.wcfm-dashboard-page input.wcfm-text::-moz-placeholder,
+body.wcfm-dashboard-page textarea.wcfm-textarea::-moz-placeholder {
+  color: #b0b6c0 !important;
+  opacity: 1 !important;
+}
+
+/* =============================================================================
+   WCFM · Tabla de productos del pedido (Ver detalles)
+   El plugin fuerza line_cost a width:1% y deja item_cost/item_quantity/line_tax
+   sin ancho => las 4 columnas quedan angostas. Damos anchos legibles y dejamos
+   que la columna del producto (item) ocupe el resto. Scopeado al panel WCFM.
+   ========================================================================== */
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items {
+  table-layout: auto;
+  width: 100%;
+}
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items th.item_cost,
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items td.item_cost {
+  width: 120px;
+}
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items th.item_quantity,
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items td.item_quantity,
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items td.wcfm_item_qty {
+  width: 80px !important;
+}
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items th.line_cost,
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items td.line_cost {
+  width: 110px !important;
+}
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items th.line_tax,
+body.wcfm-dashboard-page #orders_details_items_expander table.woocommerce_order_items td.line_tax {
+  width: 100px;
 }
 
 /* =============================================================================

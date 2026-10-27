@@ -18,7 +18,12 @@ if (!defined('ABSPATH')) exit;
           incluso para el usuario ADMIN logueado (is_admin() solo mira
           la URL /wp-admin/, no el rol del usuario).
    ========================================================================== */
-if ( ! is_admin() ) :
+// WCFM: las tablas (articulos, productos, pedidos...) se rellenan por AJAX.
+// admin-ajax.php corre con is_admin() === true, por eso aqui tambien activamos
+// los filtros cuando la peticion es el controlador de listados de WCFM. Asi se
+// traducen tooltips (Ver/Editar/Eliminar) y estados de fila.
+$scx_es_wcfm_ajax = ( defined( 'DOING_AJAX' ) && DOING_AJAX && isset( $_POST['action'] ) && is_string( $_POST['action'] ) && 'wcfm_ajax_controller' === $_POST['action'] );
+if ( ! is_admin() || $scx_es_wcfm_ajax ) :
 
 if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 	function storex_child_traducciones_personalizadas( $translated, $text, $domain ) {
@@ -58,7 +63,20 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 				'Replies', 'Enquiries', 'Inquiries', 'Day', 'Days', 'Close', 'Week', 'Month', 'Year', 'Time', 'Hour', 'Minute',
 				'There is no enquiry yet!!', 'There is no topic yet!!',
 				'%1$s top seller in last 7 days (sold %2$d)',
-				'Year', 'This Month', 'Custom:', 'Print',
+				'Year', 'This Month', 'Custom:', 'Print', 'Order', 'Purchased',
+				'Modules', 'Policies',
+				'Dashboard Page/Endpoint Setting',
+				'Published', 'Draft', 'Pending', 'Unlimited', 'Articles Limit: ',
+				'Name', 'Status',
+				'Downloadable', 'External/Affiliate Product',
+				'Price', 'schedule', 'Upto', 'Inventory', 'Tax', 'Attributes', 'Linked',
+				'Weight', 'Dimensions', 'Length', 'Width', 'Height', 'Taxable', 'Standard',
+				'Add', 'None', 'Up-sells', 'Cross-sells',
+				'Code', 'Amount', 'Action',
+				'Discount', 'Cost', 'Order #', 'Update',
+				'Location', 'Customers Limit: ',
+				'Check this box if the coupon grants free shipping. The free shipping method must be enabled and be set to require "a valid free shipping coupon" (see the "Free Shipping Requires" setting).',
+				'Tags',
 				'Search:', 'Search',
 				'Topics', 'Add New', 'Add New Topic', 'View Topic', 'Edit Topic', 'View', 'Edit', 'Title',
 				'Add New Knowledgebase', 'Category', 'Details', 'Categories', 'Add new category', 'Add Knowledgebase',
@@ -71,6 +89,7 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 				'mo', 'tu', 'we', 'th', 'fr', 'su',
 				'You have received an Order <b>#%s</b>',
 				'Previous', 'Next', 'System', 'Processing...', 'Send',
+				'Order date:', 'Order status:', 'Customer:', 'Shipping Item(s)',
 				'You do not have any enquiry yet!',
 				'%1$sResend%2$s',
 				'Apartment, suite, unit, etc. (optional)',
@@ -141,6 +160,79 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Product image'                              => 'Imagen del producto',
 			'quantity'                                   => 'Cantidad',
 			'Quantity'                                   => 'Cantidad',
+			'Order'                                      => 'Pedido',
+			'Order #'                                    => 'Pedido #',
+			'Order Details'                              => 'Detalles del pedido',
+			'Cost'                                       => 'Costo',
+			'Update'                                     => 'Actualizar',
+			'Orders Listing'                             => 'Listado de pedidos',
+			'Purchased'                                  => 'Comprado',
+			'Modules'                                    => 'Modulos',
+			'Dashboard Style'                            => 'Estilo del panel',
+			'Dashboard Pages'                            => 'Paginas del panel',
+			'Menu Manager'                               => 'Gestor de menu',
+			'Email Setting'                              => 'Configuracion de correo',
+			'Inquiry Settings'                           => 'Configuracion de consultas',
+			'Product Type Categories'                    => 'Categorias por tipo de producto',
+			'Product Custom Field'                       => 'Campo personalizado de producto',
+			'Policies'                                   => 'Politicas',
+			'Dashboard Setting'                          => 'Configuracion del panel',
+			'Module Controller'                          => 'Control de modulos',
+			'Configure what to hide from your dashboard' => 'Configura que ocultar de tu panel',
+			'Dashboard Display Setting'                  => 'Configuracion visual del panel',
+			'Select Color'                                => 'Elegir color',
+			'Base Highlighter Color'                      => 'Color base de resaltado',
+			'Top Bar Background Color'                    => 'Color de fondo de la barra superior',
+			'Top Bar Text Color'                          => 'Color de texto de la barra superior',
+			'Dashboard Background Color'                  => 'Color de fondo del panel',
+			'Container Background Color'                  => 'Color de fondo de los contenedores',
+			'Container Head Color'                        => 'Color de las cabeceras',
+			'Container Head Text Color'                   => 'Color de texto de las cabeceras',
+			'Container Head Active Color'                 => 'Color de cabecera activa',
+			'Container Head Active Text Color'            => 'Color de texto de cabecera activa',
+			'Menu Background Color'                       => 'Color de fondo del menu',
+			'Menu Item Text Color'                        => 'Color de texto del menu',
+			'Menu Active Item Background'                 => 'Fondo del item activo del menu',
+			'Menu Active Item Text Color'                 => 'Color de texto del item activo del menu',
+			'Button Background Color'                     => 'Color de fondo de los botones',
+			'Button Text Color'                           => 'Color de texto de los botones',
+			'Reset to Default'                            => 'Restablecer valores',
+			'Dashboard Page/Endpoint Setting'            => 'Configuracion de paginas y endpoints',
+			'Refresh Permalink'                          => 'Actualizar enlaces permanentes',
+			'Check to refresh WCfM page permalinks. Only apply if you are getting error (e.g. 404 not found) for any pages.' => 'Marca esta casilla para regenerar los enlaces (permalinks) de las paginas de WCFM. Usalo solo si alguna pagina del panel da error (por ejemplo, 404 no encontrada).',
+			'My Account End Points'                      => 'Endpoints de mi cuenta',
+			'Published'                                  => 'Publicado',
+			'Draft'                                      => 'Borrador',
+			'Pending'                                    => 'Pendiente',
+			'Articles Limit: '                           => 'Limite de articulos: ',
+			'Name'                                       => 'Nombre',
+			'Status'                                     => 'Estado',
+			'Select a category'                          => 'Elegir una categoria',
+			'Add Article'                                => 'Agregar articulo',
+			'Edit Article'                               => 'Editar articulo',
+			'Article Title'                              => 'Titulo del articulo',
+			'Tags'                                       => 'Etiquetas',
+			'Separate Article Tags with commas'          => 'Separar las etiquetas del articulo con comas',
+			'Choose from the most used tags'             => 'Elige entre las etiquetas mas usadas',
+			'Short Description'                          => 'Descripcion corta',
+			'Description'                                => 'Descripcion',
+			'Unlimited'                                  => 'Ilimitados',
+			'remaining'                                  => 'restantes',
+			'Quick access icon'                          => 'Icono de acceso rapido',
+			'My Store Label'                             => 'Etiqueta de mi tienda',
+			'Disable Quick Access'                       => 'Desactivar acceso rapido',
+			'Disable Welcome Box'                        => 'Desactivar caja de bienvenida',
+			'Disable WCFM Menu'                          => 'Desactivar menu de WCFM',
+			'Disable Theme Header'                       => 'Desactivar cabecera del tema',
+			'Disable WCFM Full View'                     => 'Desactivar vista completa de WCFM',
+			'Disable WCFM Slick Menu'                    => 'Desactivar menu slick de WCFM',
+			'Disable WCFM Header Panel'                  => 'Desactivar panel de cabecera de WCFM',
+			'Disable Float Button'                       => 'Desactivar boton flotante',
+			'Disable Category Checklist'                 => 'Desactivar lista de categorias',
+			'Disable Tags Input Box'                     => 'Desactivar caja de etiquetas',
+			'Disable Ultimate Notice'                    => 'Desactivar aviso de Ultimate',
+			'Billing Address'                            => 'Direccion de facturacion',
+			'Shipping Address'                           => 'Direccion de envio',
 			'SKU:'                                       => 'SKU:',
 			'Category:'                                  => 'Categoría:',
 			'Categories:'                                => 'Categorías:',
@@ -325,6 +417,22 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Refunded'                                   => 'Reembolsado',
 			'Failed'                                     => 'Fallido',
 			'Pending payment'                            => 'Pendiente de pago',
+			'On hold'                                    => 'En espera',
+			'Mark as Complete'                           => 'Marcar como completado',
+			'View Details'                               => 'Ver detalles',
+			'Order date:'                                => 'Fecha del pedido:',
+			'Order status:'                              => 'Estado del pedido:',
+			'Customer:'                                  => 'Cliente:',
+			'View other orders'                          => 'Ver otros pedidos',
+			'Order Items'                                => 'Productos del pedido',
+			'Shipping Item(s)'                           => 'Productos de envio',
+			'Order Total'                                => 'Total del pedido',
+			'Payment via %s'                             => 'Pago con %s',
+			'Billing Details'                            => 'Datos de facturacion',
+			'Shipping Details'                           => 'Datos de envio',
+			'No shipping address set.'                   => 'No se ha establecido una direccion de envio.',
+			'Pickup address'                             => 'Direccion de recojo',
+			'Pickup details'                             => 'Detalles de recojo',
 			'Online'                                     => 'En linea',
 			'Search By Customer'                         => 'Buscar por cliente',
 			'Search By Product'                          => 'Buscar por producto',
@@ -377,6 +485,78 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'Set New Password – Leave blank to retain current password' => 'Nueva contraseña - Dejar en blanco para mantener la actual',
 			'Set New Password – Leave blank to retain current password' => 'Nueva contraseña - Dejar en blanco para mantener la actual',
 			'Show all category'                          => 'Mostrar todas las categorias',
+			'Filter by category ...'                     => 'Filtrar por categoria ...',
+			'Show all '                                  => 'Mostrar todas ',
+			'Product brands'                             => 'Marcas de productos',
+			'All product types'                          => 'Todos los tipos de producto',
+			'Simple Product'                             => 'Producto simple',
+			'Downloadable'                               => 'Descargable',
+			'Variable Product'                           => 'Producto variable',
+			'Grouped Product'                            => 'Producto agrupado',
+			'External/Affiliate Product'                 => 'Producto externo/afiliado',
+			'Export products to a CSV file'              => 'Exportar productos a un archivo CSV',
+			'This tool allows you to generate and download a CSV file containing a list of all products.' => 'Esta herramienta te permite generar y descargar un archivo CSV con la lista de todos los productos.',
+			'Which columns should be exported?'          => 'Que columnas deseas exportar?',
+			'Which product types should be exported?'    => 'Que tipos de producto deseas exportar?',
+			'Export custom meta?'                        => 'Exportar metadatos personalizados?',
+			'Export all columns'                         => 'Exportar todas las columnas',
+			'Export all products'                        => 'Exportar todos los productos',
+			'Yes, export all custom meta'                => 'Si, exportar todos los metadatos personalizados',
+			'Generate CSV'                               => 'Generar CSV',
+			'Add Product'                                => 'Agregar producto',
+			'Product Title'                              => 'Titulo del producto',
+			'Price'                                      => 'Precio',
+			'Sale Price'                                 => 'Precio de oferta',
+			'schedule'                                   => 'Programar',
+			'Upto'                                       => 'Hasta',
+			'Separate Product Tags with commas'          => 'Separar las etiquetas del producto con comas',
+			'Inventory'                                  => 'Inventario',
+			'Attributes'                                 => 'Atributos',
+			'Linked'                                     => 'Vinculados',
+			'Manage Stock?'                              => 'Gestionar inventario?',
+			'Stock status'                               => 'Estado del inventario',
+			'Sold Individually'                          => 'Vendido individualmente',
+			'On backorder'                               => 'Sobre pedido',
+			'Product Policies'                           => 'Politicas del producto',
+			'Weight'                                     => 'Peso',
+			'Dimensions'                                 => 'Dimensiones',
+			'Length'                                     => 'Largo',
+			'Width'                                      => 'Ancho',
+			'Height'                                     => 'Alto',
+			'Shipping class'                             => 'Clase de envio',
+			'No shipping class'                          => 'Sin clase de envio',
+			'Tax Status'                                 => 'Estado del impuesto',
+			'Tax Class'                                  => 'Clase de impuesto',
+			'Taxable'                                    => 'Gravable',
+			'Shipping only'                              => 'Solo envio',
+			'Standard'                                   => 'Estandar',
+			'None'                                       => 'Ninguno',
+			'Add attribute'                              => 'Agregar atributo',
+			'Add'                                        => 'Agregar',
+			'Up-sells'                                   => 'Ventas ascendentes',
+			'Cross-sells'                                => 'Ventas cruzadas',
+			'Override Policy Fields'                     => 'Anular campos de politicas',
+			'Coupons Listing'                            => 'Listado de cupones',
+			'Add Coupon'                                 => 'Agregar cupon',
+			'Manage Customers'                           => 'Gestionar clientes',
+			'Manage Customer'                            => 'Gestionar cliente',
+			'Customers Limit: '                          => 'Limite de clientes: ',
+			'Location'                                   => 'Ubicacion',
+			'Money Spent'                                => 'Total gastado',
+			'Last Order'                                 => 'Ultimo pedido',
+			'Code'                                       => 'Codigo',
+			'Amount'                                     => 'Monto',
+			'Usage Limit'                                => 'Limite de uso',
+			'Expiry date'                                => 'Fecha de vencimiento',
+			'Discount Type'                              => 'Tipo de descuento',
+			'Coupon Amount'                              => 'Monto del cupon',
+			'Coupon expiry date'                         => 'Fecha de vencimiento del cupon',
+			'Allow free shipping'                        => 'Permitir envio gratis',
+			'Check this box if the coupon grants free shipping. The free shipping method must be enabled and be set to require "a valid free shipping coupon" (see the "Free Shipping Requires" setting).' => 'Marca esta casilla si el cupon otorga envio gratis. El metodo de envio gratis debe estar activado y configurado para requerir "un cupon de envio gratis valido" (ver la opcion "Envio gratis requiere").',
+			'Percentage discount'                        => 'Descuento porcentual',
+			'Fixed Cart Discount'                        => 'Descuento fijo en el carrito',
+			'Fixed Product Discount'                     => 'Descuento fijo por producto',
+			'Action'                                     => 'Accion',
 			'Add New Knowledgebase'                      => 'Agregar nueva base de conocimiento',
 			'Add Knowledgebase'                          => 'Agregar base de conocimiento',
 			'Details'                                    => 'Detalles',
@@ -411,7 +591,9 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 			'New Category'                               => 'Categoria nueva',
 			'New Order'                                  => 'Pedido nuevo',
 			"Are you sure and want to do this?\nYou can't undo this action ..." => "Estas seguro de que quieres hacer esto?\nNo puedes deshacer esta accion ...",
+			"Are you sure and want to delete this 'Article'?\nYou can't undo this action ..." => "Estas seguro de que quieres eliminar este 'Articulo'?\nNo puedes deshacer esta accion ...",
 			'Are you sure and want to do this?'          => 'Estas seguro de que quieres hacer esto?',
+			"Are you sure and want to 'Mark as Complete' this Order?" => "Estas seguro de que quieres marcar como completado este pedido?",
 			'New Enquiry'                                => 'Consulta nueva',
 			'New Customer'                               => 'Cliente nuevo',
 			'Mark Read'                                  => 'Marcar como leido',
@@ -651,11 +833,23 @@ if ( ! function_exists( 'storex_child_traducciones_personalizadas' ) ) :
 endif;
 add_filter( 'gettext', 'storex_child_traducciones_personalizadas', 999999, 3 );
 
+// Los estados de pedido de WooCommerce (Pending payment, On hold, etc.) usan
+// _x( ..., 'Order status' ) => van por gettext_with_context, no por gettext.
+if ( ! function_exists( 'storex_child_traducciones_con_contexto' ) ) :
+	function storex_child_traducciones_con_contexto( $translated, $text, $context, $domain ) {
+		return storex_child_traducciones_personalizadas( $translated, $text, $domain );
+	}
+endif;
+add_filter( 'gettext_with_context', 'storex_child_traducciones_con_contexto', 999999, 4 );
+
 if ( ! function_exists( 'storex_child_traducciones_numericas_personalizadas' ) ) :
 	function storex_child_traducciones_numericas_personalizadas( $translated, $single, $plural, $number, $domain ) {
 		// WCFM Store Stats: cadenas _n() con etiquetas <strong> y sufijo - estado.
 		// Se resuelven ANTES del guardian (que bloquea por '<', '>' y '-').
 		if ( 'wc-frontend-manager' === $domain && is_string( $single ) ) {
+			if ( '<strong>%s order</strong>' === $single ) {
+				return ( (int) $number > 1 ) ? '<strong>%s pedidos</strong>' : '<strong>%s pedido</strong>';
+			}
 			if ( false !== strpos( $single, 'order</strong> - processing' ) ) {
 				return ( (int) $number > 1 ) ? '<strong>%s pedidos</strong> - en proceso' : '<strong>%s pedido</strong> - en proceso';
 			}
@@ -1011,6 +1205,24 @@ add_action('wp_footer', function () {
         var m = trimmed.match(/^Please enter a valid\s+(.+)$/i);
         if (m) {
             node.nodeValue = 'Ingresa un ' + m[1] + ' válido';
+        }
+        // Fallback: mensajes de WooCommerce core y del plugin Mercado Pago (Yape).
+        // Reemplazo por SUBCADENA porque estos textos traen HTML (<strong>/<br>)
+        // y React los parte en varios nodos de texto.
+        var scxPares = [
+            ["Please fix the following errors before continuing", "Corrige los siguientes errores antes de continuar"],
+            ["Please fix the following error before continuing", "Corrige el siguiente error antes de continuar"],
+            ["Yape declined your payment", "Yape rechazo tu pago"],
+            ["Your payment could not be processed. Please try again or choose another payment method.", "No se pudo procesar tu pago. Intenta de nuevo o elige otro metodo de pago."],
+            ["You can contact Yape to find out why or try again with this or another payment method.", "Puedes contactar a Yape para saber el motivo o intentar de nuevo con este u otro metodo de pago."],
+            ["Your payment was rejected because something went wrong. We recommend trying again or paying with another method.", "Tu pago fue rechazado porque algo salio mal. Te recomendamos intentar de nuevo o pagar con otro metodo."],
+            ["This payment exceeds your daily limit for online purchases with Yape. We recommend paying with another method or trying again tomorrow.", "Este pago supera tu limite diario de compras en linea con Yape. Te recomendamos pagar con otro metodo o intentar manana."],
+            ["After three incorrect approval codes, the payment can't be done with Yape for your safety. Pay with another method or try again in 24 hours.", "Tras tres codigos de aprobacion incorrectos, el pago no se puede hacer con Yape por tu seguridad. Paga con otro metodo o intenta en 24 horas."]
+        ];
+        for (var i = 0; i < scxPares.length; i++) {
+            if (node.nodeValue.indexOf(scxPares[i][0]) !== -1) {
+                node.nodeValue = node.nodeValue.split(scxPares[i][0]).join(scxPares[i][1]);
+            }
         }
     }
 

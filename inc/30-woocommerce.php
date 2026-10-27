@@ -26,6 +26,28 @@ endif;
 add_filter( 'woocommerce_breadcrumb_defaults', 'storex_child_fix_breadcrumb_tienda_nombre', 999999 );
 
 /* ==========================================================================
+   FIX: Hora desfasada 5h en "Ver Detalles" del pedido (WCFM).
+   WCFM usa: date_i18n( wc_date_format() . ' @' . wc_time_format(),
+                        strtotime( $order->get_date_created() ) )
+   strtotime() de un WC_DateTime devuelve un timestamp UNIX real (UTC), pero
+   date_i18n() legacy lo re-interpreta como hora local -> resta 5h (Lima).
+   Correccion: solo cuando el formato trae ' @' devolvemos wp_date() con el
+   timestamp tratado como UTC real, mostrando la hora local correcta.
+   ========================================================================== */
+if ( ! function_exists( 'storex_child_fix_wcfm_order_date' ) ) :
+	function storex_child_fix_wcfm_order_date( $date, $format, $timestamp, $gmt ) {
+		if ( $gmt || ! is_numeric( $timestamp ) ) {
+			return $date;
+		}
+		if ( false === strpos( (string) $format, ' @' ) ) {
+			return $date;
+		}
+		return wp_date( $format, (int) $timestamp, wp_timezone() );
+	}
+endif;
+add_filter( 'date_i18n', 'storex_child_fix_wcfm_order_date', 999999, 4 );
+
+/* ==========================================================================
    FIX CRÍTICO: Desactivar método COD (Cash On Delivery / Pago Contra Entrega)
    porque rompe el JS de Woo Blocks en Checkout y tira el error:
    "There was an error registering the payment method with id 'cod':
